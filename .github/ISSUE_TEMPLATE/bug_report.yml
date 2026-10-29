@@ -1,0 +1,41 @@
+name: Bug report
+description: Report a reproducible app, data or build problem.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Check existing issues first. Use synthetic data and remove private farm records, phone numbers, coordinates and credentials from logs/screenshots."
+  - type: input
+    id: build
+    attributes:
+      label: App build or commit
+      description: Include the APK version, commit or CI run link.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device and environment
+      placeholder: "Galaxy M21, Android 13, Kannada, offline"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the relevant screen and plan feature ID if known.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Add sanitized screenshots or the relevant error, if available.
+    validations:
+      required: true

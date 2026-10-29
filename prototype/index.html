@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dhara Mitra — UI Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #fbf8f5;
+  --surface: #ffffff;
+  --border: #eee7de;
+  --text-primary: #1c1a17;
+  --text-secondary: #6b645b;
+  --accent: #e8712a;
+  --accent-hover: #c85e1f;
+  --accent-soft: #fdefe3;
+  --gradient-accent: linear-gradient(135deg, #e8712a 0%, #ffb04d 100%);
+  --shadow-sm: 0 1px 2px rgba(28,26,23,0.04);
+  --shadow-md: 0 8px 24px rgba(28,26,23,0.08);
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-kn: "Noto Sans Kannada", "Inter", sans-serif;
+  --radius: 14px;
+  --up: #2e8b57;
+  --down: #c0392b;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text-primary); font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+button { font-family: inherit; }
+
+/* ---------- Page shell ---------- */
+.hero { position: relative; background: var(--bg-subtle); overflow: hidden; }
+.hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(232,113,42,.20) 1px, transparent 1px);
+  background-size: 18px 18px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 95%);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 95%);
+}
+.hero-inner { position: relative; max-width: 1280px; margin: 0 auto; padding: 40px 24px 28px; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; color: var(--accent); font-weight: 600; }
+.hero h1 { font-family: var(--font-display); font-size: 40px; margin: 8px 0 6px; letter-spacing: -.02em; }
+.hero h1 .kn-title { font-family: var(--font-kn); font-weight: 600; color: var(--text-secondary); font-size: 24px; margin-left: 10px; letter-spacing: 0; }
+.lede { color: var(--text-secondary); max-width: 640px; margin: 0; line-height: 1.55; }
+.lang-switch { display: inline-flex; background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 4px; box-shadow: var(--shadow-sm); }
+.lang-switch button { border: 0; background: transparent; padding: 8px 18px; border-radius: 999px; font-weight: 600; font-size: 13px; color: var(--text-secondary); cursor: pointer; transition: all .15s ease; }
+.lang-switch button[data-lang="kn"] { font-family: var(--font-kn); }
+.lang-switch button.on { background: var(--accent); color: #fff; }
+.hairline { height: 2px; background: var(--gradient-accent); }
+
+.stage { max-width: 1280px; margin: 0 auto; padding: 32px 24px 64px; display: grid; grid-template-columns: 230px 400px minmax(0, 1fr); gap: 36px; align-items: start; }
+.screen-nav { position: sticky; top: 24px; }
+.nav-group { margin-bottom: 20px; }
+.nav-group h4 { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); margin: 0 0 8px 12px; }
+.nav-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 9px 12px; border: 1px solid transparent; border-radius: 10px; background: transparent; font-weight: 500; font-size: 14px; color: var(--text-primary); cursor: pointer; transition: all .15s ease; }
+.nav-item:hover { background: var(--bg-subtle); }
+.nav-item.on { background: var(--accent-soft); border-color: rgba(232,113,42,.25); color: var(--accent-hover); }
+.nav-item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex: none; }
+.nav-item.on .dot { background: var(--accent); }
+
+.phone-wrap { display: flex; justify-content: center; }
+.phone { width: 400px; height: 840px; background: #1c1a17; border-radius: 52px; padding: 12px; box-shadow: 0 30px 60px rgba(28,26,23,.20), 0 0 0 1px rgba(0,0,0,.4) inset; }
+.screen { position: relative; width: 100%; height: 100%; background: var(--bg-subtle); border-radius: 40px; overflow: hidden; display: flex; flex-direction: column; font-size: 14px; }
+body.kn .screen { font-family: var(--font-kn); }
+
+.notes { position: sticky; top: 24px; }
+.note-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 24px; }
+.note-card .tag { font-family: var(--font-mono); font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.note-card h2 { font-family: var(--font-display); font-size: 24px; margin: 6px 0 8px; letter-spacing: -.01em; }
+.note-card p { color: var(--text-secondary); line-height: 1.55; margin: 0 0 16px; }
+.note-card ul { list-style: none; padding: 0; margin: 0; }
+.note-card li { position: relative; padding: 10px 0 10px 18px; border-top: 1px dashed var(--border); line-height: 1.5; font-size: 14px; }
+.note-card li::before { content: ""; position: absolute; left: 2px; top: 18px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.fid { display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--accent-hover); background: var(--accent-soft); border-radius: 6px; padding: 1px 6px; margin-left: 4px; }
+.note-tip { margin-top: 18px; padding: 14px 16px; border-radius: 12px; background: var(--bg-subtle); border: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.note-tip b { color: var(--text-primary); }
+
+/* ---------- App chrome ---------- */
+.notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 110px; height: 28px; background: #1c1a17; border-radius: 20px; z-index: 6; }
+.statusbar { flex: none; height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 4px 30px 0; font-family: var(--font-body); font-weight: 600; font-size: 13px; }
+.appbar { flex: none; display: flex; align-items: center; gap: 12px; padding: 4px 18px 12px; }
+.appbar h2 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 21px; letter-spacing: -.01em; line-height: 1.2; }
+body.kn .appbar h2 { font-family: var(--font-kn); font-size: 19px; }
+.appbar .sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
+.icon-btn { width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--border); background: #fff; display: grid; place-items: center; cursor: pointer; color: var(--text-primary); flex: none; transition: all .15s ease; }
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.content { flex: 1; overflow-y: auto; padding: 2px 16px 104px; scrollbar-width: none; }
+.content::-webkit-scrollbar { display: none; }
+.bottomnav { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; padding-bottom: 14px; background: rgba(255,255,255,.96); backdrop-filter: blur(8px); border-top: 1px solid var(--border); display: flex; z-index: 4; }
+.bn { flex: 1; border: 0; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+.bn-ic { width: 48px; height: 30px; border-radius: 999px; display: grid; place-items: center; transition: background .15s ease; }
+.bn.on { color: var(--accent-hover); }
+.bn.on .bn-ic { background: var(--accent-soft); color: var(--accent); }
+.fab { position: absolute; right: 18px; bottom: 96px; width: 58px; height: 58px; border-radius: 18px; border: 0; background: var(--gradient-accent); color: #fff; display: grid; place-items: center; box-shadow: 0 10px 24px rgba(232,113,42,.35); cursor: pointer; z-index: 4; transition: transform .15s ease; }
+.fab:hover { transform: translateY(-2px); }
+.toast { position: absolute; left: 50%; bottom: 100px; transform: translateX(-50%) translateY(16px); background: #1c1a17; color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 13px; opacity: 0; pointer-events: none; transition: all .2s ease; z-index: 10; width: max-content; max-width: 86%; text-align: center; line-height: 1.4; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- App components ---------- */
+.card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 14px; margin-bottom: 12px; }
+.tap { cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+.tap:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.sec { display: flex; justify-content: space-between; align-items: baseline; margin: 20px 2px 10px; }
+.sec h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+body.kn .sec h3 { font-family: var(--font-kn); text-transform: none; letter-spacing: 0; font-size: 14px; }
+.link { font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; background: none; border: 0; padding: 0; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { justify-content: space-between; }
+.wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.muted { color: var(--text-secondary); }
+.small { font-size: 12px; }
+.xs { font-size: 11px; }
+.mono { font-family: var(--font-mono); }
+.b { font-weight: 600; }
+.big { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: -.01em; }
+.mid { font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+.up { color: var(--up); }
+.down { color: var(--down); }
+.flat { color: var(--text-secondary); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #fff; border: 1px solid var(--border); color: var(--text-secondary); white-space: nowrap; cursor: pointer; transition: all .15s ease; }
+.chip.static { cursor: default; background: var(--bg-subtle); }
+.chip.sel { background: var(--accent-soft); border-color: rgba(232,113,42,.4); color: var(--accent-hover); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips.scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chips.scroll::-webkit-scrollbar { display: none; }
+.cdot { width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.pill.drying { background: var(--accent-soft); color: var(--accent-hover); }
+.pill.storage { background: #eaf4ee; color: #23704a; }
+.pill.sold { background: #f1efec; color: var(--text-secondary); }
+.pill.warn { background: #fff4d6; color: #8a6100; }
+.progress { height: 8px; border-radius: 99px; background: var(--bg-subtle); overflow: hidden; border: 1px solid var(--border); }
+.progress > i { display: block; height: 100%; background: var(--gradient-accent); border-radius: 99px; }
+.alert { background: linear-gradient(135deg, #fff1e6, #fff 80%); border: 1px solid rgba(232,113,42,.35); border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: flex-start; margin-top: 12px; }
+.alert .a-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); color: #fff; display: grid; place-items: center; flex: none; }
+.ok-line { margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--up); }
+.qa { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.qa button { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px 4px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: all .15s ease; }
+.qa button:hover { border-color: rgba(232,113,42,.4); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.qi { width: 38px; height: 38px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
+.pstrip { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 6px; margin: 0 -2px; }
+.pstrip::-webkit-scrollbar { display: none; }
+.pcard { min-width: 128px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; transition: all .15s ease; }
+.pcard:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.lrow { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px dashed var(--border); }
+.lrow:last-child { border-bottom: 0; padding-bottom: 2px; }
+.lrow:first-child { padding-top: 2px; }
+.lrow.tap:hover { transform: none; box-shadow: none; background: var(--bg-subtle); }
+.avatar { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; font-weight: 700; font-size: 14px; background: var(--accent-soft); color: var(--accent-hover); flex: none; font-family: var(--font-body); }
+.avatar.sm { width: 26px; height: 26px; border-radius: 9px; font-size: 10px; border: 2px solid #fff; margin-left: -6px; }
+.avatar.sm:first-child { margin-left: 0; }
+.ricon { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; flex: none; background: var(--bg-subtle); color: var(--text-primary); border: 1px solid var(--border); }
+.seg { display: flex; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 3px; gap: 3px; margin-bottom: 12px; }
+.seg button { flex: 1; border: 0; background: transparent; padding: 8px 4px; border-radius: 9px; font-weight: 600; font-size: 12.5px; color: var(--text-secondary); cursor: pointer; transition: all .15s ease; }
+.seg button.on { background: var(--accent); color: #fff; }
+.kv { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: 13px; border-bottom: 1px dashed var(--border); }
+.kv:last-child { border-bottom: 0; }
+.kv > span:first-child { color: var(--text-secondary); }
+.kv > span:last-child { font-weight: 600; text-align: right; }
+.wline { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+.wline:last-child { border-bottom: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.kpi { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+.kpi .v { font-family: var(--font-display); font-weight: 700; font-size: 17px; margin-top: 4px; }
+.kpi .l { font-size: 11px; color: var(--text-secondary); line-height: 1.3; }
+.btn { border: 0; border-radius: 14px; padding: 13px 16px; font-weight: 700; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all .15s ease; }
+.btn.primary { background: var(--gradient-accent); color: #fff; box-shadow: 0 8px 20px rgba(232,113,42,.28); }
+.btn.primary:hover { transform: translateY(-1px); }
+.btn.ghost { background: #fff; border: 1px solid var(--border); color: var(--text-primary); }
+.btn.ghost:hover { border-color: var(--accent); color: var(--accent-hover); }
+.btn.sm { padding: 8px 12px; font-size: 12px; border-radius: 10px; }
+.btn.block { width: 100%; }
+.btn-row { display: flex; gap: 10px; margin-top: 4px; }
+.btn-row .btn { flex: 1; }
+
+/* timeline */
+.tl { position: relative; padding-left: 30px; margin-top: 6px; }
+.tl-item { position: relative; padding-bottom: 14px; }
+.tl-item::before { content: ""; position: absolute; left: -20px; top: 24px; bottom: 0; width: 2px; background: var(--border); }
+.tl-item:last-child::before { display: none; }
+.tl-item.done::before { background: rgba(232,113,42,.45); }
+.tl-dot { position: absolute; left: -30px; top: 0; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); background: #fff; display: grid; place-items: center; color: #fff; }
+.done .tl-dot { background: var(--accent); border-color: var(--accent); }
+.active .tl-dot { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.active .tl-dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.tl-head { display: flex; justify-content: space-between; align-items: center; min-height: 22px; margin-bottom: 8px; }
+.tl-head b { font-size: 14px; }
+.todo .tl-head b { color: var(--text-secondary); font-weight: 600; }
+.tl .card { margin-bottom: 0; }
+
+/* diary */
+.day { display: grid; grid-template-columns: 44px 1fr; gap: 10px; }
+.dcol { text-align: center; padding-top: 10px; }
+.dcol b { display: block; font-family: var(--font-display); font-size: 20px; line-height: 1; }
+.dcol span { font-size: 11px; color: var(--text-secondary); }
+.type-ic { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; flex: none; color: #fff; }
+
+/* forms */
+.field { margin-bottom: 18px; }
+.field > label { display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; letter-spacing: .02em; }
+.input { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; font: inherit; font-size: 14px; background: #fff; color: var(--text-primary); }
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.counter { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; }
+.counter button { width: 38px; height: 38px; border: 0; background: #fff; font-size: 18px; cursor: pointer; color: var(--accent); }
+.counter span { min-width: 34px; text-align: center; font-weight: 700; }
+.toggle { width: 44px; height: 26px; border-radius: 99px; background: #ddd5cb; position: relative; border: 0; cursor: pointer; flex: none; transition: background .15s ease; }
+.toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: left .15s ease; }
+.toggle.on { background: var(--accent); }
+.toggle.on::after { left: 21px; }
+.voice { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px dashed rgba(232,113,42,.5); border-radius: 12px; background: #fffaf6; cursor: pointer; }
+.voice .mic { width: 40px; height: 40px; border-radius: 50%; background: var(--gradient-accent); color: #fff; display: grid; place-items: center; flex: none; }
+.total-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px; border-radius: 14px; background: #1c1a17; color: #fff; margin-bottom: 12px; }
+
+/* prices */
+.chart { width: 100%; height: auto; display: block; margin-top: 10px; }
+.spark { width: 64px; height: 26px; display: block; }
+.prow { display: grid; grid-template-columns: 1fr 60px 104px; gap: 8px; align-items: center; padding: 11px 0; border-bottom: 1px dashed var(--border); }
+.prow:last-child { border-bottom: 0; }
+
+/* bars */
+.hbar { margin-bottom: 12px; }
+.hbar:last-child { margin-bottom: 0; }
+.hbar .track { height: 10px; border-radius: 99px; background: var(--bg-subtle); border: 1px solid var(--border); overflow: hidden; margin-top: 6px; }
+.hbar .track > i { display: block; height: 100%; border-radius: 99px; }
+
+/* weather */
+.hourly { display: flex; gap: 8px; align-items: flex-end; height: 56px; }
+.hr { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: var(--text-secondary); }
+.hr i { width: 10px; border-radius: 4px; background: linear-gradient(180deg, #7fb2e5, #4a86c5); display: block; }
+.wx-ic { width: 46px; height: 46px; border-radius: 14px; background: #eaf2fb; color: #3b77b8; display: grid; place-items: center; }
+
+/* calendar */
+.cal-crop { display: flex; gap: 12px; align-items: flex-start; }
+.cal-crop .bar { width: 4px; align-self: stretch; border-radius: 4px; flex: none; }
+
+/* more grid */
+.mgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.mtile { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s ease; text-align: center; color: var(--text-primary); }
+.mtile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: rgba(232,113,42,.4); }
+.mtile .qi { width: 36px; height: 36px; }
+
+.hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.net-toggle { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: 10px 16px; font-weight: 600; font-size: 13px; color: var(--text-primary); cursor: pointer; box-shadow: var(--shadow-sm); transition: all .15s ease; }
+.net-toggle:hover { border-color: var(--accent); }
+.net-toggle .nd { width: 8px; height: 8px; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 3px rgba(46,139,87,.15); }
+.net-toggle.off .nd { background: #a39a8f; box-shadow: 0 0 0 3px rgba(163,154,143,.2); }
+.offline { display: flex; gap: 10px; align-items: flex-start; background: #f1efec; border: 1px solid #e3ddd5; border-radius: 12px; padding: 10px 12px; font-size: 12px; line-height: 1.45; color: var(--text-secondary); margin-bottom: 12px; }
+.offline svg { flex: none; margin-top: 1px; color: var(--text-primary); }
+.mgrid.four { grid-template-columns: repeat(4, 1fr); }
+.mgrid.four .mtile { font-size: 11px; padding: 12px 4px; }
+.doc { display: flex; flex-direction: column; gap: 6px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-subtle); font-size: 12px; font-weight: 600; line-height: 1.3; }
+.doc .ricon { width: 30px; height: 30px; border-radius: 9px; background: #fff; }
+.disclaimer { text-align: center; font-size: 11px; color: var(--text-secondary); margin-top: 16px; font-family: var(--font-mono); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1180px) {
+  .stage { grid-template-columns: 400px minmax(0, 1fr); }
+  .screen-nav { grid-column: 1 / -1; position: static; display: flex; flex-wrap: wrap; gap: 8px 24px; }
+  .nav-group { margin-bottom: 0; }
+  .nav-group .items { display: flex; flex-wrap: wrap; gap: 4px; }
+  .nav-item { width: auto; }
+}
+@media (max-width: 860px) {
+  .stage { grid-template-columns: 1fr; }
+  .notes { position: static; }
+}
+@media (max-width: 768px) {
+  .hero h1 { font-size: 30px; }
+  .hero h1 .kn-title { display: block; margin: 4px 0 0; }
+}
+@media (max-width: 440px) {
+  .stage { padding: 16px 0 40px; }
+  .screen-nav, .notes { padding: 0 16px; }
+  .phone { width: 100%; height: 100vh; border-radius: 0; padding: 0; box-shadow: none; }
+  .screen { border-radius: 0; }
+  .notch { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">UI PROTOTYPE · v0.2 · SAMPLE DATA</div>
+      <h1>Dhara Mitra <span class="kn-title">ಧರಾ ಮಿತ್ರ</span></h1>
+      <p class="lede">A farm diary for arecanut (chali), coconut, pepper and banana gardens of South Karnataka. Click around inside the phone, or jump to any screen from the list. Feature IDs match <code>docs/PLAN.md</code>.</p>
+    </div>
+    <div class="hero-actions">
+      <button class="net-toggle" id="netBtn" onclick="setOnline(!state.online)"></button>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button data-lang="en" onclick="setLang('en')">English</button>
+        <button data-lang="kn" onclick="setLang('kn')">ಕನ್ನಡ</button>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="hairline"></div>
+
+<main class="stage">
+  <nav class="screen-nav" id="screenNav" aria-label="Screens"></nav>
+  <div class="phone-wrap"><div class="phone"><div class="screen" id="app"></div></div></div>
+  <aside class="notes" id="notes"></aside>
+</main>
+
+<script>
+/* =====================================================================
+   Strings  (key: [English, Kannada])
+   ===================================================================== */
+const S = {
+  nav_home: ['Home', 'ಮುಖಪುಟ'], nav_lots: ['Harvest', 'ಫಸಲು'], nav_diary: ['Diary', 'ದಿನಚರಿ'], nav_labour: ['Labour', 'ಕೂಲಿ'], nav_prices: ['Prices', 'ಧಾರಣೆ'],
+  namaskara: ['Namaskara', 'ನಮಸ್ಕಾರ'], farm_sub: ['Bhat Thota · Puttur, D.K.', 'ಭಟ್ ತೋಟ · ಪುತ್ತೂರು, ದ.ಕ.'],
+  wx_desc: ['Cloudy · rain 70% around 4 PM', 'ಮೋಡ · ಸಂಜೆ 4ರ ಸುಮಾರಿಗೆ 70% ಮಳೆ ಸಾಧ್ಯತೆ'],
+  rain_title: ['Rain likely 3–6 PM', 'ಮಧ್ಯಾಹ್ನ 3–6ಕ್ಕೆ ಮಳೆ ಸಾಧ್ಯತೆ'],
+  rain_body: ['Lot A-01 is drying on the yard. Cover it by 2:30 PM.', 'ಲಾಟ್ A-01 ಅಂಗಳದಲ್ಲಿ ಒಣಗುತ್ತಿದೆ. 2:30ರೊಳಗೆ ಟಾರ್ಪಲ್ ಮುಚ್ಚಿ.'],
+  mark_covered: ['Mark as covered', 'ಮುಚ್ಚಿದೆ ಎಂದು ಗುರುತಿಸಿ'], covered_ok: ['Yard covered at 11:58 AM · logged on Lot A-01', 'ಅಂಗಳ 11:58ಕ್ಕೆ ಮುಚ್ಚಲಾಗಿದೆ · ಲಾಟ್ A-01ರಲ್ಲಿ ದಾಖಲಾಗಿದೆ'],
+  q_activity: ['Activity', 'ಕೆಲಸ'], q_harvest: ['Harvest', 'ಕೊಯ್ಲು'], q_att: ['Attendance', 'ಹಾಜರಾತಿ'], q_sale: ['Sale', 'ಮಾರಾಟ'],
+  todays_prices: ["Today's prices", 'ಇಂದಿನ ಧಾರಣೆ'], see_all: ['See all', 'ಎಲ್ಲಾ ನೋಡಿ'],
+  drying_now: ['Drying now', 'ಈಗ ಒಣಗುತ್ತಿರುವುದು'], in_storage: ['In storage', 'ಸಂಗ್ರಹದಲ್ಲಿ'],
+  day_of: [(d, n) => `Day ${d} of ~${n}`, (d, n) => `${d}ನೇ ದಿನ · ಸುಮಾರು ${n} ದಿನ`],
+  expected: ['Expected done', 'ಮುಗಿಯುವ ಅಂದಾಜು'], est_chali: ['Est. chali', 'ಅಂದಾಜು ಚಾಲಿ'],
+  days_in_store: [n => `${n} days in store`, n => `${n} ದಿನದಿಂದ ಸಂಗ್ರಹದಲ್ಲಿ`], worth_today: ['Worth today', 'ಇಂದಿನ ಮೌಲ್ಯ'],
+  reminders: ['Reminders', 'ಜ್ಞಾಪನೆಗಳು'], money: ['Money', 'ಹಣಕಾಸು'],
+  worker_dues: ['To pay workers', 'ಕೆಲಸಗಾರರಿಗೆ ಬಾಕಿ'], to_receive: ['To receive', 'ಬರಬೇಕಾದ ಹಣ'], spent_oct: ['Spent in Oct', 'ಅಕ್ಟೋಬರ್ ಖರ್ಚು'],
+  more: ['More', 'ಇನ್ನಷ್ಟು'], calendar: ['Crop calendar', 'ಕೃಷಿ ಪಂಚಾಂಗ'], reports: ['Reports', 'ವರದಿಗಳು'], sales: ['Sales', 'ಮಾರಾಟ'], plots: ['Plots', 'ತೋಟಗಳು'], stock: ['Stock', 'ದಾಸ್ತಾನು'], settings: ['Settings', 'ಸೆಟ್ಟಿಂಗ್ಸ್'],
+  areca: ['Arecanut', 'ಅಡಿಕೆ'], coconut: ['Coconut', 'ತೆಂಗು'], pepper: ['Pepper', 'ಕಾಳುಮೆಣಸು'], banana: ['Banana', 'ಬಾಳೆ'], all: ['All', 'ಎಲ್ಲಾ'],
+  st_harvest: ['Harvest', 'ಕೊಯ್ಲು'], st_drying: ['Drying', 'ಒಣಗಿಸುವಿಕೆ'], st_peeling: ['Peeling', 'ಸುಲಿಯುವಿಕೆ'], st_grading: ['Grading', 'ವಿಂಗಡಣೆ'], st_storage: ['Storage', 'ಸಂಗ್ರಹ'], st_sale: ['Sale', 'ಮಾರಾಟ'], st_sold: ['Sold', 'ಮಾರಾಟವಾಗಿದೆ'],
+  in_progress: ['In progress', 'ನಡೆಯುತ್ತಿದೆ'], not_yet: ['Not started yet', 'ಇನ್ನೂ ಆರಂಭವಾಗಿಲ್ಲ'],
+  lots_title: ['Harvest lots', 'ಫಸಲಿನ ಲಾಟ್‌ಗಳು'], lots_sub: ['Seasons 2025–26 & 2026–27', 'ಹಂಗಾಮು 2025–26 ಮತ್ತು 2026–27'], season: ['Season', 'ಹಂಗಾಮು'],
+  f_date: ['Date', 'ದಿನಾಂಕ'], f_plot: ['Plot', 'ತೋಟ'], f_palms: ['Palms climbed', 'ಹತ್ತಿದ ಮರಗಳು'], f_trees: ['Trees plucked', 'ಕಿತ್ತ ಮರಗಳು'], f_vines: ['Vines picked', 'ಕೊಯ್ದ ಬಳ್ಳಿಗಳು'], f_bunches: ['Bunches', 'ಗೊನೆಗಳು'],
+  f_fresh: ['Fresh ripe nuts', 'ಹಣ್ಣಡಿಕೆ (ಹಸಿ)'], f_green: ['Green berries', 'ಹಸಿ ಕಾಳು'], f_nuts: ['Nuts', 'ಕಾಯಿಗಳು'], f_weight: ['Weight', 'ತೂಕ'],
+  f_started: ['Started', 'ಆರಂಭ'], f_finished: ['Finished', 'ಮುಗಿದಿದ್ದು'], f_days_yard: ['Days on the yard', 'ಅಂಗಳದಲ್ಲಿದ್ದ ದಿನಗಳು'], f_yard: ['Yard', 'ಅಂಗಳ'], f_covers: ['Covered for rain', 'ಮಳೆಗೆ ಮುಚ್ಚಿದ್ದು'],
+  n_times: [n => `${n} ${n === 1 ? 'time' : 'times'}`, n => `${n} ಬಾರಿ`],
+  f_dry: ['Dry pepper', 'ಒಣ ಕಾಳುಮೆಣಸು'], f_dates: ['Dates', 'ದಿನಾಂಕಗಳು'], f_in: ['Dried nuts in husk', 'ಒಣ ಅಡಿಕೆ (ಸಿಪ್ಪೆ ಸಹಿತ)'], f_out: ['Chali after peeling', 'ಸುಲಿದ ನಂತರ ಚಾಲಿ'], f_outturn: ['Out-turn', 'ಇಳುವರಿ ಪ್ರಮಾಣ'],
+  f_peel_cost: ['Total peeling cost', 'ಒಟ್ಟು ಸುಲಿಯುವ ಖರ್ಚು'], f_since: ['Stored since', 'ಸಂಗ್ರಹಿಸಿದ ದಿನ'], f_until: ['Taken out', 'ಹೊರತೆಗೆದ ದಿನ'], f_days_store: ['Days in storage', 'ಸಂಗ್ರಹದ ದಿನಗಳು'], f_place: ['Place', 'ಸ್ಥಳ'],
+  f_price_then: ['Price when stored', 'ಸಂಗ್ರಹಿಸಿದಾಗ ಧಾರಣೆ'], f_price_now: ['Price today', 'ಇಂದಿನ ಧಾರಣೆ'], f_sold_so_far: ['Sold so far', 'ಇದುವರೆಗೆ ಮಾರಾಟ'], f_left: ['Left in store', 'ಉಳಿದಿರುವುದು'],
+  f_buyer: ['Buyer', 'ಖರೀದಿದಾರ'], f_total: ['Total', 'ಒಟ್ಟು'], f_received: ['Received', 'ಬಂದಿರುವುದು'], f_pending: ['Pending', 'ಬಾಕಿ'], fully_paid: ['Fully paid', 'ಪೂರ್ತಿ ಪಾವತಿಯಾಗಿದೆ'],
+  lot_cost: ['Harvest + processing cost', 'ಕೊಯ್ಲು + ಸಂಸ್ಕರಣೆ ಖರ್ಚು'], lot_value: ['Sale value', 'ಮಾರಾಟ ಮೌಲ್ಯ'], est_value: ['Value at today\'s price', 'ಇಂದಿನ ಧಾರಣೆಯಲ್ಲಿ ಮೌಲ್ಯ'], cost_per_kg: ['Cost per kg', 'ಕೆಜಿಗೆ ಖರ್ಚು'], cost_per_unit: ['Cost per nut', 'ಒಂದು ಕಾಯಿಗೆ ಖರ್ಚು'],
+  btn_cover: ['Log rain cover', 'ಮಳೆ ಮುಚ್ಚಿದ್ದು ದಾಖಲಿಸಿ'], btn_finish_dry: ['Drying finished', 'ಒಣಗಿಸುವಿಕೆ ಮುಗಿದಿದೆ'], btn_check: ['Log moisture check', 'ತೇವಾಂಶ ಪರೀಕ್ಷೆ ದಾಖಲಿಸಿ'], btn_sell: ['Record sale', 'ಮಾರಾಟ ದಾಖಲಿಸಿ'], btn_receipt: ['Share sale slip', 'ಮಾರಾಟ ಚೀಟಿ ಹಂಚಿಕೊಳ್ಳಿ'],
+  g_chali: ['Chali', 'ಚಾಲಿ'], g_patora: ['Patora', 'ಪಠೋರ'], g_ulli: ['Ulli gadde', 'ಉಳ್ಳಿಗಡ್ಡೆ'], g_karigotu: ['Karigotu', 'ಕರಿಗೋಟು'], g_koka: ['Koka', 'ಕೋಕಾ'],
+  g_old: ['Old chali', 'ಹಳೆ ಚಾಲಿ'], g_new: ['New chali', 'ಹೊಸ ಚಾಲಿ'], g_double: ['Double chali', 'ಡಬಲ್ ಚಾಲಿ'],
+  g_nut: ['Coconut', 'ತೆಂಗಿನಕಾಯಿ'], g_nut_each: ['Coconut (per nut)', 'ತೆಂಗಿನಕಾಯಿ (ಒಂದಕ್ಕೆ)'], g_copra: ['Milling copra', 'ಕೊಬ್ಬರಿ'], g_dehusked: ['Coconut, dehusked', 'ಸಿಪ್ಪೆ ಸುಲಿದ ತೆಂಗಿನಕಾಯಿ'],
+  g_pepper: ['Dry pepper', 'ಒಣ ಕಾಳುಮೆಣಸು'], g_ungarbled: ['Pepper, ungarbled', 'ಕಾಳುಮೆಣಸು (ಸಾಮಾನ್ಯ)'], g_garbled: ['Pepper, garbled', 'ಕಾಳುಮೆಣಸು (ಆಯ್ದ)'],
+  g_nendran: ['Nendran', 'ನೇಂದ್ರ ಬಾಳೆ'], g_elakki: ['Elakki (Ney Poovan)', 'ಏಲಕ್ಕಿ ಬಾಳೆ'], g_robusta: ['Robusta', 'ರೋಬಸ್ಟಾ ಬಾಳೆ'],
+  u_palms: ['palms', 'ಮರ'], u_days: ['days', 'ದಿನ'], u_kg: ['kg', 'ಕೆಜಿ'], u_trees: ['trees', 'ಮರ'], u_nuts: ['nuts', 'ಕಾಯಿ'], u_l: ['L', 'ಲೀ'],
+  r_palm: ['/palm', '/ಮರ'], r_day: ['/day', '/ದಿನ'], r_kg: ['/kg', '/ಕೆಜಿ'], r_tree: ['/tree', '/ಮರ'], r_nut: ['/nut', '/ಕಾಯಿ'],
+  diary_title: ['Farm diary', 'ತೋಟದ ದಿನಚರಿ'], diary_sub: ['Everything done in the garden', 'ತೋಟದಲ್ಲಿ ಮಾಡಿದ ಎಲ್ಲಾ ಕೆಲಸ'],
+  a_fertiliser: ['Fertiliser', 'ಗೊಬ್ಬರ'], a_spray: ['Spray', 'ಸಿಂಪಡಣೆ'], a_irrigation: ['Irrigation', 'ನೀರಾವರಿ'], a_weeding: ['Weeding', 'ಕಳೆ'], a_harvest: ['Harvest', 'ಕೊಯ್ಲು'], a_care: ['Crop care', 'ಬೆಳೆ ಆರೈಕೆ'], a_other: ['Other', 'ಇತರೆ'],
+  labour: ['Labour', 'ಕೂಲಿ'], inputs: ['Inputs', 'ಸಾಮಗ್ರಿ'], next_round: ['Next round', 'ಮುಂದಿನ ಸುತ್ತು'], n_days: [n => `${n} days`, n => `${n} ದಿನ`], one_day: ['1 day', '1 ದಿನ'],
+  add_title: ['New activity', 'ಹೊಸ ಕೆಲಸ'], add_sub: ['Takes under a minute', 'ಒಂದು ನಿಮಿಷದೊಳಗೆ'],
+  what_work: ['What work?', 'ಯಾವ ಕೆಲಸ?'], which_crop: ['Which crop?', 'ಯಾವ ಬೆಳೆ?'], which_plot: ['Which plot?', 'ಯಾವ ತೋಟ?'], when: ['When?', 'ಯಾವಾಗ?'],
+  products: ['Products used (from stock)', 'ಬಳಸಿದ ಸಾಮಗ್ರಿ (ದಾಸ್ತಾನಿನಿಂದ)'], add_product: ['Add product', 'ಸಾಮಗ್ರಿ ಸೇರಿಸಿ'], no_products: ['No products for this work', 'ಈ ಕೆಲಸಕ್ಕೆ ಸಾಮಗ್ರಿ ಇಲ್ಲ'],
+  who_worked: ['Who worked?', 'ಯಾರು ಕೆಲಸ ಮಾಡಿದರು?'], how_many_days: ['How many days?', 'ಎಷ್ಟು ದಿನ?'], notes_photo: ['Notes & photo', 'ಟಿಪ್ಪಣಿ ಮತ್ತು ಫೋಟೋ'],
+  speak: ['Tap and speak in Kannada', 'ಒತ್ತಿ ಕನ್ನಡದಲ್ಲಿ ಹೇಳಿ'], speak_hint: ['"Kelagina thotakke gobbara haakide…"', '"ಕೆಳಗಿನ ತೋಟಕ್ಕೆ ಗೊಬ್ಬರ ಹಾಕಿದೆ…"'], add_photo: ['Add photo', 'ಫೋಟೋ ಸೇರಿಸಿ'],
+  remind_next: ['Remind me for the next round', 'ಮುಂದಿನ ಸುತ್ತಿಗೆ ನೆನಪಿಸಿ'], after_days: [n => `after ${n} days`, n => `${n} ದಿನದ ನಂತರ`],
+  est_total: ['Estimated cost', 'ಅಂದಾಜು ಖರ್ಚು'], save: ['Save', 'ಉಳಿಸಿ'],
+  saved_rem: [d => `Saved · reminder set for ${d}`, d => `ಉಳಿಸಲಾಗಿದೆ · ${d}ಕ್ಕೆ ಜ್ಞಾಪನೆ`], saved: ['Saved', 'ಉಳಿಸಲಾಗಿದೆ'],
+  labour_title: ['Labour', 'ಕೆಲಸಗಾರರು'], labour_sub: ['Workers, attendance, dues', 'ಕೆಲಸಗಾರರು, ಹಾಜರಾತಿ, ಬಾಕಿ'],
+  tab_workers: ['Workers', 'ಕೆಲಸಗಾರರು'], tab_att: ['Attendance', 'ಹಾಜರಾತಿ'], tab_dues: ['Dues', 'ಬಾಕಿ'],
+  r_climber: ['Climber', 'ಮರ ಹತ್ತುವವರು'], r_sprayer: ['Sprayer', 'ಔಷಧಿ ಸಿಂಪಡಿಸುವವರು'], r_daily: ['Daily labour', 'ದಿನಗೂಲಿ'], r_peeler: ['Areca peeler', 'ಅಡಿಕೆ ಸುಲಿಯುವವರು'], r_plucker: ['Coconut plucker', 'ತೆಂಗಿನಕಾಯಿ ಕೀಳುವವರು'],
+  due: ['Due', 'ಬಾಕಿ'], settled: ['Settled', 'ಚುಕ್ತಾ'], att_today: ['Today · 23 Oct', 'ಇಂದು · 23 ಅಕ್ಟೋ'],
+  p_present: ['Present', 'ಹಾಜರು'], p_half: ['Half', 'ಅರ್ಧ'], p_absent: ['Absent', 'ಗೈರು'], work_today: ['Work today', 'ಇಂದಿನ ಕೆಲಸ'],
+  today_wages: ["Today's wages", 'ಇಂದಿನ ಕೂಲಿ'], present_n: [n => `${n} present`, n => `${n} ಜನ ಹಾಜರು`], save_att: ['Save attendance', 'ಹಾಜರಾತಿ ಉಳಿಸಿ'],
+  total_due: ['Total due to workers', 'ಕೆಲಸಗಾರರಿಗೆ ಒಟ್ಟು ಬಾಕಿ'], pay: ['Pay', 'ಪಾವತಿಸಿ'], give_adv: ['Advance', 'ಮುಂಗಡ'], wa: ['WhatsApp', 'ವಾಟ್ಸ್‌ಆ್ಯಪ್'],
+  earned: ['Earned', 'ಗಳಿಕೆ'], paid_amt: ['Paid + advance', 'ಪಾವತಿ + ಮುಂಗಡ'], ledger: ['Work & payments', 'ಕೆಲಸ ಮತ್ತು ಪಾವತಿ'],
+  k_paid: ['Paid', 'ಪಾವತಿ'], k_advance: ['Advance', 'ಮುಂಗಡ'], rates: ['Rates', 'ದರಗಳು'],
+  prices_title: ['Daily prices', 'ದೈನಂದಿನ ಧಾರಣೆ'], prices_sub: ['Updated 7:30 AM today', 'ಇಂದು ಬೆಳಿಗ್ಗೆ 7:30ಕ್ಕೆ ನವೀಕರಿಸಲಾಗಿದೆ'],
+  trend30: ['30-day trend', '30 ದಿನದ ಏರಿಳಿತ'], markets: ['Markets', 'ಮಾರುಕಟ್ಟೆಗಳು'], modal: ['Avg', 'ಸರಾಸರಿ'], minmax: ['Min–Max', 'ಕನಿಷ್ಠ–ಗರಿಷ್ಠ'],
+  alert_title: ['Price alert', 'ಧಾರಣೆ ಎಚ್ಚರಿಕೆ'], alert_body: ['Tell me when old chali reaches ₹500/kg', 'ಹಳೆ ಚಾಲಿ ₹500/ಕೆಜಿ ತಲುಪಿದಾಗ ತಿಳಿಸಿ'],
+  your_stock: ['Your stock at today\'s price', 'ಇಂದಿನ ಧಾರಣೆಯಲ್ಲಿ ನಿಮ್ಮ ದಾಸ್ತಾನು'],
+  sources: ['Sources: Agmarknet (data.gov.in), CAMPCO daily rate, Spices Board. Sample numbers.', 'ಮೂಲ: ಅಗ್‌ಮಾರ್ಕ್‌ನೆಟ್ (data.gov.in), ಕ್ಯಾಂಪ್ಕೊ ದೈನಂದಿನ ದರ, ಸಾಂಬಾರ ಮಂಡಳಿ. ಮಾದರಿ ಅಂಕಿಗಳು.'],
+  cal_sub: ['What to do, month by month', 'ತಿಂಗಳು ತಿಂಗಳಿಗೆ ಮಾಡಬೇಕಾದ ಕೆಲಸ'], this_month: ['This month', 'ಈ ತಿಂಗಳು'], your_rem: ['Your reminders', 'ನಿಮ್ಮ ಜ್ಞಾಪನೆಗಳು'],
+  rep_title: ['Season report', 'ಹಂಗಾಮಿನ ವರದಿ'], rep_sub: ['June 2025 – May 2026', 'ಜೂನ್ 2025 – ಮೇ 2026'],
+  income: ['Income', 'ಆದಾಯ'], expenses: ['Expenses', 'ಖರ್ಚು'], profit: ['Profit', 'ಲಾಭ'],
+  income_by_crop: ['Income by crop', 'ಬೆಳೆವಾರು ಆದಾಯ'], where_money: ['Where the money went', 'ಹಣ ಎಲ್ಲಿಗೆ ಹೋಯಿತು'], key_numbers: ['Key numbers', 'ಮುಖ್ಯ ಅಂಕಿಅಂಶಗಳು'],
+  k_cost_chali: ['Cost per kg of chali', 'ಒಂದು ಕೆಜಿ ಚಾಲಿಗೆ ಖರ್ಚು'], k_chali: ['Chali produced', 'ಉತ್ಪಾದಿಸಿದ ಚಾಲಿ'], k_per_palm: ['Chali per bearing palm', 'ಫಲ ಕೊಡುವ ಮರಕ್ಕೆ ಚಾಲಿ'],
+  k_labour_share: ['Labour share of cost', 'ಖರ್ಚಿನಲ್ಲಿ ಕೂಲಿ ಪಾಲು'], k_profit_acre: ['Profit per acre', 'ಎಕರೆಗೆ ಲಾಭ'], k_avg_rate: ['Average chali rate', 'ಸರಾಸರಿ ಚಾಲಿ ದರ'],
+  vs_last: ['vs last season', 'ಹಿಂದಿನ ಹಂಗಾಮಿಗೆ ಹೋಲಿಸಿದರೆ'],
+  e_labour: ['Labour', 'ಕೂಲಿ'], e_peeling: ['Peeling', 'ಸುಲಿಯುವಿಕೆ'], e_fert: ['Fertiliser', 'ಗೊಬ್ಬರ'], e_spray: ['Spray chemicals', 'ಸಿಂಪಡಣೆ ಔಷಧಿ'], e_power: ['Pump power & diesel', 'ಪಂಪ್ ವಿದ್ಯುತ್ ಮತ್ತು ಡೀಸೆಲ್'], e_misc: ['Other', 'ಇತರೆ'],
+  sales_sub: ['Buyers and pending money', 'ಖರೀದಿದಾರರು ಮತ್ತು ಬಾಕಿ ಹಣ'], all_sales: ['All sales', 'ಎಲ್ಲಾ ಮಾರಾಟ'], this_season: ['This season', 'ಈ ಹಂಗಾಮು'],
+  plots_sub: ['3 plots · 3.5 acres', '3 ತೋಟ · 3.5 ಎಕರೆ'], acres: ['acres', 'ಎಕರೆ'], palms: ['palms', 'ಮರ'], vines: ['vines', 'ಬಳ್ಳಿ'], clumps: ['plants', 'ಗಿಡ'], trees: ['trees', 'ಮರ'],
+  yrs: ['yrs', 'ವರ್ಷ'], not_bearing: ['not yet bearing', 'ಇನ್ನೂ ಫಲ ಬಂದಿಲ್ಲ'], soil: ['Soil', 'ಮಣ್ಣು'], irrigation: ['Irrigation', 'ನೀರಾವರಿ'], last_work: ['Last work', 'ಕೊನೆಯ ಕೆಲಸ'],
+  stock_sub: ['Fertilisers, chemicals, fuel', 'ಗೊಬ್ಬರ, ಔಷಧಿ, ಇಂಧನ'], low: ['Low', 'ಕಡಿಮೆ'], left: ['left', 'ಉಳಿದಿದೆ'], min_level: ['min', 'ಕನಿಷ್ಠ'], purchase: ['Purchase', 'ಖರೀದಿ'],
+  more_sub: ['Everything else', 'ಉಳಿದೆಲ್ಲವೂ'], m_language: ['Language', 'ಭಾಷೆ'], m_units: ['Units', 'ಅಳತೆ'], m_season: ['Season starts', 'ಹಂಗಾಮು ಆರಂಭ'],
+  m_lock: ['App lock (PIN / fingerprint)', 'ಆ್ಯಪ್ ಲಾಕ್ (ಪಿನ್ / ಬೆರಳಚ್ಚು)'], m_backup: ['Cloud backup', 'ಕ್ಲೌಡ್ ಬ್ಯಾಕಪ್'], m_backup_v: ['Today, 6:00 AM', 'ಇಂದು, ಬೆಳಿಗ್ಗೆ 6:00'],
+  m_export: ['Export all data (Excel)', 'ಎಲ್ಲಾ ದತ್ತಾಂಶ ರಫ್ತು (ಎಕ್ಸೆಲ್)'], m_rain: ['Rain gauge log', 'ಮಳೆ ಮಾಪಕ ದಾಖಲೆ'], m_ins: ['Crop insurance & schemes', 'ಬೆಳೆ ವಿಮೆ ಮತ್ತು ಯೋಜನೆಗಳು'], m_loans: ['Land & loans', 'ಜಮೀನು ಮತ್ತು ಸಾಲ'], later: ['Later', 'ನಂತರ'],
+  proto: ['Prototype: this form comes in the next iteration', 'ಮಾದರಿ: ಈ ಫಾರ್ಮ್ ಮುಂದಿನ ಹಂತದಲ್ಲಿ ಬರುತ್ತದೆ'], lakh: ['L', 'ಲಕ್ಷ'],
+  sample: ['SAMPLE DATA · NOT LIVE PRICES', 'ಮಾದರಿ ದತ್ತಾಂಶ · ನೈಜ ಧಾರಣೆ ಅಲ್ಲ'], palm_sub: ['bearing', 'ಫಲ ಕೊಡುವ'],
+  loans: ['Land & loans', 'ಜಮೀನು ಮತ್ತು ಸಾಲ'], insurance: ['Insurance & schemes', 'ವಿಮೆ ಮತ್ತು ಯೋಜನೆಗಳು'],
+  loans_sub: ['3 loans · 2 land parcels', '3 ಸಾಲ · 2 ಜಮೀನು'], total_owed: ['Total owed today', 'ಇಂದಿನವರೆಗಿನ ಒಟ್ಟು ಸಾಲ'],
+  principal: ['Principal', 'ಅಸಲು'], interest: ['Interest', 'ಬಡ್ಡಿ'], next_due: ['Next due', 'ಮುಂದಿನ ಪಾವತಿ'],
+  in_days: [n => `in ${n} days`, n => `${n} ದಿನದಲ್ಲಿ`], loans_h: ['Loans', 'ಸಾಲಗಳು'], add_loan: ['Add loan or land', 'ಸಾಲ ಅಥವಾ ಜಮೀನು ಸೇರಿಸಿ'], land_h: ['Land parcels', 'ಜಮೀನು'], member_h: ['Memberships', 'ಸದಸ್ಯತ್ವ'],
+  k_kcc: ['Crop loan (KCC)', 'ಬೆಳೆ ಸಾಲ (ಕೆಸಿಸಿ)'], k_term: ['Term loan · pumpset & sprinklers', 'ಅವಧಿ ಸಾಲ · ಪಂಪ್‌ಸೆಟ್ ಮತ್ತು ಸ್ಪ್ರಿಂಕ್ಲರ್'], k_gold: ['Gold loan', 'ಚಿನ್ನದ ಸಾಲ'],
+  outstanding: ['Outstanding', 'ಬಾಕಿ ಸಾಲ'], rate: ['Interest rate', 'ಬಡ್ಡಿ ದರ'], sanctioned: ['Sanctioned', 'ಮಂಜೂರು'], limit: ['Limit', 'ಮಿತಿ'],
+  tenure: ['Tenure', 'ಅವಧಿ'], months: [n => `${n} months`, n => `${n} ತಿಂಗಳು`], security: ['Security', 'ಭದ್ರತೆ'], emi: ['EMI', 'ಕಂತು'],
+  emis_paid: [(a, b) => `${a} of ${b} EMIs paid`, (a, b) => `${b} ಕಂತುಗಳಲ್ಲಿ ${a} ಪಾವತಿ`], accrued: ['Interest till today', 'ಇಂದಿನವರೆಗಿನ ಬಡ್ಡಿ'], to_close: ['To close today', 'ಇಂದು ಮುಚ್ಚಲು'],
+  txns: ['Transactions', 'ವ್ಯವಹಾರಗಳು'], t_withdrawal: ['Withdrawal', 'ಹಣ ಪಡೆದದ್ದು'], t_repaid: ['Repaid', 'ಮರುಪಾವತಿ'], t_emi: ['EMI paid', 'ಕಂತು ಪಾವತಿ'], t_disbursed: ['Loan disbursed', 'ಸಾಲ ಬಿಡುಗಡೆ'],
+  btn_repay: ['Record repayment', 'ಮರುಪಾವತಿ ದಾಖಲಿಸಿ'], btn_withdraw: ['Record withdrawal', 'ಹಣ ಪಡೆದದ್ದು ದಾಖಲಿಸಿ'],
+  kcc_rate: ['0% if repaid on time · 7% if late', 'ಸಮಯಕ್ಕೆ ಮರುಪಾವತಿಸಿದರೆ 0% · ತಡವಾದರೆ 7%'], on_time_tip: ['Repay by the due date to keep the 0% rate. Reminders are set 30 and 7 days before.', '0% ದರ ಉಳಿಸಲು ಗಡುವಿನೊಳಗೆ ಮರುಪಾವತಿಸಿ. 30 ಮತ್ತು 7 ದಿನ ಮೊದಲು ಜ್ಞಾಪನೆ ಇದೆ.'],
+  gold_security: ['Gold ornaments', 'ಚಿನ್ನಾಭರಣ'], renewal: ['Repay / renew', 'ಮರುಪಾವತಿ / ನವೀಕರಣ'], p_a: ['per year', 'ವಾರ್ಷಿಕ'],
+  int_season: ['Interest paid this season', 'ಈ ಹಂಗಾಮಿನಲ್ಲಿ ಪಾವತಿಸಿದ ಬಡ್ಡಿ'], to_reports: ['Added to season expenses in Reports', 'ವರದಿಯ ಹಂಗಾಮಿನ ಖರ್ಚಿಗೆ ಸೇರಿಸಲಾಗಿದೆ'],
+  survey: ['Sy. No.', 'ಸರ್ವೆ ನಂ.'], guntas: ['guntas', 'ಗುಂಟೆ'], rtc_saved: ['RTC saved', 'ಆರ್‌ಟಿಸಿ ಉಳಿಸಲಾಗಿದೆ'], pledged_for: ['Security for', 'ಇದಕ್ಕೆ ಭದ್ರತೆ'], free_land: ['No loan on this land', 'ಈ ಜಮೀನಿನ ಮೇಲೆ ಸಾಲ ಇಲ್ಲ'],
+  member_no: ['Member no.', 'ಸದಸ್ಯ ಸಂಖ್ಯೆ'], shares: ['Shares', 'ಷೇರು'], dividend: ['Dividend 2025–26', 'ಲಾಭಾಂಶ 2025–26'],
+  ins_sub: ['Policies, claims, subsidies, papers', 'ಪಾಲಿಸಿ, ಕ್ಲೇಮ್, ಸಹಾಯಧನ, ದಾಖಲೆಗಳು'], policies: ['Crop insurance', 'ಬೆಳೆ ವಿಮೆ'], wbci: ['Weather-based crop insurance', 'ಹವಾಮಾನ ಆಧಾರಿತ ಬೆಳೆ ವಿಮೆ'],
+  premium: ['Premium', 'ಪ್ರೀಮಿಯಂ'], area: ['Area', 'ವಿಸ್ತೀರ್ಣ'], policy_no: ['Application no.', 'ಅರ್ಜಿ ಸಂಖ್ಯೆ'], active: ['Active', 'ಚಾಲ್ತಿಯಲ್ಲಿದೆ'],
+  enrol_title: ['Next enrolment · season 2027–28', 'ಮುಂದಿನ ನೋಂದಣಿ · ಹಂಗಾಮು 2027–28'], enrol_body: ['The window usually opens in June. Confirm the last date at the society or bank.', 'ಸಾಮಾನ್ಯವಾಗಿ ಜೂನ್‌ನಲ್ಲಿ ಆರಂಭವಾಗುತ್ತದೆ. ಕೊನೆಯ ದಿನಾಂಕವನ್ನು ಸಂಘ ಅಥವಾ ಬ್ಯಾಂಕಿನಲ್ಲಿ ಖಚಿತಪಡಿಸಿ.'],
+  rem_set_for: [d => `Reminder set for ${d}`, d => `${d}ಕ್ಕೆ ಜ್ಞಾಪನೆ`], claims: ['Claims', 'ಕ್ಲೇಮ್‌ಗಳು'], claim_rain: ['Excess rainfall payout · areca 2025–26', 'ಅತಿವೃಷ್ಟಿ ಪರಿಹಾರ · ಅಡಿಕೆ 2025–26'],
+  received_on: [d => `Received ${d}`, d => `${d}ರಂದು ಬಂದಿದೆ`], schemes: ['Schemes & subsidies', 'ಯೋಜನೆಗಳು ಮತ್ತು ಸಹಾಯಧನ'],
+  s_drip: ['Drip irrigation subsidy · New plot', 'ಹನಿ ನೀರಾವರಿ ಸಹಾಯಧನ · ಹೊಸ ತೋಟ'], s_cutter: ['Brush cutter subsidy', 'ಬ್ರಷ್ ಕಟ್ಟರ್ ಸಹಾಯಧನ'],
+  dept_hort: ['Horticulture Dept.', 'ತೋಟಗಾರಿಕೆ ಇಲಾಖೆ'], dept_agri: ['Agriculture Dept.', 'ಕೃಷಿ ಇಲಾಖೆ'], st_approved: ['Approved · awaiting release', 'ಮಂಜೂರು · ಬಿಡುಗಡೆ ಬಾಕಿ'], st_received: ['Received', 'ಬಂದಿದೆ'],
+  applied_on: [d => `Applied ${d}`, d => `${d}ರಂದು ಅರ್ಜಿ`], docs: ['Document vault', 'ದಾಖಲೆಗಳ ಸಂಗ್ರಹ'], docs_note: ['Saved on the phone and in the backup', 'ಫೋನ್‌ನಲ್ಲಿ ಮತ್ತು ಬ್ಯಾಕಪ್‌ನಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ'], add_doc: ['Scan document', 'ದಾಖಲೆ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ'],
+  loan_due_kpi: ['Next loan due', 'ಮುಂದಿನ ಸಾಲ ಕಂತು'], as_of: ['23 Oct, 7:30 AM', '23 ಅಕ್ಟೋ, ಬೆಳಿಗ್ಗೆ 7:30'],
+  offline_banner: [d => `Offline · prices as of ${d}. Everything else works normally.`, d => `ಆಫ್‌ಲೈನ್ · ${d}ರ ಧಾರಣೆ. ಉಳಿದೆಲ್ಲವೂ ಎಂದಿನಂತೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ.`],
+  wx_cached: ['Forecast downloaded at 7:30 AM · rain alert already set', 'ಬೆಳಿಗ್ಗೆ 7:30ಕ್ಕೆ ಪಡೆದ ಮುನ್ಸೂಚನೆ · ಮಳೆ ಎಚ್ಚರಿಕೆ ಈಗಾಗಲೇ ಸಿದ್ಧ'],
+  backup_wait: ['Waiting for internet · 3 changes queued', 'ಇಂಟರ್ನೆಟ್‌ಗಾಗಿ ಕಾಯುತ್ತಿದೆ · 3 ಬದಲಾವಣೆ ಸಾಲಿನಲ್ಲಿ'],
+  back_online: ['Back online · prices and weather refreshed · backup done', 'ಮತ್ತೆ ಆನ್‌ಲೈನ್ · ಧಾರಣೆ, ಹವಾಮಾನ ನವೀಕರಿಸಲಾಗಿದೆ · ಬ್ಯಾಕಪ್ ಆಗಿದೆ'],
+  went_offline: ['Offline · keep working, nothing is lost', 'ಆಫ್‌ಲೈನ್ · ಕೆಲಸ ಮುಂದುವರಿಸಿ, ಏನೂ ಕಳೆದುಹೋಗುವುದಿಲ್ಲ'],
+  e_interest: ['Loan interest', 'ಸಾಲದ ಬಡ್ಡಿ'], e_insurance: ['Insurance premium', 'ವಿಮಾ ಪ್ರೀಮಿಯಂ'],
+};
+
+/* =====================================================================
+   Sample data — a typical 3.5-acre Puttur-area garden
+   ===================================================================== */
+const TODAY = '2026-10-23';
+const CROPS = ['areca', 'coconut', 'pepper', 'banana'];
+const CROPC = { areca: '#2e8b57', coconut: '#8b5e34', pepper: '#b23a3a', banana: '#d4a106' };
+const TYPEC = { fertiliser: '#8b5e34', spray: '#3b77b8', irrigation: '#2a9bb5', weeding: '#5d8a3a', harvest: '#2e8b57', care: '#c0782e', other: '#6b645b' };
+const TYPEI = { fertiliser: 'sack', spray: 'shield', irrigation: 'droplet', weeding: 'scissors', harvest: 'leaf', care: 'sprout', other: 'grid' };
+
+const PLOTS = [
+  { id: 'P1', name: ['Upper plot', 'ಮೇಲಿನ ತೋಟ'], acres: 1.5, areca: 750, arecaAge: 18, arecaVar: 'Mangala + local', coconut: 24, pepper: 420, pepperVar: 'Panniyur-1', banana: 0, irr: ['Sprinklers', 'ಸ್ಪ್ರಿಂಕ್ಲರ್'], soil: ['Laterite', 'ಜಂಬಿಟ್ಟಿಗೆ ಮಣ್ಣು'] },
+  { id: 'P2', name: ['Lower plot', 'ಕೆಳಗಿನ ತೋಟ'], acres: 1.2, areca: 600, arecaAge: 25, arecaVar: 'South Kanara local', coconut: 18, pepper: 300, pepperVar: 'Karimunda', banana: 60, bananaVar: 'Nendran', irr: ['Sprinklers', 'ಸ್ಪ್ರಿಂಕ್ಲರ್'], soil: ['Old paddy land', 'ಹಿಂದಿನ ಗದ್ದೆ ಭೂಮಿ'] },
+  { id: 'P3', name: ['New plot', 'ಹೊಸ ತೋಟ'], acres: 0.8, areca: 400, arecaAge: 4, arecaVar: 'Mangala', young: true, coconut: 6, pepper: 0, banana: 350, bananaVar: 'Nendran, Elakki', irr: ['Drip', 'ಹನಿ ನೀರಾವರಿ'], soil: ['Laterite', 'ಜಂಬಿಟ್ಟಿಗೆ ಮಣ್ಣು'] },
+];
+
+const WORKERS = [
+  { id: 'W1', name: ['Ramesh Poojary', 'ರಮೇಶ್ ಪೂಜಾರಿ'], role: 'r_climber', rates: [[8, 'r_palm', 'a_harvest'], [1300, 'r_day', 'a_spray']], dayRate: 1300,
+    ledger: [{ d: '2026-10-01', w: 'h_areca', q: [620, 'u_palms'], amt: 4960 }, { d: '2026-09-28', pay: 'k_advance', amt: 2000, mode: 'Cash' }] },
+  { id: 'W2', name: ['Shekhar Gowda', 'ಶೇಖರ್ ಗೌಡ'], role: 'r_sprayer', rates: [[1300, 'r_day', 'a_spray']], dayRate: 1300,
+    ledger: [{ d: '2026-10-08', pay: 'k_paid', amt: 3900, mode: 'Cash' }, { d: '2026-10-07', w: 'spray4', q: [3, 'u_days'], amt: 3900 }] },
+  { id: 'W3', name: ['Abdul Rahiman', 'ಅಬ್ದುಲ್ ರಹಿಮಾನ್'], role: 'r_daily', rates: [[800, 'r_day', 'a_other']], dayRate: 800,
+    ledger: [
+      { d: '2026-10-21', w: 'fert', q: [2, 'u_days'], amt: 1600 }, { d: '2026-10-19', pay: 'k_paid', amt: 2000, mode: 'UPI' },
+      { d: '2026-10-18', w: 'mulch', q: [2, 'u_days'], amt: 1600 }, { d: '2026-10-13', w: 'weeding', q: [2, 'u_days'], amt: 1600 },
+      { d: '2026-10-10', w: 'banana_care', q: [1, 'u_days'], amt: 800 }, { d: '2026-10-08', pay: 'k_paid', amt: 2000, mode: 'Cash' },
+      { d: '2026-10-02', w: 'h_areca', q: [2, 'u_days'], amt: 1600 }] },
+  { id: 'W4', name: ['Mohan Naik', 'ಮೋಹನ್ ನಾಯ್ಕ್'], role: 'r_daily', rates: [[800, 'r_day', 'a_other']], dayRate: 800,
+    ledger: [
+      { d: '2026-10-21', w: 'fert', q: [2, 'u_days'], amt: 1600 }, { d: '2026-10-19', pay: 'k_paid', amt: 3200, mode: 'UPI' },
+      { d: '2026-10-18', w: 'mulch', q: [2, 'u_days'], amt: 1600 }, { d: '2026-10-14', w: 'banana_harvest', q: [1, 'u_days'], amt: 800 },
+      { d: '2026-10-07', w: 'spray4', q: [3, 'u_days'], amt: 2400 }] },
+  { id: 'W5', name: ['Lakshmi', 'ಲಕ್ಷ್ಮಿ'], role: 'r_peeler', rates: [[7, 'r_kg', 'st_peeling']], dayRate: 700,
+    ledger: [{ d: '2026-03-02', pay: 'k_paid', amt: 3780, mode: 'Cash' }, { d: '2026-03-01', w: 'peel', q: [540, 'u_kg'], amt: 3780 }] },
+  { id: 'W6', name: ['Sujatha', 'ಸುಜಾತ'], role: 'r_peeler', rates: [[7, 'r_kg', 'st_peeling']], dayRate: 700,
+    ledger: [{ d: '2026-03-02', pay: 'k_paid', amt: 3360, mode: 'Cash' }, { d: '2026-03-01', w: 'peel', q: [480, 'u_kg'], amt: 3360 }] },
+  { id: 'W7', name: ['Kumar', 'ಕುಮಾರ್'], role: 'r_plucker', rates: [[45, 'r_tree', 'a_harvest']], dayRate: 1000,
+    ledger: [{ d: '2026-10-15', w: 'coconut', q: [48, 'u_trees'], amt: 2160 }] },
+];
+
+const WORK = {
+  h_areca: ['Areca harvest round 1 · Upper plot', 'ಅಡಿಕೆ ಕೊಯ್ಲು 1ನೇ ಸುತ್ತು · ಮೇಲಿನ ತೋಟ'],
+  spray4: ['Bordeaux 1% spray · round 4 (rains continuing)', 'ಬೋರ್ಡೋ 1% ಸಿಂಪಡಣೆ · 4ನೇ ಸುತ್ತು (ಮಳೆ ಮುಂದುವರಿದಿದೆ)'],
+  fert: ['Post-monsoon fertiliser (2nd split)', 'ಮಳೆಗಾಲದ ನಂತರದ ಗೊಬ್ಬರ (2ನೇ ಹಂತ)'],
+  mulch: ['Green-leaf mulching in palm basins', 'ಮರದ ಬುಡಕ್ಕೆ ಹಸಿರು ಸೊಪ್ಪಿನ ಹೊದಿಕೆ'],
+  weeding: ['Weed slashing with brush cutter', 'ಬ್ರಷ್ ಕಟ್ಟರ್‌ನಿಂದ ಕಳೆ ಕತ್ತರಿಸುವುದು'],
+  banana_care: ['Banana de-suckering and propping', 'ಬಾಳೆ ಕಂದು ತೆಗೆಯುವುದು ಮತ್ತು ಆಧಾರ ಕೊಡುವುದು'],
+  banana_harvest: ['Nendran bunch harvest', 'ನೇಂದ್ರ ಬಾಳೆಗೊನೆ ಕಟಾವು'],
+  coconut: ['Coconut plucking · round 8', 'ತೆಂಗಿನಕಾಯಿ ಕೊಯ್ಲು · 8ನೇ ಸುತ್ತು'],
+  peel: ['Chali peeling · Lot A-2526-03', 'ಚಾಲಿ ಸುಲಿಯುವಿಕೆ · ಲಾಟ್ A-2526-03'],
+  pepper_drench: ['Pepper base drench · Trichoderma + Bordeaux', 'ಕಾಳುಮೆಣಸು ಬುಡಕ್ಕೆ ಟ್ರೈಕೋಡರ್ಮಾ + ಬೋರ್ಡೋ'],
+};
+
+const STOCK = [
+  { id: 's_cuso4', name: ['Copper sulphate', 'ಮೈಲುತುತ್ತ'], qty: 18, min: 25, unit: 'u_kg', price: 240, max: 60 },
+  { id: 's_lime', name: ['Lime', 'ಸುಣ್ಣ'], qty: 40, min: 25, unit: 'u_kg', price: 20, max: 80 },
+  { id: 's_urea', name: ['Urea', 'ಯೂರಿಯಾ'], qty: 25, min: 20, unit: 'u_kg', price: 6, max: 100 },
+  { id: 's_rp', name: ['Rock phosphate', 'ರಾಕ್ ಫಾಸ್ಫೇಟ್'], qty: 15, min: 25, unit: 'u_kg', price: 8, max: 100 },
+  { id: 's_mop', name: ['MOP (potash)', 'ಎಂಒಪಿ (ಪೊಟ್ಯಾಷ್)'], qty: 62, min: 30, unit: 'u_kg', price: 34, max: 100 },
+  { id: 's_tricho', name: ['Trichoderma', 'ಟ್ರೈಕೋಡರ್ಮಾ'], qty: 4, min: 2, unit: 'u_kg', price: 120, max: 10 },
+  { id: 's_diesel', name: ['Diesel (brush cutter)', 'ಡೀಸೆಲ್ (ಬ್ರಷ್ ಕಟ್ಟರ್)'], qty: 12, min: 5, unit: 'u_l', price: 95, max: 20 },
+];
+
+const ACTS = [
+  { id: 'a1', date: '2026-10-20', days: 2, type: 'fertiliser', w: 'fert', crops: ['areca', 'pepper'], plots: ['P1'], labour: [['W3', 1600], ['W4', 1600]], inputs: [['s_urea', 80], ['s_rp', 75], ['s_mop', 88]], next: '2027-05-20' },
+  { id: 'a2', date: '2026-10-17', days: 2, type: 'care', w: 'mulch', crops: ['areca'], plots: ['P1'], labour: [['W3', 1600], ['W4', 1600]], inputs: [] },
+  { id: 'a3', date: '2026-10-15', days: 1, type: 'harvest', w: 'coconut', crops: ['coconut'], plots: ['P1', 'P2'], labour: [['W7', 2160]], inputs: [], lot: 'C-2627-08' },
+  { id: 'a4', date: '2026-10-14', days: 1, type: 'harvest', w: 'banana_harvest', crops: ['banana'], plots: ['P3'], labour: [['W4', 800]], inputs: [], lot: 'B-2627-05' },
+  { id: 'a5', date: '2026-10-12', days: 2, type: 'weeding', w: 'weeding', crops: ['areca'], plots: ['P2'], labour: [['W3', 1600]], inputs: [['s_diesel', 6]] },
+  { id: 'a6', date: '2026-10-10', days: 1, type: 'care', w: 'banana_care', crops: ['banana'], plots: ['P3'], labour: [['W3', 800]], inputs: [] },
+  { id: 'a7', date: '2026-10-05', days: 3, type: 'spray', w: 'spray4', crops: ['areca', 'pepper'], plots: ['P1', 'P2'], labour: [['W2', 3900], ['W4', 2400]], inputs: [['s_cuso4', 27], ['s_lime', 27]] },
+  { id: 'a8', date: '2026-10-01', days: 2, type: 'harvest', w: 'h_areca', crops: ['areca'], plots: ['P1'], labour: [['W1', 4960], ['W3', 1600]], inputs: [], lot: 'A-2627-01' },
+  { id: 'a9', date: '2026-09-22', days: 1, type: 'spray', w: 'pepper_drench', crops: ['pepper'], plots: ['P1'], labour: [['W2', 1300]], inputs: [['s_tricho', 2], ['s_cuso4', 3]] },
+];
+
+const BUYERS = {
+  b_campco: ['CAMPCO · Puttur branch', 'ಕ್ಯಾಂಪ್ಕೊ · ಪುತ್ತೂರು ಶಾಖೆ'],
+  b_haneef: ['Haneef (coconut trader)', 'ಹನೀಫ್ (ತೆಂಗಿನಕಾಯಿ ವ್ಯಾಪಾರಿ)'],
+  b_apmc: ['APMC agent · Mangaluru', 'ಎಪಿಎಂಸಿ ಏಜೆಂಟ್ · ಮಂಗಳೂರು'],
+  b_local: ['Local trader · Puttur', 'ಸ್ಥಳೀಯ ವ್ಯಾಪಾರಿ · ಪುತ್ತೂರು'],
+};
+
+const LOTS = [
+  { id: 'A-2627-01', crop: 'areca', season: '2026–27', stage: 'drying', title: ['Harvest round 1 · Upper plot', 'ಕೊಯ್ಲು 1ನೇ ಸುತ್ತು · ಮೇಲಿನ ತೋಟ'],
+    harvest: { date: '2026-10-01', plots: ['P1'], count: 620, qty: 1850, workers: [['W1', 620, 'u_palms', 8, 4960], ['W3', 2, 'u_days', 800, 1600]] },
+    drying: { start: '2026-10-02', target: 40, yard: ['Main yard · tarpaulin', 'ಮುಖ್ಯ ಅಂಗಳ · ಟಾರ್ಪಲ್'], covers: 3 },
+    est: { chali: 430, price: 'new' } },
+  { id: 'A-2526-03', crop: 'areca', season: '2025–26', stage: 'storage', title: ['Harvest round 3 · Upper + Lower', 'ಕೊಯ್ಲು 3ನೇ ಸುತ್ತು · ಮೇಲಿನ + ಕೆಳಗಿನ'],
+    harvest: { date: '2026-01-12', plots: ['P1', 'P2'], count: 820, qty: 4300, workers: [['W1', 820, 'u_palms', 8, 6560], ['W3', 3, 'u_days', 800, 2400]] },
+    drying: { start: '2026-01-13', end: '2026-02-24', yard: ['Main yard · tarpaulin', 'ಮುಖ್ಯ ಅಂಗಳ · ಟಾರ್ಪಲ್'], covers: 1 },
+    peeling: { start: '2026-02-26', end: '2026-03-01', inKg: 1640, outKg: 1020, workers: [['W5', 540, 'u_kg', 7, 3780], ['W6', 480, 'u_kg', 7, 3360]] },
+    grading: [['g_chali', 940], ['g_patora', 45], ['g_ulli', 20], ['g_karigotu', 15]],
+    storage: { start: '2026-03-02', place: ['Attic store · 16 gunny bags', 'ಅಟ್ಟದ ಉಗ್ರಾಣ · 16 ಗೋಣಿ ಚೀಲ'], priceThen: 455, price: 'old', kg: 940 } },
+  { id: 'A-2526-02', crop: 'areca', season: '2025–26', stage: 'sold', title: ['Harvest round 2 · Lower plot', 'ಕೊಯ್ಲು 2ನೇ ಸುತ್ತು · ಕೆಳಗಿನ ತೋಟ'],
+    harvest: { date: '2025-12-18', plots: ['P2'], count: 760, qty: 3800, workers: [['W1', 760, 'u_palms', 8, 6080], ['W4', 2, 'u_days', 800, 1600]] },
+    drying: { start: '2025-12-19', end: '2026-01-28', yard: ['Main yard · tarpaulin', 'ಮುಖ್ಯ ಅಂಗಳ · ಟಾರ್ಪಲ್'], covers: 0 },
+    peeling: { start: '2026-01-30', end: '2026-02-02', inKg: 1420, outKg: 880, workers: [['W5', 460, 'u_kg', 7, 3220], ['W6', 420, 'u_kg', 7, 2940]] },
+    grading: [['g_chali', 820], ['g_patora', 40], ['g_karigotu', 20]],
+    storage: { start: '2026-02-03', end: '2026-04-14', place: ['Attic store · 14 gunny bags', 'ಅಟ್ಟದ ಉಗ್ರಾಣ · 14 ಗೋಣಿ ಚೀಲ'], priceThen: 440 },
+    sale: { date: '2026-04-14', buyer: 'b_campco', lines: [['g_chali', 820, 'u_kg', 462], ['g_patora', 40, 'u_kg', 310], ['g_karigotu', 20, 'u_kg', 180]], received: 394840 } },
+  { id: 'P-2526-01', crop: 'pepper', season: '2025–26', stage: 'storage', title: ['Pepper harvest · Upper + Lower', 'ಕಾಳುಮೆಣಸು ಕೊಯ್ಲು · ಮೇಲಿನ + ಕೆಳಗಿನ'],
+    harvest: { date: '2026-01-10', plots: ['P1', 'P2'], count: 720, qty: 310, workers: [['W3', 4, 'u_days', 800, 3200], ['W4', 4, 'u_days', 800, 3200]] },
+    drying: { start: '2026-01-15', end: '2026-01-24', outKg: 104, yard: ['Cement yard', 'ಸಿಮೆಂಟ್ ಅಂಗಳ'], covers: 0 },
+    storage: { start: '2026-01-25', place: ['Store room · 2 bags', 'ಉಗ್ರಾಣ ಕೋಣೆ · 2 ಚೀಲ'], soldKg: 60, soldRate: 655, kg: 44, price: 'pepper' } },
+  { id: 'C-2627-08', crop: 'coconut', season: '2026–27', stage: 'sold', title: ['Coconut plucking · round 8', 'ತೆಂಗಿನಕಾಯಿ ಕೊಯ್ಲು · 8ನೇ ಸುತ್ತು'],
+    harvest: { date: '2026-10-15', plots: ['P1', 'P2'], count: 48, qty: 1180, workers: [['W7', 48, 'u_trees', 45, 2160]] },
+    sale: { date: '2026-10-16', buyer: 'b_haneef', lines: [['g_nut', 1180, 'u_nuts', 24]], received: 20000 } },
+  { id: 'B-2627-05', crop: 'banana', season: '2026–27', stage: 'sold', title: ['Nendran bunches · New plot', 'ನೇಂದ್ರ ಬಾಳೆಗೊನೆ · ಹೊಸ ತೋಟ'],
+    harvest: { date: '2026-10-14', plots: ['P3'], count: 42, qty: 516, workers: [['W4', 1, 'u_days', 800, 800]] },
+    sale: { date: '2026-10-14', buyer: 'b_apmc', lines: [['g_nendran', 516, 'u_kg', 46]], received: 23736 } },
+];
+const FLOW = { areca: ['harvest', 'drying', 'peeling', 'grading', 'storage', 'sale'], pepper: ['harvest', 'drying', 'storage', 'sale'], coconut: ['harvest', 'sale'], banana: ['harvest', 'sale'] };
+const PEPPER_SALE = { date: '2026-03-20', buyer: 'b_local', lines: [['g_pepper', 60, 'u_kg', 655]], received: 39300, crop: 'pepper', lot: 'P-2526-01' };
+
+const PBEST = { old: 492, new: 418, pepper: 662 };
+const MK = {
+  campco: ['CAMPCO · Puttur', 'ಕ್ಯಾಂಪ್ಕೊ · ಪುತ್ತೂರು'], mlr: ['APMC Mangaluru', 'ಎಪಿಎಂಸಿ ಮಂಗಳೂರು'], btw: ['APMC Bantwal', 'ಎಪಿಎಂಸಿ ಬಂಟ್ವಾಳ'],
+  blt: ['APMC Belthangady', 'ಎಪಿಎಂಸಿ ಬೆಳ್ತಂಗಡಿ'], ptr: ['APMC Puttur', 'ಎಪಿಎಂಸಿ ಪುತ್ತೂರು'], kochi: ['Kochi · Spices Board', 'ಕೊಚ್ಚಿ · ಸಾಂಬಾರ ಮಂಡಳಿ'],
+  sirsi: ['APMC Sirsi', 'ಎಪಿಎಂಸಿ ಶಿರಸಿ'], tiptur: ['APMC Tiptur', 'ಎಪಿಎಂಸಿ ತಿಪಟೂರು'],
+};
+/* [market, grade, min, max, avg, change, unit] — ₹ per kg unless unit given */
+const PRICES = {
+  areca: [['campco', 'g_old', 485, 500, 492, 6], ['campco', 'g_new', 405, 425, 418, 3], ['ptr', 'g_double', 495, 505, 500, 5], ['mlr', 'g_old', 470, 495, 486, 4], ['btw', 'g_new', 400, 420, 412, -2], ['blt', 'g_old', 465, 490, 480, 0], ['campco', 'g_patora', 300, 330, 318, 2]],
+  coconut: [['tiptur', 'g_copra', 176, 188, 182, 1], ['mlr', 'g_dehusked', 48, 56, 52, 0], ['ptr', 'g_nut_each', 22, 26, 24, 1, 'r_nut']],
+  pepper: [['kochi', 'g_ungarbled', 655, 668, 662, -4], ['kochi', 'g_garbled', 675, 690, 682, -4], ['ptr', 'g_pepper', 630, 650, 640, -5], ['sirsi', 'g_pepper', 635, 655, 648, -3]],
+  banana: [['mlr', 'g_nendran', 42, 50, 46, 0], ['mlr', 'g_elakki', 62, 72, 68, 2], ['ptr', 'g_nendran', 40, 48, 44, -1], ['mlr', 'g_robusta', 24, 30, 28, 0]],
+};
+const STRIP = [['areca', 'g_old', 492, 6], ['areca', 'g_new', 418, 3], ['pepper', 'g_ungarbled', 662, -4], ['coconut', 'g_copra', 182, 1], ['banana', 'g_nendran', 46, 0]];
+
+const REM = [
+  { ic: 'sack', crop: 'areca', txt: ['Post-monsoon fertiliser · Lower plot', 'ಮಳೆಗಾಲದ ನಂತರದ ಗೊಬ್ಬರ · ಕೆಳಗಿನ ತೋಟ'], due: ['In 3 days', '3 ದಿನದಲ್ಲಿ'], go: "openAdd()", warn: true },
+  { ic: 'sun', crop: 'areca', txt: ['Turn drying nuts and check moisture · Lot A-01', 'ಒಣಗುವ ಅಡಿಕೆ ಮಗುಚಿ, ತೇವಾಂಶ ನೋಡಿ · ಲಾಟ್ A-01'], due: ['Today', 'ಇಂದು'], go: "goLot('A-2627-01')", warn: true },
+  { ic: 'landmark', crop: null, txt: ['Canara Bank EMI ₹8,401', 'ಕೆನರಾ ಬ್ಯಾಂಕ್ ಕಂತು ₹8,401'], due: ['15 Nov · in 23 days', '15 ನವೆಂ · 23 ದಿನದಲ್ಲಿ'], go: "goLoan('L2')" },
+  { ic: 'box', crop: null, txt: ['Copper sulphate low · 18 kg left', 'ಮೈಲುತುತ್ತ ಕಡಿಮೆ · 18 ಕೆಜಿ ಉಳಿದಿದೆ'], due: ['Before next spray', 'ಮುಂದಿನ ಸಿಂಪಡಣೆಗೆ ಮೊದಲು'], go: "go('stock')" },
+  { ic: 'droplet', crop: 'areca', txt: ['Start summer irrigation', 'ಬೇಸಿಗೆ ನೀರಾವರಿ ಆರಂಭಿಸಿ'], due: ['~15 Nov', '~15 ನವೆಂ'], go: "go('calendar')" },
+  { ic: 'users', crop: 'pepper', txt: ['Book pepper pickers for December', 'ಡಿಸೆಂಬರ್ ಕಾಳುಮೆಣಸು ಕೊಯ್ಲಿಗೆ ಕೆಲಸಗಾರರನ್ನು ಕಾಯ್ದಿರಿಸಿ'], due: ['By 25 Nov', '25 ನವೆಂ ಒಳಗೆ'], go: "goTab('labour')" },
+];
+
+const CAL = [
+  { areca: ['Harvest rounds; sun-dry chali 35–45 days; start irrigation', 'ಕೊಯ್ಲು ಸುತ್ತುಗಳು; ಚಾಲಿಯನ್ನು 35–45 ದಿನ ಒಣಗಿಸಿ; ನೀರಾವರಿ ಆರಂಭ'], coconut: ['Plucking (every ~45 days); irrigate', 'ಕೊಯ್ಲು (ಸುಮಾರು 45 ದಿನಕ್ಕೊಮ್ಮೆ); ನೀರಾವರಿ'], pepper: ['Harvest when 1–2 berries per spike turn red; dry 7–10 days', 'ತೆನೆಯಲ್ಲಿ 1–2 ಕಾಳು ಕೆಂಪಾದಾಗ ಕೊಯ್ಲು; 7–10 ದಿನ ಒಣಗಿಸಿ'], banana: ['Irrigate; remove side suckers; prop heavy bunches', 'ನೀರಾವರಿ; ಪಕ್ಕದ ಕಂದು ತೆಗೆಯಿರಿ; ಭಾರದ ಗೊನೆಗೆ ಆಧಾರ'] },
+  { areca: ['Last harvests; peel dried nuts; grade', 'ಕೊನೆಯ ಕೊಯ್ಲು; ಒಣ ಅಡಿಕೆ ಸುಲಿಯುವುದು; ವಿಂಗಡಣೆ'], coconut: ['Plucking; irrigate; mulch basins', 'ಕೊಯ್ಲು; ನೀರಾವರಿ; ಬುಡಕ್ಕೆ ಹೊದಿಕೆ'], pepper: ['Finish harvest; store dry pepper below 10% moisture', 'ಕೊಯ್ಲು ಮುಗಿಸಿ; 10%ಕ್ಕಿಂತ ಕಡಿಮೆ ತೇವಾಂಶದಲ್ಲಿ ಸಂಗ್ರಹಿಸಿ'], banana: ['Irrigate every 3–4 days', '3–4 ದಿನಕ್ಕೊಮ್ಮೆ ನೀರು'] },
+  { areca: ['Irrigate every 5–7 days; store chali in bags', '5–7 ದಿನಕ್ಕೊಮ್ಮೆ ನೀರು; ಚಾಲಿಯನ್ನು ಚೀಲದಲ್ಲಿ ಸಂಗ್ರಹಿಸಿ'], coconut: ['Plucking; irrigate', 'ಕೊಯ್ಲು; ನೀರಾವರಿ'], pepper: ['Light irrigation for vines', 'ಬಳ್ಳಿಗಳಿಗೆ ಸ್ವಲ್ಪ ನೀರು'], banana: ['Harvest early plantings', 'ಮೊದಲ ನಾಟಿಯ ಗೊನೆ ಕಟಾವು'] },
+  { areca: ['Irrigation; check stored chali for pests', 'ನೀರಾವರಿ; ಸಂಗ್ರಹಿಸಿದ ಚಾಲಿಗೆ ಕೀಟ ಪರೀಕ್ಷೆ'], coconut: ['Plucking; irrigate', 'ಕೊಯ್ಲು; ನೀರಾವರಿ'], pepper: ['Prepare nursery cuttings', 'ನರ್ಸರಿ ಕಟ್ಟಿಂಗ್ ತಯಾರಿ'], banana: ['Prepare pits for new planting', 'ಹೊಸ ನಾಟಿಗೆ ಗುಂಡಿ ತಯಾರಿ'] },
+  { areca: ['Pre-monsoon fertiliser (1st split) + lime; Bordeaux round 1 before rains', 'ಮಳೆಗಾಲ ಪೂರ್ವ ಗೊಬ್ಬರ (1ನೇ ಹಂತ) + ಸುಣ್ಣ; ಮಳೆಗೆ ಮುನ್ನ ಬೋರ್ಡೋ 1ನೇ ಸುತ್ತು'], coconut: ['Fertiliser 1st split; crown cleaning', 'ಗೊಬ್ಬರ 1ನೇ ಹಂತ; ಸುಳಿ ಸ್ವಚ್ಛತೆ'], pepper: ['Bordeaux spray; Trichoderma at vine base', 'ಬೋರ್ಡೋ ಸಿಂಪಡಣೆ; ಬಳ್ಳಿ ಬುಡಕ್ಕೆ ಟ್ರೈಕೋಡರ್ಮಾ'], banana: ['Plant suckers / tissue-culture plants', 'ಕಂದು / ಅಂಗಾಂಶ ಕೃಷಿ ಸಸಿ ನಾಟಿ'] },
+  { areca: ['Watch for koleroga; keep drains clear', 'ಕೊಳೆರೋಗದ ಮೇಲೆ ನಿಗಾ; ಕಾಲುವೆ ಸ್ವಚ್ಛವಾಗಿಡಿ'], coconut: ['Plucking; drainage', 'ಕೊಯ್ಲು; ನೀರು ಬಸಿಯುವ ವ್ಯವಸ್ಥೆ'], pepper: ['Plant new cuttings at palm bases', 'ಮರಗಳ ಬುಡದಲ್ಲಿ ಹೊಸ ಬಳ್ಳಿ ನಾಟಿ'], banana: ['Fertiliser; earthing up', 'ಗೊಬ್ಬರ; ಬುಡಕ್ಕೆ ಮಣ್ಣು ಏರಿಸುವುದು'] },
+  { areca: ['Bordeaux round 2 (40–45 days after round 1); collect fallen nuts', 'ಬೋರ್ಡೋ 2ನೇ ಸುತ್ತು (1ನೇ ಸುತ್ತಿನ 40–45 ದಿನದ ನಂತರ); ಬಿದ್ದ ಅಡಿಕೆ ಸಂಗ್ರಹ'], coconut: ['Plucking; watch for bud rot', 'ಕೊಯ್ಲು; ಸುಳಿ ಕೊಳೆ ರೋಗದ ಮೇಲೆ ನಿಗಾ'], pepper: ['Tie vines to palms; watch for quick wilt', 'ಬಳ್ಳಿಗಳನ್ನು ಕಟ್ಟಿ; ಸೊರಗು ರೋಗದ ಮೇಲೆ ನಿಗಾ'], banana: ['De-sucker; watch for leaf spot', 'ಕಂದು ತೆಗೆಯಿರಿ; ಎಲೆ ಚುಕ್ಕೆ ರೋಗದ ಮೇಲೆ ನಿಗಾ'] },
+  { areca: ['Bordeaux round 3 if rains continue', 'ಮಳೆ ಮುಂದುವರಿದರೆ ಬೋರ್ಡೋ 3ನೇ ಸುತ್ತು'], coconut: ['Plucking', 'ಕೊಯ್ಲು'], pepper: ['Second Bordeaux spray', '2ನೇ ಬೋರ್ಡೋ ಸಿಂಪಡಣೆ'], banana: ['Second fertiliser dose', '2ನೇ ಗೊಬ್ಬರ'] },
+  { areca: ['Post-monsoon fertiliser (2nd split); weed slashing', 'ಮಳೆಗಾಲದ ನಂತರದ ಗೊಬ್ಬರ (2ನೇ ಹಂತ); ಕಳೆ ಕತ್ತರಿಸುವುದು'], coconut: ['Fertiliser 2nd split', 'ಗೊಬ್ಬರ 2ನೇ ಹಂತ'], pepper: ['Fertiliser and compost for vines', 'ಬಳ್ಳಿಗಳಿಗೆ ಗೊಬ್ಬರ ಮತ್ತು ಕಾಂಪೋಸ್ಟ್'], banana: ['Plant second-season crop', '2ನೇ ಹಂಗಾಮಿನ ನಾಟಿ'] },
+  { areca: ['Finish fertiliser; mulch basins; early harvest and drying', 'ಗೊಬ್ಬರ ಮುಗಿಸಿ; ಬುಡಕ್ಕೆ ಸೊಪ್ಪಿನ ಹೊದಿಕೆ; ಆರಂಭಿಕ ಕೊಯ್ಲು ಮತ್ತು ಒಣಗಿಸುವಿಕೆ'], coconut: ['Plucking; check for rhinoceros beetle', 'ಕೊಯ್ಲು; ಕೊಂಬಿನ ದುಂಬಿ ಪರೀಕ್ಷೆ'], pepper: ['Spikes forming; mulch vine bases', 'ತೆನೆ ಬರುವ ಸಮಯ; ಬಳ್ಳಿ ಬುಡಕ್ಕೆ ಹೊದಿಕೆ'], banana: ['Prop bunches; harvest mature bunches', 'ಗೊನೆಗೆ ಆಧಾರ; ಬಲಿತ ಗೊನೆ ಕಟಾವು'] },
+  { areca: ['Main harvest begins; prepare drying yard; start irrigation', 'ಮುಖ್ಯ ಕೊಯ್ಲು ಆರಂಭ; ಒಣಗಿಸುವ ಅಂಗಳ ಸಿದ್ಧಪಡಿಸಿ; ನೀರಾವರಿ ಆರಂಭ'], coconut: ['Plucking; start irrigation', 'ಕೊಯ್ಲು; ನೀರಾವರಿ ಆರಂಭ'], pepper: ['Book pickers; clean the drying area', 'ಕೊಯ್ಲಿಗೆ ಕೆಲಸಗಾರರನ್ನು ಕಾಯ್ದಿರಿಸಿ; ಒಣಗಿಸುವ ಜಾಗ ಸ್ವಚ್ಛಗೊಳಿಸಿ'], banana: ['Irrigate; de-sucker', 'ನೀರಾವರಿ; ಕಂದು ತೆಗೆಯಿರಿ'] },
+  { areca: ['Harvest rounds; dry 35–45 days; cover when it rains', 'ಕೊಯ್ಲು ಸುತ್ತುಗಳು; 35–45 ದಿನ ಒಣಗಿಸಿ; ಮಳೆ ಬಂದರೆ ಮುಚ್ಚಿ'], coconut: ['Plucking; irrigate', 'ಕೊಯ್ಲು; ನೀರಾವರಿ'], pepper: ['Harvest begins', 'ಕೊಯ್ಲು ಆರಂಭ'], banana: ['Irrigate; prop bunches', 'ನೀರಾವರಿ; ಗೊನೆಗೆ ಆಧಾರ'] },
+];
+
+const LAND = [
+  { id: 'LP1', sy: '112/2', village: ['Kemminje', 'ಕೆಮ್ಮಿಂಜೆ'], a: 2, g: 28, plots: ['P1', 'P2'] },
+  { id: 'LP2', sy: '87/1B', village: ['Kemminje', 'ಕೆಮ್ಮಿಂಜೆ'], a: 0, g: 32, plots: ['P3'] },
+];
+const LOANS = [
+  { id: 'L2', kind: 'term', lender: ['Canara Bank · Puttur', 'ಕೆನರಾ ಬ್ಯಾಂಕ್ · ಪುತ್ತೂರು'], short: ['Canara Bank', 'ಕೆನರಾ ಬ್ಯಾಂಕ್'], amount: 400000, rate: 9.5, tenure: 60, start: '2024-06-15', firstEmi: '2024-07-15', security: 'LP1' },
+  { id: 'L1', kind: 'kcc', lender: ['Kemminje PACS (co-op society)', 'ಕೆಮ್ಮಿಂಜೆ ಕೃಷಿ ಪತ್ತಿನ ಸಹಕಾರ ಸಂಘ'], short: ['Kemminje PACS', 'ಕೆಮ್ಮಿಂಜೆ ಸಂಘ'], limit: 300000, rate: 0, start: '2025-05-08', due: '2027-04-30', security: 'LP2',
+    txns: [{ d: '2025-05-08', k: 't_withdrawal', amt: 240000 }, { d: '2026-04-28', k: 't_repaid', amt: 240000 }, { d: '2026-05-10', k: 't_withdrawal', amt: 250000 }] },
+  { id: 'L3', kind: 'gold', lender: ['SCDCC Bank · Puttur', 'ಎಸ್‌ಸಿಡಿಸಿಸಿ ಬ್ಯಾಂಕ್ · ಪುತ್ತೂರು'], short: ['SCDCC Bank', 'ಎಸ್‌ಸಿಡಿಸಿಸಿ ಬ್ಯಾಂಕ್'], amount: 120000, rate: 8, start: '2026-08-01', due: '2027-07-31', security: null },
+];
+
+const REPORT = {
+  income: [['areca', 941600], ['coconut', 186400], ['pepper', 138600], ['banana', 61200]],
+  expense: [['e_labour', 248000], ['e_fert', 58400], ['e_spray', 46800], ['e_interest', 26800], ['e_misc', 24900], ['e_power', 21600], ['e_peeling', 14300], ['e_insurance', 4600]],
+  chaliKg: 2030, arecaCost: 320600, acres: 3.5, bearingPalms: 1350, lastProfit: 812000,
+};
+
+/* =====================================================================
+   Helpers
+   ===================================================================== */
+const MON = { en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], kn: ['ಜನ', 'ಫೆಬ್ರ', 'ಮಾರ್ಚ್', 'ಏಪ್ರಿ', 'ಮೇ', 'ಜೂನ್', 'ಜುಲೈ', 'ಆಗ', 'ಸೆಪ್ಟೆಂ', 'ಅಕ್ಟೋ', 'ನವೆಂ', 'ಡಿಸೆಂ'] };
+const state = {
+  lang: 'en', screen: 'home', params: {}, stack: [],
+  lotFilter: 'all', diaryFilter: 'all', priceCrop: 'areca', labourTab: 'workers', calMonth: 9,
+  alertOn: true, covered: false, lockOn: true, online: true, form: null, extraActs: [],
+  att: { W3: 'p', W4: 'p', W2: 'a', W1: 'h' }, attWork: 'a_fertiliser',
+};
+
+function t(k, ...a) {
+  const v = S[k];
+  if (!v) return k;
+  const s = state.lang === 'kn' ? (v[1] ?? v[0]) : v[0];
+  return typeof s === 'function' ? s(...a) : s;
+}
+const L = o => (Array.isArray(o) ? (state.lang === 'kn' ? o[1] : o[0]) : (o ?? ''));
+const num = n => Math.round(n).toLocaleString('en-IN');
+const inr = n => '₹' + num(n);
+const lakh = n => '₹' + (n / 100000).toFixed(2).replace(/\.?0+$/, '') + ' ' + t('lakh');
+const money = n => (Math.abs(n) >= 100000 ? lakh(n) : inr(n));
+const d8 = s => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+const daysBetween = (a, b) => Math.round((d8(b) - d8(a)) / 86400000);
+const addDays = (s, n) => { const d = d8(s); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const addMonths = (s, n) => { const d = d8(s); d.setUTCMonth(d.getUTCMonth() + n); return d.toISOString().slice(0, 10); };
+const SEASON_START = '2026-06-01';
+
+function loanCalc(l) {
+  if (l.kind === 'term') {
+    const r = l.rate / 1200, f = Math.pow(1 + r, l.tenure);
+    const emi = l.amount * r * f / (f - 1);
+    const rows = [];
+    let bal = l.amount, d = l.firstEmi;
+    for (let k = 1; k <= l.tenure; k++) {
+      const int = bal * r, prin = emi - int;
+      bal = Math.max(0, bal - prin);
+      rows.push({ k, d, emi, int, prin, bal });
+      d = addMonths(d, 1);
+    }
+    const paid = rows.filter(x => x.d <= TODAY);
+    const last = paid[paid.length - 1];
+    const principal = last ? last.bal : l.amount;
+    const interest = principal * l.rate / 100 * daysBetween(last ? last.d : l.start, TODAY) / 365;
+    const next = rows[paid.length];
+    return { principal, interest, emi, rows, paid, next: { date: next.d, amount: emi },
+      seasonInt: paid.filter(x => x.d >= SEASON_START).reduce((s, x) => s + x.int, 0) };
+  }
+  if (l.kind === 'kcc') {
+    const principal = l.txns.reduce((s, x) => s + (x.k === 't_withdrawal' ? x.amt : -x.amt), 0);
+    return { principal, interest: 0, next: { date: l.due, amount: principal }, seasonInt: 0 };
+  }
+  const interest = l.amount * l.rate / 100 * daysBetween(l.start, TODAY) / 365;
+  return { principal: l.amount, interest, next: { date: l.due, amount: l.amount * (1 + l.rate / 100 * daysBetween(l.start, l.due) / 365) }, seasonInt: 0 };
+}
+const loanTotals = () => {
+  const c = LOANS.map(l => ({ l, c: loanCalc(l) }));
+  const next = c.map(x => ({ ...x.c.next, l: x.l })).sort((a, b) => a.date.localeCompare(b.date))[0];
+  return { principal: c.reduce((s, x) => s + x.c.principal, 0), interest: c.reduce((s, x) => s + x.c.interest, 0), seasonInt: c.reduce((s, x) => s + x.c.seasonInt, 0), next };
+};
+const fmt = s => { const d = d8(s); return `${String(d.getUTCDate()).padStart(2, '0')} ${MON[state.lang][d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
+const fmtShort = s => { const d = d8(s); return `${d.getUTCDate()} ${MON[state.lang][d.getUTCMonth()]}`; };
+const worker = id => WORKERS.find(w => w.id === id);
+const plotName = id => L(PLOTS.find(p => p.id === id).name);
+const plotNames = ids => ids.map(plotName).join(' + ');
+const stockItem = id => STOCK.find(s => s.id === id);
+const initials = w => w.name[0].split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+const dueOf = w => w.ledger.reduce((s, e) => s + (e.pay ? -e.amt : e.amt), 0);
+const earnedOf = w => w.ledger.filter(e => !e.pay).reduce((s, e) => s + e.amt, 0);
+const allActs = () => [...state.extraActs, ...ACTS];
+const actLabour = a => a.labour.reduce((s, l) => s + l[1], 0);
+const actInputs = a => a.inputs.reduce((s, [id, q]) => s + q * stockItem(id).price, 0);
+const actTitle = a => (a.w ? L(WORK[a.w]) : L(a.title));
+const saleTotal = s => s.lines.reduce((x, l) => x + l[1] * l[3], 0);
+const allSales = () => [...LOTS.filter(l => l.sale).map(l => ({ ...l.sale, crop: l.crop, lot: l.id })), PEPPER_SALE].sort((a, b) => b.date.localeCompare(a.date));
+const chg = c => (c > 0 ? `<span class="up">▲ ${c}</span>` : c < 0 ? `<span class="down">▼ ${Math.abs(c)}</span>` : `<span class="flat">• 0</span>`);
+const cropDot = c => `<span class="cdot" style="background:${CROPC[c]}"></span>`;
+
+/* Icons (stroke, 24px grid) */
+const IC = {
+  home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  book: '<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  trend: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  back: '<polyline points="15 18 9 12 15 6"/>',
+  chev: '<polyline points="9 18 15 12 9 6"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  rain: '<line x1="16" y1="13" x2="16" y2="21"/><line x1="8" y1="13" x2="8" y2="21"/><line x1="12" y1="15" x2="12" y2="23"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>',
+  sun: '<circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1.5" x2="12" y2="3.5"/><line x1="12" y1="20.5" x2="12" y2="22.5"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1.5" y1="12" x2="3.5" y2="12"/><line x1="20.5" y1="12" x2="22.5" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/>',
+  bell: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  droplet: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  box: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+  sack: '<path d="M8 3h8l-1.5 3.5c3 1.6 5.5 5 5.5 9A5.5 5.5 0 0 1 14.5 21h-5A5.5 5.5 0 0 1 4 15.5c0-4 2.5-7.4 5.5-9z"/><line x1="9.5" y1="6.5" x2="14.5" y2="6.5"/>',
+  map: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+  bars: '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+  mic: '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>',
+  camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  msg: '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  scissors: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/>',
+  sprout: '<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  grid: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+  alert: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+  archive: '<polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>',
+  tag: '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+  wallet: '<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>',
+  lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  sliders: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+  umbrella: '<path d="M23 12a11.05 11.05 0 0 0-22 0zm-5 7a3 3 0 0 1-6 0v-7"/>',
+  cloud: '<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>',
+  file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>',
+  landmark: '<line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/>',
+  wifiOff: '<line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
+  wifi: '<path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
+  battery: '<rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="13" x2="23" y2="11"/><rect x="3" y="8" width="11" height="8" rx="1" fill="currentColor" stroke="none"/>',
+};
+const ic = (n, s = 20, sw = 1.8) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n] || ''}</svg>`;
+
+/* Deterministic sample price history */
+function series(end, vol, seed, n = 30) {
+  let s = seed;
+  const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  const out = [end];
+  let v = end;
+  for (let i = 1; i < n; i++) { v = v - (r() - 0.42) * vol; out.unshift(v); }
+  return out;
+}
+function sparkSvg(arr, w, h, stroke, fill, id, cls = 'chart') {
+  const min = Math.min(...arr), max = Math.max(...arr), span = max - min || 1;
+  const pts = arr.map((v, i) => [(i / (arr.length - 1)) * w, h - 4 - ((v - min) / span) * (h - 8)]);
+  const line = pts.map(p => p.map(x => x.toFixed(1)).join(',')).join(' ');
+  const area = fill ? `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${stroke}" stop-opacity=".22"/><stop offset="1" stop-color="${stroke}" stop-opacity="0"/></linearGradient></defs><polygon fill="url(#${id})" points="0,${h} ${line} ${w},${h}"/>` : '';
+  const last = pts[pts.length - 1];
+  return `<svg class="${cls}" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none">${area}<polyline fill="none" stroke="${stroke}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${line}"/>${fill ? `<circle cx="${last[0]}" cy="${last[1]}" r="4" fill="#fff" stroke="${stroke}" stroke-width="2"/>` : ''}</svg>`;
+}
+
+/* =====================================================================
+   Screens
+   ===================================================================== */
+function Home() {
+  const dry = LOTS.find(l => l.stage === 'drying');
+  const dd = daysBetween(dry.drying.start, TODAY);
+  const stored = LOTS.find(l => l.id === 'A-2526-03');
+  const pep = LOTS.find(l => l.id === 'P-2526-01');
+  const dues = WORKERS.filter(w => dueOf(w) > 0);
+  const dueSum = dues.reduce((s, w) => s + dueOf(w), 0);
+  const pending = allSales().reduce((s, x) => s + (saleTotal(x) - x.received), 0);
+  const octSpent = allActs().filter(a => a.date.startsWith('2026-10')).reduce((s, a) => s + actLabour(a) + actInputs(a), 0);
+  const hours = [['12', 10], ['1', 20], ['2', 40], ['3', 65], ['4', 70], ['5', 60], ['6', 45], ['7', 20]];
+  const loanNext = loanTotals().next;
+
+  return `
+  ${offlineBanner()}
+  <div class="card">
+    <div class="row between">
+      <div class="row">
+        <div class="wx-ic">${ic('rain', 24)}</div>
+        <div><div class="big">29°<span class="muted small" style="font-weight:500"> / 23°</span></div><div class="small muted">${t('wx_desc')}</div></div>
+      </div>
+      <div class="hourly">${hours.map(([h, p]) => `<div class="hr"><i style="height:${Math.round(p * 0.38) + 4}px"></i><span>${h}</span></div>`).join('')}</div>
+    </div>
+    ${state.online ? '' : `<div class="xs muted row" style="gap:6px;margin-top:10px">${ic('clock', 12)} ${t('wx_cached')}</div>`}
+    ${state.covered
+      ? `<div class="ok-line">${ic('check', 16, 2.4)} ${t('covered_ok')}</div>`
+      : `<div class="alert"><div class="a-ic">${ic('alert', 18)}</div><div class="grow"><div class="b">${t('rain_title')}</div><div class="small muted" style="margin:2px 0 8px">${t('rain_body')}</div><button class="btn primary sm" onclick="markCovered()">${ic('check', 14, 2.4)} ${t('mark_covered')}</button></div></div>`}
+  </div>
+
+  <div class="qa">
+    <button onclick="openAdd()"><span class="qi">${ic('plus')}</span>${t('q_activity')}</button>
+    <button onclick="proto()"><span class="qi">${ic('leaf')}</span>${t('q_harvest')}</button>
+    <button onclick="goTab('labour','att')"><span class="qi">${ic('users')}</span>${t('q_att')}</button>
+    <button onclick="proto()"><span class="qi">${ic('tag')}</span>${t('q_sale')}</button>
+  </div>
+
+  <div class="sec"><h3>${t('todays_prices')}</h3><button class="link" onclick="goTab('prices')">${t('see_all')}</button></div>
+  <div class="pstrip">${STRIP.map(([c, g, v, d]) => `
+    <div class="pcard" onclick="goPrices('${c}')">
+      <div class="row small muted" style="gap:6px">${cropDot(c)}${t(g)}</div>
+      <div class="mid" style="margin:6px 0 2px">${inr(v)}<span class="xs muted" style="font-weight:500">${t('r_kg')}</span></div>
+      <div class="xs b">${chg(d)}</div>
+    </div>`).join('')}
+  </div>
+
+  <div class="sec"><h3>${t('drying_now')}</h3></div>
+  <div class="card tap" onclick="goLot('${dry.id}')">
+    <div class="row between"><div class="row">${cropDot('areca')}<span class="b">${L(dry.title)}</span></div><span class="pill drying">${ic('sun', 12, 2.2)} ${t('st_drying')}</span></div>
+    <div class="b" style="margin:12px 0 6px">${t('day_of', dd, dry.drying.target)}</div>
+    <div class="progress"><i style="width:${Math.min(100, Math.round(dd / dry.drying.target * 100))}%"></i></div>
+    <div class="small muted" style="margin-top:8px">${t('expected')}: ${fmtShort(addDays(dry.drying.start, dry.drying.target))} · ${t('est_chali')} ~${dry.est.chali} ${t('u_kg')}</div>
+  </div>
+
+  <div class="sec"><h3>${t('in_storage')}</h3></div>
+  <div class="card">
+    <div class="lrow tap" onclick="goLot('${stored.id}')">
+      <div class="ricon">${ic('archive', 18)}</div>
+      <div class="grow"><div class="b">${stored.storage.kg} ${t('u_kg')} ${t('g_old')}</div><div class="small muted">${t('days_in_store', daysBetween(stored.storage.start, TODAY))}</div></div>
+      <div style="text-align:right"><div class="b">${money(stored.storage.kg * PBEST.old)}</div><div class="xs muted">${t('worth_today')}</div></div>
+    </div>
+    <div class="lrow tap" onclick="goLot('${pep.id}')">
+      <div class="ricon">${ic('archive', 18)}</div>
+      <div class="grow"><div class="b">${pep.storage.kg} ${t('u_kg')} ${t('g_pepper')}</div><div class="small muted">${t('days_in_store', daysBetween(pep.storage.start, TODAY))}</div></div>
+      <div style="text-align:right"><div class="b">${money(pep.storage.kg * PBEST.pepper)}</div><div class="xs muted">${t('worth_today')}</div></div>
+    </div>
+  </div>
+
+  <div class="sec"><h3>${t('reminders')}</h3><button class="link" onclick="go('calendar')">${t('calendar')}</button></div>
+  <div class="card">${REM.slice(0, 4).map(remRow).join('')}</div>
+
+  <div class="sec"><h3>${t('money')}</h3><button class="link" onclick="go('reports')">${t('reports')}</button></div>
+  <div class="grid2">
+    <div class="kpi tap" onclick="goTab('labour','dues')"><div class="l">${t('worker_dues')}</div><div class="v">${inr(dueSum)}</div></div>
+    <div class="kpi tap" onclick="go('sales')"><div class="l">${t('to_receive')}</div><div class="v">${inr(pending)}</div></div>
+    <div class="kpi"><div class="l">${t('spent_oct')}</div><div class="v">${inr(octSpent)}</div></div>
+    <div class="kpi tap" onclick="goLoan('${loanNext.l.id}')"><div class="l">${t('loan_due_kpi')} · ${fmtShort(loanNext.date)}</div><div class="v">${inr(loanNext.amount)}</div></div>
+  </div>
+
+  <div class="sec"><h3>${t('more')}</h3></div>
+  <div class="mgrid four">
+    ${[['calendar', 'calendar'], ['reports', 'bars'], ['sales', 'tag'], ['plots', 'map'], ['stock', 'box'], ['loans', 'landmark'], ['insurance', 'umbrella'], ['more', 'sliders']].map(([s, i]) =>
+      `<div class="mtile" onclick="go('${s}')"><span class="qi">${ic(i, 18)}</span>${t(s === 'more' ? 'settings' : s)}</div>`).join('')}
+  </div>
+  <div class="disclaimer">${t('sample')}</div>`;
+}
+
+function offlineBanner() {
+  return state.online ? '' : `<div class="offline">${ic('wifiOff', 16)}<span>${t('offline_banner', t('as_of'))}</span></div>`;
+}
+
+function remRow(r) {
+  return `<div class="lrow tap" onclick="${r.go}">
+    <div class="ricon" style="${r.warn ? 'background:var(--accent-soft);color:var(--accent);border-color:rgba(232,113,42,.3)' : ''}">${ic(r.ic, 18)}</div>
+    <div class="grow"><div class="b" style="font-size:13px">${L(r.txt)}</div><div class="xs muted row" style="gap:6px;margin-top:2px">${r.crop ? cropDot(r.crop) + t(r.crop) + ' · ' : ''}${L(r.due)}</div></div>
+    <span class="muted">${ic('chev', 16)}</span>
+  </div>`;
+}
+
+function stagePill(stage) {
+  const cls = stage === 'drying' ? 'drying' : stage === 'sold' ? 'sold' : 'storage';
+  const i = stage === 'drying' ? 'sun' : stage === 'sold' ? 'check' : 'archive';
+  return `<span class="pill ${cls}">${ic(i, 12, 2.2)} ${t('st_' + stage)}</span>`;
+}
+
+function lotMetric(l) {
+  if (l.stage === 'drying') {
+    const dd = daysBetween(l.drying.start, TODAY);
+    return `<div class="row between small" style="margin-bottom:6px"><span class="b">${t('day_of', dd, l.drying.target)}</span><span class="muted">${t('est_chali')} ~${l.est.chali} ${t('u_kg')}</span></div><div class="progress"><i style="width:${Math.round(dd / l.drying.target * 100)}%"></i></div>`;
+  }
+  if (l.stage === 'storage') {
+    const p = PBEST[l.storage.price];
+    return `<div class="row between small"><span><b>${l.storage.kg} ${t('u_kg')}</b> · <span class="muted">${t('days_in_store', daysBetween(l.storage.start, TODAY))}</span></span><span class="b">${money(l.storage.kg * p)}</span></div>`;
+  }
+  return `<div class="row between small"><span class="muted">${fmt(l.sale.date)} · ${L(BUYERS[l.sale.buyer])}</span><span class="b">${money(saleTotal(l.sale))}</span></div>`;
+}
+
+function Lots() {
+  const list = LOTS.filter(l => state.lotFilter === 'all' || l.crop === state.lotFilter);
+  return `
+  <div class="chips scroll" style="margin-bottom:14px">
+    ${['all', ...CROPS].map(c => `<span class="chip ${state.lotFilter === c ? 'sel' : ''}" onclick="setLotFilter('${c}')">${c !== 'all' ? cropDot(c) : ''}${t(c)}</span>`).join('')}
+  </div>
+  ${list.map(l => `
+    <div class="card tap" onclick="goLot('${l.id}')">
+      <div class="row between"><div class="row" style="gap:8px">${cropDot(l.crop)}<span class="mono xs muted">${l.id}</span><span class="xs muted">· ${t(l.crop)}</span></div>${stagePill(l.stage)}</div>
+      <div class="b" style="margin:8px 0 10px">${L(l.title)}</div>
+      ${lotMetric(l)}
+    </div>`).join('')}
+  <div class="disclaimer">${t('sample')}</div>`;
+}
+
+function workerLines(ws) {
+  return ws.map(([wid, q, u, rate, amt]) => {
+    const w = worker(wid);
+    return `<div class="wline"><span class="avatar sm" style="margin:0">${initials(w)}</span><div class="grow"><div class="b">${L(w.name)}</div><div class="xs muted">${num(q)} ${t(u)} × ₹${rate}</div></div><span class="b">${inr(amt)}</span></div>`;
+  }).join('');
+}
+const kv = (k, v) => `<div class="kv"><span>${k}</span><span>${v}</span></div>`;
+
+function stageBody(l, key) {
+  const h = l.harvest;
+  if (key === 'harvest') {
+    const countLabel = { areca: 'f_palms', coconut: 'f_trees', pepper: 'f_vines', banana: 'f_bunches' }[l.crop];
+    const qtyLabel = { areca: 'f_fresh', coconut: 'f_nuts', pepper: 'f_green', banana: 'f_weight' }[l.crop];
+    const qtyVal = l.crop === 'coconut' ? num(h.qty) : `${num(h.qty)} ${t('u_kg')}`;
+    return kv(t('f_date'), fmt(h.date)) + kv(t('f_plot'), plotNames(h.plots)) + kv(t(countLabel), num(h.count)) + kv(t(qtyLabel), qtyVal) + workerLines(h.workers);
+  }
+  if (key === 'drying' && l.drying) {
+    const d = l.drying;
+    let out = kv(t('f_started'), fmt(d.start));
+    if (d.end) {
+      out += kv(t('f_finished'), fmt(d.end)) + kv(t('f_days_yard'), `${daysBetween(d.start, d.end)} ${t('u_days')}`);
+    } else {
+      const dd = daysBetween(d.start, TODAY);
+      out += `<div style="padding:8px 0"><div class="small b" style="margin-bottom:6px">${t('day_of', dd, d.target)}</div><div class="progress"><i style="width:${Math.round(dd / d.target * 100)}%"></i></div><div class="xs muted" style="margin-top:6px">${t('expected')}: ${fmt(addDays(d.start, d.target))}</div></div>`;
+    }
+    if (d.outKg) out += kv(t('f_dry'), `${d.outKg} ${t('u_kg')} (${(d.outKg / h.qty * 100).toFixed(1)}%)`);
+    out += kv(t('f_yard'), L(d.yard)) + kv(t('f_covers'), t('n_times', d.covers + (l.id === 'A-2627-01' && state.covered ? 1 : 0)));
+    return out;
+  }
+  if (key === 'peeling' && l.peeling) {
+    const p = l.peeling;
+    const cost = p.workers.reduce((s, w) => s + w[4], 0);
+    return kv(t('f_dates'), `${fmtShort(p.start)} – ${fmtShort(p.end)}`) + kv(t('f_in'), `${num(p.inKg)} ${t('u_kg')}`) + kv(t('f_out'), `${num(p.outKg)} ${t('u_kg')}`) +
+      kv(t('f_outturn'), `${(p.outKg / p.inKg * 100).toFixed(1)}%`) + workerLines(p.workers) + kv(t('f_peel_cost'), inr(cost));
+  }
+  if (key === 'grading' && l.grading) {
+    const tot = l.grading.reduce((s, g) => s + g[1], 0);
+    return l.grading.map(([g, k]) => `<div class="hbar"><div class="row between small"><span>${t(g)}</span><b>${k} ${t('u_kg')}</b></div><div class="track"><i style="width:${k / tot * 100}%;background:${g === 'g_chali' ? CROPC.areca : '#c9bfb2'}"></i></div></div>`).join('');
+  }
+  if (key === 'storage' && l.storage) {
+    const s = l.storage;
+    let out = kv(t('f_since'), fmt(s.start));
+    if (s.end) out += kv(t('f_until'), fmt(s.end));
+    out += kv(t('f_days_store'), `${daysBetween(s.start, s.end || TODAY)} ${t('u_days')}`) + kv(t('f_place'), L(s.place));
+    if (s.priceThen && !s.end) {
+      const now = PBEST[s.price];
+      const pct = ((now - s.priceThen) / s.priceThen * 100).toFixed(1);
+      out += kv(t('f_price_then'), `₹${s.priceThen}${t('r_kg')}`) + kv(t('f_price_now'), `₹${now}${t('r_kg')} <span class="up">(+${pct}%)</span>`);
+    } else if (s.priceThen) {
+      out += kv(t('f_price_then'), `₹${s.priceThen}${t('r_kg')}`);
+    }
+    if (s.soldKg) out += kv(t('f_sold_so_far'), `${s.soldKg} ${t('u_kg')} × ₹${s.soldRate} = ${inr(s.soldKg * s.soldRate)}`) + kv(t('f_left'), `${s.kg} ${t('u_kg')}`);
+    return out;
+  }
+  if (key === 'sale' && l.sale) {
+    const s = l.sale;
+    const tot = saleTotal(s);
+    return kv(t('f_date'), fmt(s.date)) + kv(t('f_buyer'), L(BUYERS[s.buyer])) +
+      s.lines.map(([g, q, u, r]) => kv(t(g), `${num(q)} ${t(u)} × ₹${r} = ${inr(q * r)}`)).join('') +
+      kv(t('f_total'), inr(tot)) +
+      (s.received >= tot ? kv(t('f_received'), `<span class="up">${t('fully_paid')}</span>`) : kv(t('f_received'), inr(s.received)) + kv(t('f_pending'), `<span class="down">${inr(tot - s.received)}</span>`));
+  }
+  return '';
+}
+
+function LotDetail() {
+  const l = LOTS.find(x => x.id === state.params.id) || LOTS[0];
+  const flow = FLOW[l.crop];
+  const idx = l.stage === 'sold' ? flow.length : flow.indexOf(l.stage);
+  const cost = l.harvest.workers.reduce((s, w) => s + w[4], 0) + (l.peeling ? l.peeling.workers.reduce((s, w) => s + w[4], 0) : 0);
+  let value, valueLabel, perKg, perLabel = t('cost_per_kg');
+  if (l.sale) { value = saleTotal(l.sale); valueLabel = t('lot_value'); }
+  else if (l.stage === 'drying') { value = l.est.chali * PBEST[l.est.price]; valueLabel = t('est_value'); }
+  else { value = l.storage.kg * PBEST[l.storage.price] + (l.storage.soldKg ? l.storage.soldKg * l.storage.soldRate : 0); valueLabel = t('est_value'); }
+  if (l.crop === 'coconut') { perKg = `₹${(cost / l.harvest.qty).toFixed(2)}`; perLabel = t('cost_per_unit'); }
+  else {
+    const kgOut = l.peeling ? l.peeling.outKg : l.drying && l.drying.outKg ? l.drying.outKg : l.est ? l.est.chali : l.harvest.qty;
+    perKg = `₹${(cost / kgOut).toFixed(1)}`;
+  }
+
+  const items = flow.map((k, i) => {
+    const status = i < idx ? 'done' : i === idx ? 'active' : 'todo';
+    const body = status === 'todo' ? '' : stageBody(l, k);
+    const right = status === 'active' ? `<span class="pill drying">${t('in_progress')}</span>` : status === 'todo' ? `<span class="xs muted">${t('not_yet')}</span>` : '';
+    return `<div class="tl-item ${status}">
+      <div class="tl-dot">${status === 'done' ? ic('check', 12, 3) : ''}</div>
+      <div class="tl-head"><b>${t('st_' + k)}</b>${right}</div>
+      ${body ? `<div class="card">${body}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  const actions = l.stage === 'drying'
+    ? `<button class="btn ghost" onclick="proto()">${ic('rain', 16)} ${t('btn_cover')}</button><button class="btn primary" onclick="proto()">${ic('check', 16, 2.4)} ${t('btn_finish_dry')}</button>`
+    : l.stage === 'storage'
+      ? `<button class="btn ghost" onclick="proto()">${ic('droplet', 16)} ${t('btn_check')}</button><button class="btn primary" onclick="proto()">${ic('tag', 16)} ${t('btn_sell')}</button>`
+      : `<button class="btn ghost block" onclick="proto()">${ic('msg', 16)} ${t('btn_receipt')}</button>`;
+
+  return `
+  <div class="card">
+    <div class="row between"><div class="row" style="gap:8px">${cropDot(l.crop)}<span class="small b">${t(l.crop)}</span><span class="xs muted">· ${t('season')} ${l.season}</span></div>${stagePill(l.stage)}</div>
+    <div class="grid3" style="margin-top:12px">
+      <div><div class="xs muted">${t('lot_cost')}</div><div class="mid">${inr(cost)}</div></div>
+      <div><div class="xs muted">${valueLabel}</div><div class="mid">${money(value)}</div></div>
+      <div><div class="xs muted">${perLabel}</div><div class="mid">${perKg}</div></div>
+    </div>
+  </div>
+  <div class="tl">${items}</div>
+  <div class="btn-row">${actions}</div>
+  <div class="disclaimer">${t('sample')}</div>`;
+}
+
+function Diary() {
+  const acts = allActs().filter(a => state.diaryFilter === 'all' || a.crops.includes(state.diaryFilter));
+  return `
+  <div class="chips scroll" style="margin-bottom:14px">
+    ${['all', ...CROPS].map(c => `<span class="chip ${state.diaryFilter === c ? 'sel' : ''}" onclick="setDiaryFilter('${c}')">${c !== 'all' ? cropDot(c) : ''}${t(c)}</span>`).join('')}
+  </div>
+  ${acts.map(a => {
+    const d = d8(a.date);
+    const lab = actLabour(a), inp = actInputs(a);
+    const ws = [...new Set(a.labour.map(x => x[0]))].map(worker);
+    return `<div class="day">
+      <div class="dcol"><b>${d.getUTCDate()}</b><span>${MON[state.lang][d.getUTCMonth()]}</span></div>
+      <div class="card ${a.lot ? 'tap' : ''}" ${a.lot ? `onclick="goLot('${a.lot}')"` : ''}>
+        <div class="row" style="align-items:flex-start">
+          <div class="type-ic" style="background:${TYPEC[a.type]}">${ic(TYPEI[a.type], 17)}</div>
+          <div class="grow">
+            <div class="b" style="font-size:13.5px;line-height:1.35">${actTitle(a)}</div>
+            <div class="row wrap xs muted" style="gap:6px;margin-top:4px">${t('a_' + a.type)} · ${plotNames(a.plots)} · ${a.days === 1 ? t('one_day') : t('n_days', a.days)}</div>
+          </div>
+        </div>
+        ${a.inputs.length ? `<div class="chips" style="margin-top:10px">${a.inputs.map(([id, q]) => `<span class="chip static">${L(stockItem(id).name)} · ${q} ${t(stockItem(id).unit)}</span>`).join('')}</div>` : ''}
+        <div class="row between" style="margin-top:10px">
+          <div class="row" style="gap:0">${ws.map(w => `<span class="avatar sm">${initials(w)}</span>`).join('')}<span class="row" style="gap:4px;margin-left:8px">${a.crops.map(cropDot).join('')}</span></div>
+          <div style="text-align:right"><div class="b">${inr(lab + inp)}</div><div class="xs muted">${t('labour')} ${inr(lab)}${inp ? ` · ${t('inputs')} ${inr(inp)}` : ''}</div></div>
+        </div>
+        ${a.next ? `<div class="row xs" style="gap:6px;margin-top:10px;color:var(--accent-hover);font-weight:600">${ic('bell', 13, 2.2)} ${t('next_round')}: ${fmt(a.next)}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('')}
+  <div class="disclaimer">${t('sample')}</div>`;
+}
+
+const FORM_INPUTS = { fertiliser: [['s_urea', 65], ['s_rp', 60], ['s_mop', 70]], spray: [['s_cuso4', 12], ['s_lime', 12]], weeding: [['s_diesel', 5]] };
+const FORM_REMIND = { fertiliser: 180, spray: 40, weeding: 60, irrigation: 7 };
+function newForm() { return { type: 'fertiliser', crops: ['areca', 'pepper'], plots: ['P2'], workers: ['W3', 'W4'], days: 2, remind: true, remindDays: 180 }; }
+
+function AddActivity() {
+  const f = state.form;
+  const inputs = FORM_INPUTS[f.type] || [];
+  const lab = f.workers.reduce((s, id) => s + worker(id).dayRate * f.days, 0);
+  const inp = inputs.reduce((s, [id, q]) => s + q * stockItem(id).price, 0);
+  const chip = (on, onclick, label) => `<span class="chip ${on ? 'sel' : ''}" onclick="${onclick}">${label}</span>`;
+  return `
+  <div class="field"><label>${t('what_work')}</label><div class="chips">
+    ${['fertiliser', 'spray', 'irrigation', 'weeding', 'harvest', 'care', 'other'].map(k => chip(f.type === k, `setF('type','${k}')`, `${ic(TYPEI[k], 14)} ${t('a_' + k)}`)).join('')}
+  </div></div>
+  <div class="field"><label>${t('which_crop')}</label><div class="chips">
+    ${CROPS.map(c => chip(f.crops.includes(c), `togF('crops','${c}')`, `${cropDot(c)} ${t(c)}`)).join('')}
+  </div></div>
+  <div class="field"><label>${t('which_plot')}</label><div class="chips">
+    ${PLOTS.map(p => chip(f.plots.includes(p.id), `togF('plots','${p.id}')`, L(p.name))).join('')}
+  </div></div>
+  <div class="field"><label>${t('when')}</label><input class="input" type="date" value="${TODAY}"></div>
+  <div class="field"><label>${t('products')}</label>
+    <div class="card" style="margin:0">
+      ${inputs.length ? inputs.map(([id, q]) => { const s = stockItem(id); return `<div class="kv"><span>${L(s.name)} · ${q} ${t(s.unit)}</span><span>${inr(q * s.price)}</span></div>`; }).join('') : `<div class="small muted">${t('no_products')}</div>`}
+      <button class="link" style="margin-top:10px" onclick="proto()">+ ${t('add_product')}</button>
+    </div>
+  </div>
+  <div class="field"><label>${t('who_worked')}</label><div class="chips">
+    ${WORKERS.map(w => chip(f.workers.includes(w.id), `togF('workers','${w.id}')`, `${L(w.name)} <span class="muted" style="font-weight:500">₹${w.dayRate}</span>`)).join('')}
+  </div></div>
+  <div class="field row between"><label style="margin:0">${t('how_many_days')}</label>
+    <div class="counter"><button onclick="setDays(-1)">−</button><span>${f.days}</span><button onclick="setDays(1)">+</button></div>
+  </div>
+  <div class="field"><label>${t('notes_photo')}</label>
+    <div class="voice" onclick="proto()"><div class="mic">${ic('mic', 18)}</div><div class="grow"><div class="b small">${t('speak')}</div><div class="xs muted">${t('speak_hint')}</div></div></div>
+    <button class="btn ghost block" style="margin-top:8px" onclick="proto()">${ic('camera', 16)} ${t('add_photo')}</button>
+  </div>
+  <div class="card">
+    <div class="row between"><span class="b small">${t('remind_next')}</span><button class="toggle ${f.remind ? 'on' : ''}" onclick="setF('remind',${!f.remind})" aria-label="toggle"></button></div>
+    ${f.remind ? `<div class="chips" style="margin-top:10px">${[30, 40, 45, 60, 180].map(n => chip(f.remindDays === n, `setF('remindDays',${n})`, t('after_days', n))).join('')}</div>
+    <div class="xs muted" style="margin-top:8px">${ic('bell', 12)} ${fmt(addDays(TODAY, f.remindDays))}</div>` : ''}
+  </div>
+  <div class="total-bar"><div><div class="xs" style="opacity:.7">${t('est_total')}</div><div class="mid">${inr(lab + inp)}</div></div><div class="xs" style="opacity:.7;text-align:right">${t('labour')} ${inr(lab)}<br>${t('inputs')} ${inr(inp)}</div></div>
+  <button class="btn primary block" onclick="saveAct()">${ic('check', 16, 2.4)} ${t('save')}</button>`;
+}
+
+function Labour() {
+  const tab = state.labourTab;
+  const seg = `<div class="seg">${[['workers', 'tab_workers'], ['att', 'tab_att'], ['dues', 'tab_dues']].map(([k, l]) => `<button class="${tab === k ? 'on' : ''}" onclick="setLabourTab('${k}')">${t(l)}</button>`).join('')}</div>`;
+  if (tab === 'workers') {
+    return seg + `<div class="card">${WORKERS.map(w => {
+      const due = dueOf(w);
+      return `<div class="lrow tap" onclick="goWorker('${w.id}')">
+        <div class="avatar">${initials(w)}</div>
+        <div class="grow"><div class="b">${L(w.name)}</div><div class="xs muted">${t(w.role)} · ${w.rates.map(([r, u]) => `₹${r}${t(u)}`).join(' · ')}</div></div>
+        ${due > 0 ? `<span class="pill warn">${t('due')} ${inr(due)}</span>` : `<span class="pill sold">${t('settled')}</span>`}
+      </div>`;
+    }).join('')}</div>`;
+  }
+  if (tab === 'att') {
+    const list = ['W3', 'W4', 'W2', 'W1'].map(worker);
+    const wages = list.reduce((s, w) => s + (state.att[w.id] === 'p' ? w.dayRate : state.att[w.id] === 'h' ? w.dayRate / 2 : 0), 0);
+    const present = list.filter(w => state.att[w.id] !== 'a').length;
+    return seg + `
+    <div class="row between" style="margin:2px 2px 10px"><span class="b">${t('att_today')}</span><span class="small muted">${t('present_n', present)}</span></div>
+    <div class="card">${list.map(w => `
+      <div class="lrow">
+        <div class="avatar">${initials(w)}</div>
+        <div class="grow"><div class="b">${L(w.name)}</div><div class="xs muted">₹${w.dayRate}${t('r_day')}</div></div>
+        <div class="seg" style="margin:0;width:150px">${[['p', 'p_present'], ['h', 'p_half'], ['a', 'p_absent']].map(([k, l]) => `<button class="${state.att[w.id] === k ? 'on' : ''}" style="padding:6px 2px;font-size:11px" onclick="setAtt('${w.id}','${k}')">${t(l)}</button>`).join('')}</div>
+      </div>`).join('')}
+    </div>
+    <div class="field"><label>${t('work_today')}</label><div class="chips">${['a_fertiliser', 'a_weeding', 'a_care', 'a_irrigation'].map(k => `<span class="chip ${state.attWork === k ? 'sel' : ''}" onclick="setAttWork('${k}')">${t(k)}</span>`).join('')}</div></div>
+    <div class="total-bar"><div><div class="xs" style="opacity:.7">${t('today_wages')}</div><div class="mid">${inr(wages)}</div></div><span class="xs" style="opacity:.7">${t('present_n', present)}</span></div>
+    <button class="btn primary block" onclick="toast(t('saved'))">${ic('check', 16, 2.4)} ${t('save_att')}</button>`;
+  }
+  const dues = WORKERS.filter(w => dueOf(w) > 0);
+  const total = dues.reduce((s, w) => s + dueOf(w), 0);
+  return seg + `
+  <div class="total-bar"><div><div class="xs" style="opacity:.7">${t('total_due')}</div><div class="big" style="color:#fff">${inr(total)}</div></div>${ic('wallet', 28)}</div>
+  <div class="card">${dues.map(w => `
+    <div class="lrow">
+      <div class="avatar tap" onclick="goWorker('${w.id}')">${initials(w)}</div>
+      <div class="grow tap" onclick="goWorker('${w.id}')"><div class="b">${L(w.name)}</div><div class="xs muted">${t(w.role)}</div></div>
+      <div class="row" style="gap:6px"><span class="b">${inr(dueOf(w))}</span><button class="btn primary sm" onclick="toast(t('saved'))">${t('pay')}</button></div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function Worker() {
+  const w = worker(state.params.id) || WORKERS[2];
+  const earned = earnedOf(w), due = dueOf(w);
+  const led = [...w.ledger].sort((a, b) => b.d.localeCompare(a.d));
+  return `
+  <div class="card">
+    <div class="row"><div class="avatar" style="width:52px;height:52px;font-size:17px">${initials(w)}</div>
+      <div class="grow"><div class="mid">${L(w.name)}</div><div class="small muted">${t(w.role)} · 98450 •••••</div></div></div>
+    <div class="chips" style="margin-top:12px">${w.rates.map(([r, u, k]) => `<span class="chip static">${t(k)} · ₹${r}${t(u)}</span>`).join('')}</div>
+  </div>
+  <div class="grid3">
+    <div class="kpi"><div class="l">${t('earned')}</div><div class="v">${inr(earned)}</div></div>
+    <div class="kpi"><div class="l">${t('paid_amt')}</div><div class="v">${inr(earned - due)}</div></div>
+    <div class="kpi" style="${due > 0 ? 'border-color:rgba(232,113,42,.4);background:#fffaf6' : ''}"><div class="l">${t('due')}</div><div class="v" style="${due > 0 ? 'color:var(--accent-hover)' : ''}">${inr(due)}</div></div>
+  </div>
+  <div class="btn-row" style="margin-top:12px">
+    <button class="btn primary sm" onclick="toast(t('saved'))">${ic('wallet', 14)} ${t('pay')}</button>
+    <button class="btn ghost sm" onclick="proto()">${t('give_adv')}</button>
+    <button class="btn ghost sm" onclick="proto()">${ic('msg', 14)} ${t('wa')}</button>
+  </div>
+  <div class="sec"><h3>${t('ledger')}</h3></div>
+  <div class="card">${led.map(e => `
+    <div class="lrow">
+      <div class="ricon" style="${e.pay ? 'background:#eaf4ee;color:#23704a;border-color:#cfe6d8' : ''}">${ic(e.pay ? 'wallet' : 'leaf', 16)}</div>
+      <div class="grow"><div class="b" style="font-size:13px">${e.pay ? `${t(e.pay)} · ${e.mode}` : L(WORK[e.w])}</div><div class="xs muted">${fmt(e.d)}${e.q ? ` · ${num(e.q[0])} ${t(e.q[1])}` : ''}</div></div>
+      <span class="b ${e.pay ? 'up' : ''}">${e.pay ? '− ' : '+ '}${inr(e.amt)}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function Prices() {
+  const c = state.priceCrop;
+  const rows = PRICES[c];
+  const hero = rows[0];
+  const hs = series(hero[4], hero[4] * 0.012, hero[4]);
+  const stockVal = c === 'areca' ? [940, PBEST.old, 'g_old'] : c === 'pepper' ? [44, PBEST.pepper, 'g_pepper'] : null;
+  return `
+  ${offlineBanner()}
+  <div class="seg">${CROPS.map(k => `<button class="${c === k ? 'on' : ''}" onclick="setPriceCrop('${k}')">${t(k)}</button>`).join('')}</div>
+  <div class="card">
+    <div class="row between"><div class="small muted row" style="gap:6px">${cropDot(c)}${t(hero[1])} · ${L(MK[hero[0]])}</div><span class="xs mono muted">${t('trend30')}</span></div>
+    <div class="row" style="align-items:baseline;gap:8px;margin-top:6px"><span class="big">${inr(hero[4])}</span><span class="small muted">${t(hero[6] || 'r_kg')}</span><span class="small b">${chg(hero[5])}</span></div>
+    ${sparkSvg(hs, 320, 96, '#e8712a', true, 'hg')}
+    <div class="row between xs muted" style="margin-top:4px"><span>${fmtShort(addDays(TODAY, -29))}</span><span>${fmtShort(TODAY)}</span></div>
+  </div>
+  ${stockVal ? `<div class="card row between" style="background:#fffaf6;border-color:rgba(232,113,42,.3)"><div><div class="xs muted">${t('your_stock')}</div><div class="b">${stockVal[0]} ${t('u_kg')} ${t(stockVal[2])} × ₹${stockVal[1]}</div></div><div class="mid">${money(stockVal[0] * stockVal[1])}</div></div>` : ''}
+  <div class="sec"><h3>${t('markets')}</h3><span class="xs muted">${t('modal')} · ${t('minmax')}</span></div>
+  <div class="card">${rows.map((r, i) => `
+    <div class="prow">
+      <div style="min-width:0"><div class="b" style="font-size:13px">${t(r[1])}</div><div class="xs muted">${L(MK[r[0]])}</div></div>
+      <div>${sparkSvg(series(r[4], r[4] * 0.012, r[4] + i * 7, 14), 64, 26, r[5] >= 0 ? '#2e8b57' : '#c0392b', false, '', 'spark')}</div>
+      <div style="text-align:right"><div class="b">${inr(r[4])}<span class="xs muted" style="font-weight:500">${t(r[6] || 'r_kg')}</span></div><div class="xs" style="white-space:nowrap">${chg(r[5])} <span class="muted">· ${r[2]}–${r[3]}</span></div></div>
+    </div>`).join('')}
+  </div>
+  ${c === 'areca' ? `<div class="card row between"><div class="row"><div class="ricon">${ic('bell', 18)}</div><div><div class="b small">${t('alert_title')}</div><div class="xs muted">${t('alert_body')}</div></div></div><button class="toggle ${state.alertOn ? 'on' : ''}" onclick="toggleAlert()" aria-label="toggle"></button></div>` : ''}
+  <div class="xs muted" style="line-height:1.5;padding:0 4px">${t('sources')}</div>`;
+}
+
+function Calendar() {
+  const m = state.calMonth;
+  const tasks = CAL[m];
+  return `
+  <div class="chips scroll" style="margin-bottom:14px">${MON[state.lang].map((n, i) => `<span class="chip ${m === i ? 'sel' : ''}" onclick="setMonth(${i})">${n}${i === 9 ? ' •' : ''}</span>`).join('')}</div>
+  ${m === 9 ? `<div class="xs mono" style="color:var(--accent);font-weight:600;margin:0 2px 8px">${t('this_month').toUpperCase()}</div>` : ''}
+  ${CROPS.map(c => `
+    <div class="card cal-crop"><span class="bar" style="background:${CROPC[c]}"></span>
+      <div class="grow"><div class="b small" style="margin-bottom:4px">${t(c)}</div><div style="font-size:13px;line-height:1.5">${L(tasks[c])}</div></div>
+    </div>`).join('')}
+  ${m === 9 ? `<div class="sec"><h3>${t('your_rem')}</h3></div><div class="card">${REM.map(remRow).join('')}</div>` : ''}`;
+}
+
+function Reports() {
+  const inc = REPORT.income.reduce((s, x) => s + x[1], 0);
+  const exp = REPORT.expense.reduce((s, x) => s + x[1], 0);
+  const profit = inc - exp;
+  const expOf = k => REPORT.expense.find(x => x[0] === k)[1];
+  const labourShare = Math.round((expOf('e_labour') + expOf('e_peeling')) / exp * 100);
+  const growth = ((profit - REPORT.lastProfit) / REPORT.lastProfit * 100).toFixed(1);
+  const maxI = Math.max(...REPORT.income.map(x => x[1]));
+  const maxE = Math.max(...REPORT.expense.map(x => x[1]));
+  return `
+  <div class="chips" style="margin-bottom:12px"><span class="chip sel">${t('season')} 2025–26</span><span class="chip">2024–25</span><span class="chip">2023–24</span></div>
+  <div class="grid3">
+    <div class="kpi"><div class="l">${t('income')}</div><div class="v">${lakh(inc)}</div></div>
+    <div class="kpi"><div class="l">${t('expenses')}</div><div class="v">${lakh(exp)}</div></div>
+    <div class="kpi" style="border-color:rgba(46,139,87,.35);background:#f4faf6"><div class="l">${t('profit')}</div><div class="v up">${lakh(profit)}</div></div>
+  </div>
+  <div class="xs muted" style="margin:8px 4px 0"><span class="up b">▲ ${growth}%</span> ${t('vs_last')}</div>
+  <div class="sec"><h3>${t('income_by_crop')}</h3></div>
+  <div class="card">${REPORT.income.map(([c, v]) => `<div class="hbar"><div class="row between small"><span class="row" style="gap:6px">${cropDot(c)}${t(c)}</span><b>${money(v)}</b></div><div class="track"><i style="width:${v / maxI * 100}%;background:${CROPC[c]}"></i></div></div>`).join('')}</div>
+  <div class="sec"><h3>${t('where_money')}</h3></div>
+  <div class="card">${REPORT.expense.map(([k, v]) => `<div class="hbar"><div class="row between small"><span>${t(k)}</span><b>${money(v)}</b></div><div class="track"><i style="width:${v / maxE * 100}%;background:var(--gradient-accent)"></i></div></div>`).join('')}</div>
+  <div class="sec"><h3>${t('key_numbers')}</h3></div>
+  <div class="card">
+    ${kv(t('k_chali'), `${num(REPORT.chaliKg)} ${t('u_kg')}`)}
+    ${kv(t('k_per_palm'), `${(REPORT.chaliKg / REPORT.bearingPalms).toFixed(2)} ${t('u_kg')}`)}
+    ${kv(t('k_cost_chali'), `₹${Math.round(REPORT.arecaCost / REPORT.chaliKg)}`)}
+    ${kv(t('k_avg_rate'), `₹${Math.round(REPORT.income[0][1] / REPORT.chaliKg)}${t('r_kg')}`)}
+    ${kv(t('k_labour_share'), `${labourShare}%`)}
+    ${kv(t('k_profit_acre'), lakh(profit / REPORT.acres))}
+  </div>
+  <div class="btn-row">
+    <button class="btn ghost sm" onclick="proto()">${ic('download', 14)} PDF</button>
+    <button class="btn ghost sm" onclick="proto()">${ic('download', 14)} Excel</button>
+    <button class="btn primary sm" onclick="proto()">${ic('msg', 14)} ${t('wa')}</button>
+  </div>
+  <div class="disclaimer">${t('sample')}</div>`;
+}
+
+function Sales() {
+  const sales = allSales();
+  const total = sales.reduce((s, x) => s + saleTotal(x), 0);
+  const pending = sales.reduce((s, x) => s + saleTotal(x) - x.received, 0);
+  return `
+  <div class="grid2">
+    <div class="kpi"><div class="l">${t('all_sales')}</div><div class="v">${lakh(total)}</div></div>
+    <div class="kpi" style="border-color:rgba(232,113,42,.4);background:#fffaf6"><div class="l">${t('to_receive')}</div><div class="v" style="color:var(--accent-hover)">${inr(pending)}</div></div>
+  </div>
+  <div class="sec"><h3>${t('all_sales')}</h3></div>
+  <div class="card">${sales.map(s => {
+    const tot = saleTotal(s), pend = tot - s.received;
+    const qty = s.lines.reduce((x, l) => x + l[1], 0);
+    return `<div class="lrow tap" onclick="goLot('${s.lot}')">
+      <div class="ricon" style="color:${CROPC[s.crop]}">${ic('tag', 16)}</div>
+      <div class="grow"><div class="b" style="font-size:13px">${L(BUYERS[s.buyer])}</div><div class="xs muted">${fmt(s.date)} · ${t(s.crop)} · ${num(qty)} ${t(s.lines[0][2])}</div></div>
+      <div style="text-align:right"><div class="b">${money(tot)}</div>${pend > 0 ? `<span class="pill warn" style="margin-top:3px">${t('f_pending')} ${inr(pend)}</span>` : `<div class="xs up b">${t('fully_paid')}</div>`}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function Plots() {
+  return PLOTS.map(p => {
+    const last = allActs().filter(a => a.plots.includes(p.id)).sort((a, b) => b.date.localeCompare(a.date))[0];
+    const crop = (c, count, unit, extra) => count ? `<div class="kv"><span class="row" style="gap:6px">${cropDot(c)}${t(c)}</span><span>${num(count)} ${t(unit)}${extra ? ` <span class="xs muted" style="font-weight:500">· ${extra}</span>` : ''}</span></div>` : '';
+    return `<div class="card">
+      <div class="row between"><div class="mid">${L(p.name)}</div><span class="chip static">${p.acres} ${t('acres')}</span></div>
+      <div style="margin-top:8px">
+        ${crop('areca', p.areca, 'palms', `${p.arecaAge} ${t('yrs')}${p.young ? ' · ' + t('not_bearing') : ''}`)}
+        ${crop('coconut', p.coconut, 'trees')}
+        ${crop('pepper', p.pepper, 'vines', p.pepperVar)}
+        ${crop('banana', p.banana, 'clumps', p.bananaVar)}
+        ${kv(t('soil'), L(p.soil))}
+        ${kv(t('irrigation'), L(p.irr))}
+        ${last ? kv(t('last_work'), `${fmtShort(last.date)} · ${t('a_' + last.type)}`) : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function Stock() {
+  return `
+  <div class="card">${STOCK.map(s => {
+    const low = s.qty < s.min;
+    return `<div class="lrow" style="display:block">
+      <div class="row between"><span class="b">${L(s.name)}</span><span class="row" style="gap:6px">${low ? `<span class="pill warn">${t('low')}</span>` : ''}<b>${s.qty} ${t(s.unit)}</b></span></div>
+      <div class="track" style="height:8px;border-radius:99px;background:var(--bg-subtle);border:1px solid var(--border);overflow:hidden;margin:8px 0 4px;position:relative">
+        <i style="display:block;height:100%;width:${Math.min(100, s.qty / s.max * 100)}%;background:${low ? '#d98a00' : CROPC.areca};border-radius:99px"></i>
+      </div>
+      <div class="xs muted">${t('min_level')} ${s.min} ${t(s.unit)} · ₹${s.price}/${t(s.unit)}</div>
+    </div>`;
+  }).join('')}</div>
+  <button class="btn primary block" onclick="proto()">${ic('plus', 16, 2.4)} ${t('purchase')}</button>`;
+}
+
+function More() {
+  const row = (i, label, right, onclick) => `<div class="lrow ${onclick ? 'tap' : ''}" ${onclick ? `onclick="${onclick}"` : ''}><div class="ricon">${ic(i, 16)}</div><div class="grow b" style="font-size:13.5px">${label}</div>${right}</div>`;
+  return `
+  <div class="card">
+    ${row('globe', t('m_language'), `<div class="seg" style="margin:0;width:130px"><button class="${state.lang === 'en' ? 'on' : ''}" style="padding:5px" onclick="setLang('en')">EN</button><button class="${state.lang === 'kn' ? 'on' : ''}" style="padding:5px;font-family:var(--font-kn)" onclick="setLang('kn')">ಕನ್ನಡ</button></div>`)}
+    ${row('sliders', t('m_units'), '<span class="small muted">kg · ₹</span>')}
+    ${row('calendar', t('m_season'), `<span class="small muted">${MON[state.lang][5]}</span>`)}
+    ${row('lock', t('m_lock'), `<button class="toggle ${state.lockOn ? 'on' : ''}" onclick="state.lockOn=!state.lockOn;render()" aria-label="toggle"></button>`)}
+  </div>
+  <div class="card">
+    ${row('cloud', t('m_backup'), state.online ? `<span class="small up b">${t('m_backup_v')}</span>` : `<span class="xs muted" style="text-align:right;max-width:140px">${t('backup_wait')}</span>`)}
+    ${row('download', t('m_export'), `<span class="muted">${ic('chev', 16)}</span>`, 'proto()')}
+  </div>
+  <div class="card">
+    ${row('landmark', t('m_loans'), `<span class="muted">${ic('chev', 16)}</span>`, "go('loans')")}
+    ${row('umbrella', t('m_ins'), `<span class="muted">${ic('chev', 16)}</span>`, "go('insurance')")}
+    ${row('droplet', t('m_rain'), `<span class="chip static">${t('later')}</span>`)}
+  </div>`;
+}
+
+const landOf = id => LAND.find(p => p.id === id);
+const landLabel = p => `${t('survey')} ${p.sy}`;
+const extent = p => `${p.a} ${t('acres')} ${p.g} ${t('guntas')}`;
+const loanKind = l => t('k_' + l.kind);
+const loanRate = l => (l.kind === 'kcc' ? t('kcc_rate') : `${l.rate}% ${t('p_a')}`);
+
+function Loans() {
+  const tot = loanTotals();
+  const nextDays = daysBetween(TODAY, tot.next.date);
+  return `
+  <div class="total-bar">
+    <div><div class="xs" style="opacity:.7">${t('total_owed')}</div><div class="big" style="color:#fff">${lakh(tot.principal + tot.interest)}</div>
+      <div class="xs" style="opacity:.7;margin-top:2px">${t('principal')} ${inr(tot.principal)} · ${t('interest')} ${inr(tot.interest)}</div></div>
+    ${ic('landmark', 28)}
+  </div>
+  <div class="card row between tap" style="border-color:rgba(232,113,42,.4);background:#fffaf6" onclick="goLoan('${tot.next.l.id}')">
+    <div class="row"><div class="ricon" style="background:var(--accent-soft);color:var(--accent);border-color:rgba(232,113,42,.3)">${ic('bell', 18)}</div>
+      <div><div class="xs muted">${t('next_due')} · ${t('in_days', nextDays)}</div><div class="b">${L(tot.next.l.lender)}</div><div class="xs muted">${fmt(tot.next.date)}</div></div></div>
+    <div class="mid">${inr(tot.next.amount)}</div>
+  </div>
+
+  <div class="sec"><h3>${t('loans_h')}</h3></div>
+  ${LOANS.map(l => {
+    const c = loanCalc(l);
+    return `<div class="card tap" onclick="goLoan('${l.id}')">
+      <div class="row between" style="align-items:flex-start">
+        <div class="row" style="align-items:flex-start"><div class="ricon">${ic(l.kind === 'gold' ? 'wallet' : 'landmark', 17)}</div>
+          <div><div class="b">${loanKind(l)}</div><div class="xs muted">${L(l.lender)}</div></div></div>
+        <div style="text-align:right"><div class="b">${money(c.principal + c.interest)}</div><div class="xs muted">${t('outstanding')}</div></div>
+      </div>
+      ${l.kind === 'term' ? `<div class="progress" style="margin-top:12px"><i style="width:${c.paid.length / l.tenure * 100}%"></i></div>
+        <div class="row between xs muted" style="margin-top:6px"><span>${t('emis_paid', c.paid.length, l.tenure)}</span><span>${t('emi')} ${inr(c.emi)}</span></div>`
+      : `<div class="row between xs muted" style="margin-top:10px"><span>${loanRate(l)}</span><span>${t('next_due')}: ${fmtShort(c.next.date)}</span></div>`}
+    </div>`;
+  }).join('')}
+  <div class="xs muted" style="margin:-4px 4px 0">${t('int_season')}: <b>${inr(tot.seasonInt)}</b> · ${t('to_reports')}</div>
+
+  <div class="sec"><h3>${t('land_h')}</h3></div>
+  <div class="card">${LAND.map(p => {
+    const secured = LOANS.filter(l => l.security === p.id);
+    return `<div class="lrow">
+      <div class="ricon">${ic('map', 16)}</div>
+      <div class="grow"><div class="b">${landLabel(p)} · ${L(p.village)}</div><div class="xs muted">${extent(p)} · ${plotNames(p.plots)}</div>
+        <div class="xs" style="margin-top:3px;${secured.length ? 'color:var(--accent-hover);font-weight:600' : ''}">${secured.length ? `${t('pledged_for')}: ${secured.map(loanKind).join(', ')}` : t('free_land')}</div></div>
+      <span class="pill storage">${ic('file', 11, 2.2)} RTC</span>
+    </div>`;
+  }).join('')}</div>
+
+  <div class="sec"><h3>${t('member_h')}</h3></div>
+  <div class="card">
+    <div class="row between"><div class="row"><div class="ricon">${ic('users', 16)}</div><div><div class="b">CAMPCO</div><div class="xs muted">${t('member_no')} M-48213</div></div></div>
+      <div style="text-align:right"><div class="b">${inr(10000)}</div><div class="xs muted">${t('shares')}</div></div></div>
+    <div class="kv" style="margin-top:8px"><span>${t('dividend')}</span><span class="up">${inr(1200)}</span></div>
+  </div>
+  <button class="btn primary block" style="margin-top:14px" onclick="proto()">${ic('plus', 16, 2.4)} ${t('add_loan')}</button>
+  <div class="disclaimer">${t('sample')}</div>`;
+}
+
+function LoanDetail() {
+  const l = LOANS.find(x => x.id === state.params.id) || LOANS[0];
+  const c = loanCalc(l);
+  const land = l.security ? landOf(l.security) : null;
+  let txns;
+  if (l.kind === 'term') {
+    txns = c.paid.slice(-6).reverse().map(r => ({ d: r.d, label: `${t('t_emi')} · #${r.k}`, sub: `${t('principal')} ${inr(r.prin)} · ${t('interest')} ${inr(r.int)}`, amt: -r.emi }));
+    txns.push({ d: l.start, label: t('t_disbursed'), sub: '', amt: l.amount });
+  } else if (l.kind === 'kcc') {
+    txns = [...l.txns].reverse().map(x => ({ d: x.d, label: t(x.k), sub: '', amt: x.k === 't_withdrawal' ? x.amt : -x.amt }));
+  } else {
+    txns = [{ d: l.start, label: t('t_disbursed'), sub: '', amt: l.amount }];
+  }
+  return `
+  <div class="card">
+    <div class="row"><div class="ricon">${ic(l.kind === 'gold' ? 'wallet' : 'landmark', 18)}</div><div class="grow"><div class="b">${L(l.lender)}</div><div class="xs muted">${loanKind(l)}</div></div></div>
+    <div style="margin-top:8px">
+      ${kv(l.kind === 'kcc' ? t('limit') : t('sanctioned'), `${inr(l.kind === 'kcc' ? l.limit : l.amount)} · ${fmt(l.start)}`)}
+      ${kv(t('rate'), loanRate(l))}
+      ${l.kind === 'term' ? kv(t('tenure'), `${t('months', l.tenure)} · ${t('emi')} ${inr(c.emi)}`) : kv(t('renewal'), fmt(l.due))}
+      ${kv(t('security'), land ? `${landLabel(land)} · ${extent(land)}` : t('gold_security'))}
+    </div>
+  </div>
+  <div class="grid3">
+    <div class="kpi"><div class="l">${t('principal')}</div><div class="v">${money(c.principal)}</div></div>
+    <div class="kpi"><div class="l">${t('accrued')}</div><div class="v">${inr(c.interest)}</div></div>
+    <div class="kpi" style="border-color:rgba(232,113,42,.4);background:#fffaf6"><div class="l">${t('to_close')}</div><div class="v" style="color:var(--accent-hover)">${money(c.principal + c.interest)}</div></div>
+  </div>
+  ${l.kind === 'term' ? `<div class="card" style="margin-top:12px">
+      <div class="row between small" style="margin-bottom:6px"><b>${t('emis_paid', c.paid.length, l.tenure)}</b><span class="muted">${Math.round(c.paid.length / l.tenure * 100)}%</span></div>
+      <div class="progress"><i style="width:${c.paid.length / l.tenure * 100}%"></i></div>
+      <div class="row between xs muted" style="margin-top:8px"><span>${t('next_due')}: ${fmt(c.next.date)}</span><b style="color:var(--text-primary)">${inr(c.emi)}</b></div>
+    </div>` : ''}
+  ${l.kind === 'kcc' ? `<div class="alert" style="margin:12px 0 0"><div class="a-ic">${ic('bell', 16)}</div><div class="small">${t('on_time_tip')}</div></div>` : ''}
+  <div class="sec"><h3>${t('txns')}</h3></div>
+  <div class="card">${txns.map(x => `
+    <div class="lrow">
+      <div class="ricon" style="${x.amt < 0 ? 'background:#eaf4ee;color:#23704a;border-color:#cfe6d8' : ''}">${ic(x.amt < 0 ? 'check' : 'download', 15)}</div>
+      <div class="grow"><div class="b" style="font-size:13px">${x.label}</div><div class="xs muted">${fmt(x.d)}${x.sub ? ` · ${x.sub}` : ''}</div></div>
+      <span class="b ${x.amt < 0 ? 'up' : ''}">${x.amt < 0 ? '− ' : '+ '}${inr(Math.abs(x.amt))}</span>
+    </div>`).join('')}
+  </div>
+  <div class="btn-row">
+    ${l.kind === 'kcc' ? `<button class="btn ghost" onclick="proto()">${t('btn_withdraw')}</button>` : ''}
+    <button class="btn primary" onclick="proto()">${ic('check', 16, 2.4)} ${t('btn_repay')}</button>
+  </div>
+  <div class="disclaimer">${t('sample')}</div>`;
+}
+
+function Insurance() {
+  const policies = [
+    { crop: 'areca', area: 2.7, premium: 3780, no: 'KA-26-118402', plots: ['P1', 'P2'] },
+    { crop: 'pepper', area: 2.7, premium: 820, no: 'KA-26-118403', plots: ['P1', 'P2'] },
+  ];
+  const schemes = [
+    { k: 's_drip', dept: 'dept_hort', applied: '2026-02-10', status: 'st_approved', amt: 38000, warn: true },
+    { k: 's_cutter', dept: 'dept_agri', applied: '2025-09-02', status: 'st_received', amt: 6000, on: '2025-11-12' },
+  ];
+  const docs = [['RTC · Sy. No. 112/2', 'ಆರ್‌ಟಿಸಿ · ಸರ್ವೆ ನಂ. 112/2'], ['RTC · Sy. No. 87/1B', 'ಆರ್‌ಟಿಸಿ · ಸರ್ವೆ ನಂ. 87/1B'], ['KCC passbook', 'ಕೆಸಿಸಿ ಪಾಸ್‌ಬುಕ್'],
+    ['Canara loan sanction letter', 'ಕೆನರಾ ಸಾಲ ಮಂಜೂರಾತಿ ಪತ್ರ'], ['Crop insurance 2026–27', 'ಬೆಳೆ ವಿಮೆ 2026–27'], ['Drip subsidy approval', 'ಹನಿ ನೀರಾವರಿ ಮಂಜೂರಾತಿ']];
+  return `
+  <div class="sec" style="margin-top:4px"><h3>${t('policies')}</h3><span class="xs muted">${t('season')} 2026–27</span></div>
+  ${policies.map(p => `<div class="card">
+    <div class="row between"><div class="row" style="gap:8px">${cropDot(p.crop)}<span class="b">${t(p.crop)}</span></div><span class="pill storage">${ic('check', 11, 2.6)} ${t('active')}</span></div>
+    <div class="xs muted" style="margin:2px 0 6px">${t('wbci')}</div>
+    ${kv(t('area'), `${p.area} ${t('acres')} · ${plotNames(p.plots)}`)}
+    ${kv(t('premium'), inr(p.premium))}
+    ${kv(t('policy_no'), `<span class="mono">${p.no}</span>`)}
+  </div>`).join('')}
+  <div class="alert" style="margin-top:0"><div class="a-ic">${ic('calendar', 16)}</div><div class="grow"><div class="b small">${t('enrol_title')}</div><div class="xs muted" style="margin-top:2px">${t('enrol_body')}</div>
+    <div class="xs b" style="margin-top:6px;color:var(--accent-hover)">${ic('bell', 12)} ${t('rem_set_for', fmt('2027-06-01'))}</div></div></div>
+
+  <div class="sec"><h3>${t('claims')}</h3></div>
+  <div class="card"><div class="lrow">
+    <div class="ricon" style="color:#3b77b8">${ic('rain', 16)}</div>
+    <div class="grow"><div class="b" style="font-size:13px">${t('claim_rain')}</div><div class="xs muted">${t('received_on', fmt('2026-03-18'))}</div></div>
+    <span class="b up">+ ${inr(14200)}</span>
+  </div></div>
+
+  <div class="sec"><h3>${t('schemes')}</h3></div>
+  <div class="card">${schemes.map(s => `<div class="lrow">
+    <div class="ricon">${ic('sprout', 16)}</div>
+    <div class="grow"><div class="b" style="font-size:13px">${t(s.k)}</div><div class="xs muted">${t(s.dept)} · ${t('applied_on', fmtShort(s.applied))}</div>
+      <span class="pill ${s.warn ? 'warn' : 'storage'}" style="margin-top:5px">${t(s.status)}${s.on ? ` · ${fmtShort(s.on)}` : ''}</span></div>
+    <span class="b">${inr(s.amt)}</span>
+  </div>`).join('')}</div>
+
+  <div class="sec"><h3>${t('docs')}</h3><span class="xs muted">${docs.length}</span></div>
+  <div class="grid2">${docs.map(d => `<div class="doc"><span class="ricon">${ic('file', 15)}</span>${L(d)}</div>`).join('')}</div>
+  <div class="xs muted" style="margin:8px 4px 12px">${ic('lock', 11)} ${t('docs_note')}</div>
+  <button class="btn primary block" onclick="proto()">${ic('camera', 16)} ${t('add_doc')}</button>
+  <div class="disclaimer">${t('sample')}</div>`;
+}
+
+/* =====================================================================
+   Screen registry, notes, navigation
+   ===================================================================== */
+const SCREENS = {
+  home: { tab: 'home', body: Home, bar: () => ({ sub: t('farm_sub'), title: t('namaskara'), actions: `<button class="icon-btn" onclick="go('calendar')">${ic('bell', 18)}</button>` }) },
+  lots: { tab: 'lots', body: Lots, fab: 'proto()', bar: () => ({ sub: t('lots_sub'), title: t('lots_title') }) },
+  lot: { tab: 'lots', parent: 'lots', body: LotDetail, bar: () => { const l = LOTS.find(x => x.id === state.params.id) || LOTS[0]; return { sub: `<span class="mono">${l.id}</span>`, title: L(l.title) }; } },
+  diary: { tab: 'diary', body: Diary, fab: 'openAdd()', bar: () => ({ sub: t('diary_sub'), title: t('diary_title') }) },
+  addActivity: { tab: 'diary', parent: 'diary', hideNav: true, body: AddActivity, bar: () => ({ sub: t('add_sub'), title: t('add_title') }) },
+  labour: { tab: 'labour', body: Labour, fab: 'proto()', bar: () => ({ sub: t('labour_sub'), title: t('labour_title') }) },
+  worker: { tab: 'labour', parent: 'labour', body: Worker, bar: () => ({ sub: t(worker(state.params.id)?.role || 'r_daily'), title: L((worker(state.params.id) || WORKERS[2]).name) }) },
+  prices: { tab: 'prices', body: Prices, bar: () => ({ sub: t('prices_sub'), title: t('prices_title'), actions: `<button class="icon-btn" onclick="toggleAlert()">${ic('bell', 18)}</button>` }) },
+  calendar: { tab: 'home', parent: 'home', body: Calendar, bar: () => ({ sub: t('cal_sub'), title: t('calendar') }) },
+  reports: { tab: 'home', parent: 'home', body: Reports, bar: () => ({ sub: t('rep_sub'), title: t('rep_title') }) },
+  sales: { tab: 'home', parent: 'home', body: Sales, fab: 'proto()', bar: () => ({ sub: t('sales_sub'), title: t('sales') }) },
+  plots: { tab: 'home', parent: 'home', body: Plots, bar: () => ({ sub: t('plots_sub'), title: t('plots') }) },
+  stock: { tab: 'home', parent: 'home', body: Stock, bar: () => ({ sub: t('stock_sub'), title: t('stock') }) },
+  more: { tab: 'home', parent: 'home', body: More, bar: () => ({ sub: t('more_sub'), title: t('settings') }) },
+  loans: { tab: 'home', parent: 'home', body: Loans, bar: () => ({ sub: t('loans_sub'), title: t('loans') }) },
+  loan: { tab: 'home', parent: 'loans', body: LoanDetail, bar: () => { const l = LOANS.find(x => x.id === state.params.id) || LOANS[0]; return { sub: loanKind(l), title: L(l.short) }; } },
+  insurance: { tab: 'home', parent: 'home', body: Insurance, bar: () => ({ sub: t('ins_sub'), title: t('insurance') }) },
+};
+
+const NAV = [
+  { g: 'Main tabs', items: [['home', 'Home'], ['lots', 'Harvest lots'], ['diary', 'Farm diary'], ['labour', 'Labour'], ['prices', 'Daily prices']] },
+  { g: 'Details & forms', items: [['lot', 'Lot · drying now', 'A-2627-01'], ['lot', 'Lot · chali in storage', 'A-2526-03'], ['lot', 'Lot · sold to CAMPCO', 'A-2526-02'], ['lot', 'Lot · pepper', 'P-2526-01'], ['addActivity', 'Add activity'], ['worker', 'Worker ledger', 'W3'], ['loan', 'Loan · term loan EMIs', 'L2'], ['loan', 'Loan · KCC crop loan', 'L1']] },
+  { g: 'More', items: [['loans', 'Land & loans'], ['insurance', 'Insurance & schemes'], ['calendar', 'Crop calendar'], ['reports', 'Season report'], ['sales', 'Sales & buyers'], ['plots', 'Plots'], ['stock', 'Stock'], ['more', 'Settings']] },
+];
+
+const NOTES = {
+  home: { title: 'Home', p: 'The morning view: what needs attention today, without opening five screens.', li: [
+    ['Weather with an hourly rain bar and a <b>rain alert tied to the drying lot</b>. Tap "Mark as covered" and it is logged on the lot.', 'F8.1 F8.2'],
+    ['Quick actions for the four most common entries.', 'F2.2'],
+    ["Today's prices strip for all four crops. Tap one to open that crop's price page.", 'F7.1'],
+    ['Drying progress with an automatic day counter, and stored stock valued at today\'s price.', 'F4.4 F4.7 F7.4'],
+    ['Reminders (fertiliser due, turn the nuts, low stock, irrigation, booking labour).', 'F8.3'],
+    ['Money snapshot: owed to workers, to receive from buyers, spent this month, next loan due.', 'F6.4 F11.4'],
+    ['Try <b>Simulate offline</b> at the top: prices show their "as of" time, the forecast and rain alert stay, backup waits, and everything else keeps working.', 'F10.1 F7.6']] },
+  loans: { title: 'Land & loans', p: 'Every loan and every piece of land in one place, with the interest worked out to today.', li: [
+    ['Total owed today = principal + interest accrued till today, across all lenders.', 'F11.3 F11.5'],
+    ['Next due payment on top, with a reminder (Canara EMI on 15 Nov).', 'F11.4'],
+    ['Loan cards: KCC crop loan at the society, pumpset term loan with EMIs paid, gold loan.', 'F11.2'],
+    ['Interest paid this season flows into the season report as an expense.', 'F11.5 F9.1'],
+    ['Land parcels with survey number, extent in acres + guntas, which plots lie on them, the RTC photo, and which loan they secure.', 'F11.1'],
+    ['CAMPCO membership: shares and dividend.', 'F11.6']] },
+  loan: { title: 'Loan detail', p: 'One loan, fully worked out by the app.', li: [
+    ['Sanction, rate, tenure / renewal date, and the land given as security.', 'F11.2'],
+    ['Principal left, interest till today, amount to close today.', 'F11.3'],
+    ['Term loan: EMIs paid out of total, each EMI split into principal and interest.', 'F11.3'],
+    ['KCC: withdrawals and repayments; reminder to repay on time to keep the 0% rate.', 'F11.4'],
+    ['Record a repayment or withdrawal (works offline).', 'F11.3 F10.1']] },
+  insurance: { title: 'Insurance & schemes', p: 'Policies, claims, subsidies and the important papers.', li: [
+    ['Crop insurance policies for areca and pepper: area, premium, application number.', 'F12.1'],
+    ['Reminder before next year\'s enrolment window.', 'F12.2'],
+    ['Claims and payouts received.', 'F12.3'],
+    ['Subsidy applications (drip, brush cutter) with status and amount.', 'F12.4'],
+    ['Document vault: RTCs, KCC passbook, loan letters, policy receipts; scan with the camera.', 'F12.5']] },
+  lots: { title: 'Harvest lots', p: 'Every harvest round becomes a lot that is followed until the last kg is sold.', li: [
+    ['Filter by crop. Each card shows the current stage and the most useful number for that stage.', 'F4.1'],
+    ['Drying lots show "Day X of ~40"; stored lots show days in store and value today; sold lots show the sale amount.', 'F4.4 F4.7 F4.8'],
+    ['The + button will open the "new harvest" form.', 'F4.3']] },
+  lot_drying: { title: 'Lot: drying now', p: "The chali journey for a lot that is still on the yard.", li: [
+    ['Timeline: Harvest → Drying → Peeling → Grading → Storage → Sale. Finished stages turn orange.', 'F4.2'],
+    ['Harvest: palms climbed, fresh nut weight, and each climber / collector with rate and amount.', 'F4.3'],
+    ['Drying: start date, automatic day counter, expected finish, yard, number of rain covers.', 'F4.4'],
+    ['Top summary: cost so far, estimated chali and its value at today\'s new chali price.', 'F7.4']] },
+  lot_storage: { title: 'Lot: chali in storage', p: 'A finished lot sitting in the attic. This answers "how long have I kept it and should I sell?"', li: [
+    ['Days on the yard (42), peeling done by Lakshmi and Sujatha at ₹7/kg, out-turn 62.2%.', 'F4.4 F4.5'],
+    ['Grading split: chali, patora, ulli gadde, karigotu.', 'F4.6'],
+    ['Storage: since when, days in storage, place and bags, price when stored vs today (+8.1%).', 'F4.7'],
+    ['Buttons to log a moisture / pest check or record the sale.', 'F4.7 F6.1']] },
+  lot_sold: { title: 'Lot: sold', p: 'A complete lot: harvest to CAMPCO sale, with the true cost per kg.', li: [
+    ['Sale lines by grade with rate and amount; payment received or pending.', 'F6.1 F6.2'],
+    ['Cost per kg of chali for this lot (harvest + peeling labour).', 'F9.3'],
+    ['Share the sale slip on WhatsApp.', 'F9.5']] },
+  lot_pepper: { title: 'Lot: pepper', p: 'Pepper has a shorter journey: harvest → drying → storage → sale.', li: [
+    ['Green berries in, dry pepper out, with dry-weight %.', 'F4.9'],
+    ['Partial sale: 60 kg already sold, 44 kg still in store.', 'F4.12'],
+    ['Coconut and banana lots work the same way with their own steps.', 'F4.10 F4.11']] },
+  diary: { title: 'Farm diary', p: 'The old notebook, but searchable and with the money worked out.', li: [
+    ['One card per job: type, plot, days, products used, workers, crops.', 'F2.1'],
+    ['Cost per entry is split into labour and inputs automatically.', 'F2.3 F2.4'],
+    ['"Next round" reminder shown on entries that have one.', 'F2.6'],
+    ['Harvest entries open their lot. Filter by crop at the top.', 'F2.7']] },
+  addActivity: { title: 'Add activity', p: 'Designed for one-hand use in the garden: tap chips, no typing.', li: [
+    ['Work type, crops, plots as chips. The products list fills in for the work type (e.g. urea, rock phosphate, MOP for fertiliser).', 'F2.2 F2.3'],
+    ['Pick workers and days. The estimated cost updates as you tap.', 'F2.4'],
+    ['Kannada voice note and photo.', 'F2.5'],
+    ['Reminder for the next round (40 days for Bordeaux, 180 for the next fertiliser split).', 'F2.6'],
+    ['Try it: Save adds the entry to the diary.', '']] },
+  labour: { title: 'Labour', p: 'Three tabs: the worker list, today\'s attendance, and dues.', li: [
+    ['Each worker has a role and one or more wage types: per palm, per day, per kg, per tree.', 'F3.1 F3.2'],
+    ['Attendance: present / half / absent with today\'s work; wages total live.', 'F3.3'],
+    ['Dues: who is owed what; pay in one tap.', 'F3.5']] },
+  worker: { title: 'Worker ledger', p: 'A khata for each worker.', li: [
+    ['Earned, paid + advance, balance due.', 'F3.4'],
+    ['Every work entry (from the diary or a lot) and every payment / advance with cash or UPI.', 'F3.4'],
+    ['Send the statement on WhatsApp in Kannada.', 'F3.6']] },
+  prices: { title: 'Daily prices', p: 'All four crops, several markets, and what it means for your own stock.', li: [
+    ['Crop tabs; headline price with a 30-day trend.', 'F7.1 F7.2'],
+    ['Market list: average, min–max, daily change, mini trend.', 'F7.1'],
+    ['"Your stock at today\'s price": 940 kg old chali → value.', 'F7.4'],
+    ['Price alert toggle (old chali ≥ ₹500).', 'F7.3'],
+    ['Real data: Agmarknet (data.gov.in) + Spices Board + CAMPCO rate (manual if needed).', 'F7.5']] },
+  calendar: { title: 'Crop calendar', p: 'ಕೃಷಿ ಪಂಚಾಂಗ: what to do each month for all four crops, plus your own reminders.', li: [
+    ['Month chips; current month is marked.', 'F8.4'],
+    ['Arecanut, coconut, pepper and banana tasks for that month.', 'F8.4'],
+    ['Your reminders listed under the current month.', 'F8.3']] },
+  reports: { title: 'Season report', p: 'Profit and loss for June–May, and the numbers that matter for an areca garden.', li: [
+    ['Income, expenses, profit, and change vs last season.', 'F9.1 F9.4'],
+    ['Income by crop; where the money went.', 'F9.2'],
+    ['Cost per kg chali, chali per palm, average rate, labour share, profit per acre.', 'F9.3'],
+    ['Export PDF / Excel, share on WhatsApp.', 'F9.5']] },
+  sales: { title: 'Sales & buyers', p: 'Every sale, who bought it, and what is still to come.', li: [
+    ['Sales list linked to lots.', 'F6.1'],
+    ['Pending money highlighted per buyer (Haneef still owes ₹8,320).', 'F6.2']] },
+  plots: { title: 'Plots', p: 'The garden, plot by plot.', li: [
+    ['Area, soil, irrigation.', 'F1.2'],
+    ['Areca palms (age, bearing or not), coconut trees, pepper vines (variety), banana plants.', 'F1.3'],
+    ['Last work done on the plot.', 'F2.7']] },
+  stock: { title: 'Stock', p: 'Fertilisers, chemicals and fuel; auto-reduced when you log work.', li: [
+    ['Quantity bars with a minimum level; low items flagged.', 'F5.1 F5.3'],
+    ['Purchase entry with bill photo.', 'F5.2']] },
+  more: { title: 'Settings', p: 'Language, units, season, security, backup.', li: [
+    ['Kannada / English switch inside the app too.', 'F10.2'],
+    ['Units, season start month.', 'F10.7 F1.4'],
+    ['App lock, cloud backup, full Excel export.', 'F10.4 F10.5'],
+    ['Land & loans and crop insurance & schemes (screens to be designed next).', 'F11 F12'],
+    ['Planned: rain gauge log.', 'F8.5']] },
+};
+
+function notesKey() {
+  if (state.screen !== 'lot') return state.screen;
+  const l = LOTS.find(x => x.id === state.params.id) || LOTS[0];
+  if (l.crop === 'pepper') return 'lot_pepper';
+  return l.stage === 'drying' ? 'lot_drying' : l.stage === 'storage' ? 'lot_storage' : 'lot_sold';
+}
+
+function renderNotes() {
+  const n = NOTES[notesKey()];
+  document.getElementById('notes').innerHTML = `
+  <div class="note-card">
+    <div class="tag">Screen</div>
+    <h2>${n.title}</h2>
+    <p>${n.p}</p>
+    <ul>${n.li.map(([txt, ids]) => `<li>${txt}${ids ? ids.split(' ').map(i => `<span class="fid">${i}</span>`).join('') : ''}</li>`).join('')}</ul>
+    <div class="note-tip"><b>Want changes?</b> Tell me the feature ID (e.g. "F4.4: also log who turned the nuts") or the screen name, and what to add, remove or change.</div>
+  </div>`;
+}
+
+function renderScreenNav() {
+  document.getElementById('screenNav').innerHTML = NAV.map((g, gi) => `
+    <div class="nav-group"><h4>${g.g}</h4><div class="items">
+      ${g.items.map(([s, label, id], ii) => {
+        const on = state.screen === s && (!id || state.params.id === id) && (id || !['lot', 'worker', 'loan'].includes(s));
+        return `<button class="nav-item ${on ? 'on' : ''}" onclick="jump(${gi},${ii})"><span class="dot"></span>${label}</button>`;
+      }).join('')}
+    </div></div>`).join('');
+}
+
+function bottomNav(tab) {
+  const items = [['home', 'home', 'nav_home'], ['lots', 'leaf', 'nav_lots'], ['diary', 'book', 'nav_diary'], ['labour', 'users', 'nav_labour'], ['prices', 'trend', 'nav_prices']];
+  return `<nav class="bottomnav">${items.map(([k, i, l]) => `<button class="bn ${tab === k ? 'on' : ''}" onclick="goTab('${k}')"><span class="bn-ic">${ic(i, 20)}</span>${t(l)}</button>`).join('')}</nav>`;
+}
+
+let lastKey = '';
+function render() {
+  const sc = SCREENS[state.screen];
+  const app = document.getElementById('app');
+  const key = state.screen + '|' + (state.params.id || '');
+  const prev = app.querySelector('.content');
+  const keep = prev && key === lastKey ? prev.scrollTop : 0;
+  lastKey = key;
+  const bar = sc.bar();
+  document.body.classList.toggle('kn', state.lang === 'kn');
+  document.documentElement.lang = state.lang === 'kn' ? 'kn' : 'en';
+  document.querySelectorAll('.lang-switch button').forEach(b => b.classList.toggle('on', b.dataset.lang === state.lang));
+  const net = document.getElementById('netBtn');
+  net.classList.toggle('off', !state.online);
+  net.innerHTML = `<span class="nd"></span>${state.online ? 'Online · simulate offline' : 'Offline · go back online'}`;
+  app.innerHTML = `
+    <div class="notch"></div>
+    <div class="statusbar"><span>9:41</span><span class="row" style="gap:6px">${ic(state.online ? 'wifi' : 'wifiOff', 15, 2)}${ic('battery', 20, 1.6)}</span></div>
+    <div class="appbar">
+      ${sc.parent ? `<button class="icon-btn" onclick="back()" aria-label="Back">${ic('back')}</button>` : ''}
+      <div class="grow">${bar.sub ? `<div class="sub">${bar.sub}</div>` : ''}<h2>${bar.title}</h2></div>
+      ${bar.actions || ''}
+    </div>
+    <div class="content" style="${sc.hideNav ? 'padding-bottom:24px' : ''}">${sc.body()}</div>
+    ${sc.fab ? `<button class="fab" onclick="${sc.fab}" aria-label="Add">${ic('plus', 26, 2.2)}</button>` : ''}
+    ${sc.hideNav ? '' : bottomNav(sc.tab)}
+    <div class="toast" id="toast"></div>`;
+  app.querySelector('.content').scrollTop = keep;
+  renderNotes();
+  renderScreenNav();
+}
+
+/* =====================================================================
+   Actions
+   ===================================================================== */
+function go(screen, params = {}) { state.stack.push({ screen: state.screen, params: state.params }); state.screen = screen; state.params = params; render(); }
+function back() {
+  const p = state.stack.pop();
+  if (p) { state.screen = p.screen; state.params = p.params; }
+  else { state.screen = SCREENS[state.screen].parent || 'home'; state.params = {}; }
+  render();
+}
+function goTab(tab, sub) { state.stack = []; state.screen = tab; state.params = {}; if (tab === 'labour' && sub) state.labourTab = sub; render(); }
+function goLot(id) { go('lot', { id }); }
+function goWorker(id) { go('worker', { id }); }
+function goLoan(id) { go('loan', { id }); }
+function setOnline(v) { state.online = v; render(); toast(t(v ? 'back_online' : 'went_offline')); }
+function goPrices(c) { state.priceCrop = c; goTab('prices'); }
+function jump(gi, ii) {
+  const [s, , id] = NAV[gi].items[ii];
+  const parent = SCREENS[s].parent;
+  state.stack = parent ? [{ screen: parent, params: {} }] : [];
+  if (s === 'addActivity') state.form = newForm();
+  state.screen = s; state.params = id ? { id } : {};
+  render();
+}
+function openAdd() { state.form = newForm(); go('addActivity'); }
+function setF(k, v) {
+  state.form[k] = v;
+  if (k === 'type') state.form.remindDays = FORM_REMIND[v] || 30;
+  render();
+}
+function togF(k, v) { const a = state.form[k]; const i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); render(); }
+function setDays(d) { state.form.days = Math.max(1, state.form.days + d); render(); }
+function saveAct() {
+  const f = state.form;
+  const inputs = FORM_INPUTS[f.type] || [];
+  const title = [`${t('a_' + f.type)} · ${plotNames(f.plots.length ? f.plots : ['P1'])}`];
+  state.extraActs.unshift({
+    id: 'n' + Date.now(), date: TODAY, days: f.days, type: f.type, title: [title[0], title[0]],
+    crops: f.crops.length ? [...f.crops] : ['areca'], plots: f.plots.length ? [...f.plots] : ['P1'],
+    labour: f.workers.map(id => [id, worker(id).dayRate * f.days]), inputs: inputs.map(x => [...x]),
+    next: f.remind ? addDays(TODAY, f.remindDays) : null,
+  });
+  const msg = f.remind ? t('saved_rem', fmt(addDays(TODAY, f.remindDays))) : t('saved');
+  state.stack = []; state.screen = 'diary'; state.params = {}; state.diaryFilter = 'all';
+  render(); toast(msg);
+}
+function setAtt(w, v) { state.att[w] = v; render(); }
+function setAttWork(k) { state.attWork = k; render(); }
+function setLotFilter(c) { state.lotFilter = c; render(); }
+function setDiaryFilter(c) { state.diaryFilter = c; render(); }
+function setPriceCrop(c) { state.priceCrop = c; render(); }
+function setLabourTab(k) { state.labourTab = k; render(); }
+function setMonth(m) { state.calMonth = m; render(); }
+function markCovered() { state.covered = true; render(); toast(t('saved')); }
+function toggleAlert() { state.alertOn = !state.alertOn; render(); toast(t('saved')); }
+function setLang(l) { state.lang = l; render(); }
+function proto() { toast(t('proto')); }
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+state.form = newForm();
+render();
+</script>
+</body>
+</html>

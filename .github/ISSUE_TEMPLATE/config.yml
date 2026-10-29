@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Pending work tracker
+    url: https://github.com/Shr1ramN/Dhara-Mitra/issues/20
+    about: Check existing implementation, testing and deferred work before creating a duplicate.

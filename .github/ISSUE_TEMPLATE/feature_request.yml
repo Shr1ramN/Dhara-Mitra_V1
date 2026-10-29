@@ -1,0 +1,31 @@
+name: Feature or improvement
+description: Propose a farm workflow improvement or clarify a planned requirement.
+title: "[Feature] "
+body:
+  - type: markdown
+    attributes:
+      value: "Review docs/PLAN.md and issue #20 before proposing work. Unaccepted ideas need owner agreement."
+  - type: input
+    id: plan
+    attributes:
+      label: Related plan feature or issue
+      placeholder: "F9.3 or #8; new proposal if not planned"
+  - type: textarea
+    id: problem
+    attributes:
+      label: Farm workflow and problem
+      description: Who needs this, when, and what is difficult today?
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior
+      description: Include offline behavior, language/units and how to verify the result.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or dependencies
+      description: Note account/API requirements without including any credentials.
