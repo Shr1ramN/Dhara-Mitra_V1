@@ -1,77 +1,54 @@
 # Dhara Mitra · ಧರಾ ಮಿತ್ರ
 
-**A Kannada and English farm diary for South Karnataka mixed gardens.**
+**Your farm records, organised by date. In Kannada and English.**
 
-[![Android build](https://github.com/Shr1ramN/Dhara-Mitra/actions/workflows/android.yml/badge.svg?branch=develop)](https://github.com/Shr1ramN/Dhara-Mitra/actions/workflows/android.yml)
+[![Android checks](https://github.com/Shr1ramN/Dhara-Mitra_V1/actions/workflows/android.yml/badge.svg?branch=develop)](https://github.com/Shr1ramN/Dhara-Mitra_V1/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Dhara Mitra means *friend of the earth*. It helps an owner record farm work, worker wages, harvests and money for arecanut, coconut, pepper and banana. Records are saved on the phone first, so everyday work does not depend on a network connection.
+Dhara Mitra is an Android farm diary for keeping everyday work, labour, harvests and payments together. Records stay on your phone, so you can record work and look back through your farm's history offline.
 
-> **Development preview.** The expanded app is under active development. Financial workflows and device features still need final acceptance testing. Automatic market-price collection and Supabase cloud backup are not connected. See the [remaining-work checklist](https://github.com/Shr1ramN/Dhara-Mitra/issues/20) before relying on a feature.
+[Download a test APK](https://github.com/Shr1ramN/Dhara-Mitra_V1/releases) · [Source code](https://github.com/Shr1ramN/Dhara-Mitra_V1) · [Report an issue](https://github.com/Shr1ramN/Dhara-Mitra_V1/issues)
 
-## What is available
+## Three places for your daily work
 
-| Area | Implemented in the development app |
+| Screen | What you can do |
 | --- | --- |
-| Farm | Multiple isolated farms, map pin/GPS location, plots, crop details and season configuration |
-| Diary | Work timeline, filters, notes, inputs from stock, labour and next-round reminders |
-| Workers | Individual attendance work, reusable custom roles, validated Indian contact numbers, calling, rates, ledgers and dues |
-| Harvest | Daily areca collections grouped or dried separately; bags until peeling or kg throughout; harvest → drying → peeling → grading → storage → sale; pepper, coconut/copra and banana lots; partial sales |
-| Stock and money | Input purchases and usage, low-stock thresholds, buyers, receivables and expenses |
-| Land and finance | Land records, loans and interest calculations, calculated membership holdings with editable purchases/dividends, insurance claims and scheme applications |
-| Reports | Season totals, crop/plot breakdowns, yields, worker totals, PDF and Excel exports |
-| Documents | Local files, photos, recorded voice notes and a document vault |
-| Weather and tasks | Cached forecasts, rain log, reminders, crop calendar and notification scheduling |
-| Privacy and backup | Optional device-authentication lock, per-farm backup/restore and all-farm backup/import with attachments |
+| **Home** | See recent records, drying and stored harvests, worker dues, buyer balances and this month's costs. Open everyday farm tools and switch farms. |
+| **Calendar** | Select a day to review or add work, attendance, payments, expenses, harvests, sales and date notes. Search existing records by words, category or date range. |
+| **More** | Manage farms and plots, open farm records and reports, switch between English and ಕನ್ನಡ, export data, and manage backup and the optional app lock. |
 
-The interface supports **ಕನ್ನಡ and English**, with fonts bundled for offline rendering. Prices can be entered manually, stored locally, charted and used for alerts. Live prices and some report/correction features remain tracked in [Issues](https://github.com/Shr1ramN/Dhara-Mitra/issues).
+## Keep the farm's story together
 
-Daily labour in the diary, areca lots and other produce reuses one attendance wage per worker/date; separate piecework is additional. Enter `0.5` days for a half-day allocation. A shared day can be split between jobs without duplicating wages. Attendance corrections update linked lot costs and reports.
+- **Work and labour:** record farm activities, attendance, wages and worker payments.
+- **Harvests:** follow arecanut from collection through drying, peeling, grading and storage; record coconut harvests too.
+- **Sales and expenses:** record buyers, sales, receipts, outstanding amounts and farm spending.
+- **Calendar history:** find recorded work such as manure application or spraying, then open the original entry. Keyword search works locally on your saved records.
+- **Reports:** review farm totals and export reports as PDF or Excel.
+- **Separate farms:** switch between farms with independent records and balances.
 
-## Offline and online
+The interface and bundled fonts support Kannada and English. Core record keeping works offline. Data is stored locally; save backups outside the app regularly and before installing an update. A database export is also available under **More**.
 
-Google/email sign-in and local mode are available in the app. Account sign-in needs
-[Supabase configuration](docs/AUTHENTICATION.md). Signing in does not back up farm
-records; all modes still require manual backups saved outside the app.
+## Install on Android
 
-- **Offline:** record and review farm work, stock, harvests, sales, loans and documents; calculate balances; generate reports; create local backups.
-- **Online:** refresh weather and eventually market prices. Previously cached data remains available offline. Sending a prepared report through another app may need connectivity.
-- **Device dependent:** Kannada dictation may need internet unless the phone's speech service supports an installed offline language pack. Notifications and authentication depend on Android permissions and device support.
-- **Pending:** automatic market-price imports/history collection and cloud backup/new-phone restore. No API key or cloud account is required to run the existing offline app.
+1. Open [Releases](https://github.com/Shr1ramN/Dhara-Mitra_V1/releases) and select a **Develop preview**.
+2. Download **DharaMitra.apk** from its assets directly to your phone.
+3. Open the APK and allow installation from your browser or file manager if Android requests it.
 
-## Everyday collection flow
+These are test builds signed with the project's existing public development key. Each preview includes its source commit and `SHA256SUMS`. Updating an existing installation requires the same app ID and signing certificate, with a higher version code. Export a backup first; uninstalling or clearing app storage removes local records.
 
-The top-left leaf button opens Home from any feature. The header's Back button and Android Back return to the previous page, or to Home from a section's first screen. Dialogs close first. Android Back on Home keeps the usual exit behavior. Home shortcuts are grouped under **Farm tools**; balances appear under **Money**.
+## Develop locally
 
-1. Choose the active farm in **My farms**. Each farm has independent workers, accounts, stock and attachments.
-2. Open **Collected from farm**, record the date and bags (or kg), and leave quantity blank if not measured yet.
-3. Select one pickup to dry separately, or several pickups to **Dry selected together**. Pickups with different units cannot be mixed.
-4. In the drying lot, record the **dried bags brought home**. At peeling, record the actual peeled output in kg; storage bag counts are separate packaging.
-5. Original pickups remain visible inside the lot. Edit their measured quantity later without creating another harvest. No fixed kg-per-bag conversion is assumed.
-
-Workers and buyers are deliberately separate per farm. If the same person works on two farms in one day, enter only that farm's share of the work/rate; full-day attendance in both profiles is two independent wage bookings. Cross-farm shared payroll is not automatic.
-
-The map uses OpenStreetMap with attribution and needs internet for map tiles. Location is optional, coordinates are never typed, and saved farm data remains offline. **Fertilizer** on Home opens the existing diary form with stock use, labour and reminders. Automated UPI payment handoff remains deferred in [#26](https://github.com/Shr1ramN/Dhara-Mitra/issues/26).
-
-## Run the Android app
-
-Use **Flutter 3.47.8 / Dart 3.13.7**, **JDK 17**, and the Android SDK. The exact Flutter version is also pinned in [CI](.github/workflows/android.yml). Use `develop` for the latest merged development app. Feature changes arrive through reviewed pull requests.
+Use **Flutter 3.47.8 / Dart 3.13.7**, **JDK 17**, and the Android SDK. From a checkout of this repository:
 
 ```sh
-git clone --branch develop https://github.com/Shr1ramN/Dhara-Mitra.git
-cd Dhara-Mitra/app
-flutter doctor -v
-flutter doctor --android-licenses
+git clone --branch develop https://github.com/Shr1ramN/Dhara-Mitra_V1.git
+cd Dhara-Mitra_V1/app
 flutter pub get
 flutter devices
 flutter run -d <device-id>
 ```
 
-Replace `<device-id>` with the ID printed by `flutter devices`. On a physical phone, enable USB debugging, connect a data-capable cable, unlock it and accept the debugging prompt. See the [development guide](docs/DEVELOPMENT.md) for Windows setup, code generation and troubleshooting.
-
-## Build and check
-
-Run from `app/`:
+Run checks from `app/`:
 
 ```sh
 flutter analyze
@@ -79,40 +56,14 @@ flutter test
 flutter build apk --debug
 ```
 
-The debug APK is written to `app/build/app/outputs/flutter-apk/app-debug.apk` from the repository root. The [testing guide](docs/TESTING.md) explains the remaining acceptance checks and data-preservation steps.
+The debug APK is at `app/build/app/outputs/flutter-apk/app-debug.apk` from the repository root. See the [app development notes](app/README.md) for generated files and signing details.
 
-## GitHub Actions APKs
+## Build delivery
 
-Open [GitHub Releases](https://github.com/Shr1ramN/Dhara-Mitra/releases) and select a **Develop preview**. Download **dhara-mitra-v1.apk** under Assets directly to your phone—no ZIP extraction. Each preview identifies its source commit and includes `SHA256SUMS`.
+Pull requests to `develop` or `master` run analysis and tests. Pushes to `develop` run the same checks, build **DharaMitra.apk**, and publish a **Develop preview** prerelease. Feature branches and pushes to `master` do not automatically build or publish APKs.
 
-Pull requests to `develop` or `master` run **Analyze and test** only. A push/merge to `develop` runs those checks, then builds and publishes a development pre-release. Feature-branch pushes do not build APKs. Both protected branches require the checks on an up-to-date PR, prohibit deletion/force pushes, and retain the existing one-review requirement. Only repository admins may bypass the rules.
-
-The workflow runs analysis and tests before building. Although the APK uses Flutter's release build mode, **it is signed with a public, test-only development key**. Both local build types use that key for testing compatibility. Do not treat these artifacts as trusted production releases.
-
-Before updating a phone, export a backup. An in-place update requires the same app ID, compatible signing certificate and a suitable version code. If Android rejects the update, check those first; uninstalling or clearing storage removes local records. See [release preparation](docs/RELEASING.md).
-
-## Project guide
-
-| Resource | Purpose |
-| --- | --- |
-| [Plan](docs/PLAN.md) | Accepted F1–F12 requirements and architecture; includes future work |
-| [Implementation status](docs/IMPLEMENTATION_STATUS.md) | Current capabilities, limitations and validation status |
-| [Development guide](docs/DEVELOPMENT.md) | Setup, commands and repository layout |
-| [Testing guide](docs/TESTING.md) | Automated checks and phone acceptance checklist |
-| [Contributing](CONTRIBUTING.md) | Issue and pull-request workflow |
-| [Security](SECURITY.md) | Data handling, credentials and vulnerability reporting |
-| [Work tracker](https://github.com/Shr1ramN/Dhara-Mitra/issues/20) | Remaining implementation, delivery and deferred work |
-| [UI prototype](prototype/index.html) | Open locally in a browser; all numbers are sample data |
-
-## Design preview
-
-These images show the **design prototype**, not verified screenshots of the current Android app.
-
-<p>
-  <img src="docs/screenshots/01-overview-home.png" alt="Prototype of the Dhara Mitra home screen" width="280">
-  <img src="docs/screenshots/09-diary-kannada.png" alt="Kannada farm diary design prototype" width="280">
-</p>
+A maintainer can explicitly run **Android quality and delivery** on `master` to check and build a downloadable test APK. That manual run does not publish a release. CI version codes use `20000 + github.run_number`, above the earlier `10030` build, while retaining the existing app ID and signing key.
 
 ## License
 
-Project code is available under the [MIT License](LICENSE). Bundled fonts retain their respective [Open Font License notices](app/assets/fonts/).
+Code is available under the [MIT License](LICENSE). Bundled fonts retain their [Open Font License notices](app/assets/fonts/).

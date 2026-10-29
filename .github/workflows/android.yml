@@ -2,9 +2,10 @@ name: Android quality and delivery
 
 on:
   push:
-    branches: [develop, V1-Dev, master]
+    branches: [develop]
   pull_request:
-    branches: [develop, master, V1-Dev]
+    branches: [develop, master]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -25,31 +26,28 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
-
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           flutter-version: '3.47.8'
           cache: true
-
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
 
-  publish:
-    name: Publish develop APK
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+  build:
+    name: Build test APK
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    permissions:
-      contents: write
     defaults:
       run:
         working-directory: app
@@ -71,60 +69,35 @@ jobs:
       - name: Build APK
         env:
           BUILD_NUMBER: ${{ github.run_number }}
-        run: flutter build apk --release --build-number=$((1000 + BUILD_NUMBER))
-      - name: Publish directly installable APK
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          SOURCE_SHA: ${{ github.sha }}
-          BUILD_NUMBER: ${{ github.run_number }}
-          BUILD_ATTEMPT: ${{ github.run_attempt }}
-        shell: bash
+        run: flutter build apk --release --build-number=$((20000 + BUILD_NUMBER))
+      - name: Prepare installable APK
         run: |
           set -euo pipefail
           mkdir -p apk-release
           cp build/app/outputs/flutter-apk/app-release.apk apk-release/DharaMitra.apk
           (cd apk-release && sha256sum DharaMitra.apk > SHA256SUMS)
-          tag="develop-build-${BUILD_NUMBER}-${BUILD_ATTEMPT}"
-          printf 'Development preview from `%s`.\n\nDownload **DharaMitra.apk** directly below (no ZIP). Uses the public development signing key; production release signing is tracked separately.\n' "$SOURCE_SHA" > apk-release/notes.md
-          gh release create "$tag" apk-release/DharaMitra.apk apk-release/SHA256SUMS \
-            --target "$SOURCE_SHA" --title "Develop preview ${BUILD_NUMBER}.${BUILD_ATTEMPT}" \
-            --prerelease --notes-file apk-release/notes.md
-
-  v1-build:
-    name: Publish Android APK
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/V1-Dev' || github.ref == 'refs/heads/master')
-    needs: checks
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      contents: write
-    defaults:
-      run:
-        working-directory: app
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-version: '3.47.8'
-          cache: true
-      - run: flutter pub get
-      - name: Build Android APK
-        env:
-          BUILD_NUMBER: ${{ github.run_number }}
-        run: flutter build apk --release --build-number=$((10000 + BUILD_NUMBER))
-      - name: Name APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/DharaMitra.apk
       - uses: actions/upload-artifact@v4
         with:
           name: DharaMitra-apk
-          path: app/build/app/outputs/flutter-apk/DharaMitra.apk
+          path: |
+            app/apk-release/DharaMitra.apk
+            app/apk-release/SHA256SUMS
+          if-no-files-found: error
           retention-days: 30
+
+  publish:
+    name: Publish develop preview
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: DharaMitra-apk
+          path: apk-release
       - name: Publish directly installable APK
         env:
           GH_TOKEN: ${{ github.token }}
@@ -135,16 +108,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p apk-release
-          cp build/app/outputs/flutter-apk/app-release.apk apk-release/DharaMitra.apk
-          (cd apk-release && sha256sum DharaMitra.apk > SHA256SUMS)
-          tag="v1-dev-build-${BUILD_NUMBER}-${BUILD_ATTEMPT}"
-          release_flags=(--prerelease)
-          if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
-            tag="release-${BUILD_NUMBER}-${BUILD_ATTEMPT}"
-            release_flags=(--latest)
-          fi
-          printf 'Dhara Mitra Android build from `%s`.\n\nDownload **DharaMitra.apk** directly below. Uses the public development signing key.\n' "$SOURCE_SHA" > apk-release/notes.md
+          tag="develop-build-${BUILD_NUMBER}-${BUILD_ATTEMPT}"
+          printf 'Development preview from `%s`.\n\nDownload **DharaMitra.apk** directly below (no ZIP). Uses the public development signing key.\n' "$SOURCE_SHA" > apk-release/notes.md
           gh release create "$tag" apk-release/DharaMitra.apk apk-release/SHA256SUMS \
-            --target "$SOURCE_SHA" --title "Dhara Mitra ${BUILD_NUMBER}.${BUILD_ATTEMPT}" \
-            "${release_flags[@]}" --notes-file apk-release/notes.md
+            --target "$SOURCE_SHA" --title "Develop preview ${BUILD_NUMBER}.${BUILD_ATTEMPT}" \
+            --prerelease --notes-file apk-release/notes.md
