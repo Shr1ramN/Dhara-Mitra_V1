@@ -137,6 +137,7 @@ void main() {
     });
     await pumpApp(tester, hasFarm: true);
 
+    await tester.scrollUntilVisible(find.text('Day 50 of ~40'), 200);
     expect(find.text('Day 50 of ~40'), findsOneWidget);
     await tester.tap(find.text('Harvest round 1').first);
     await tester.pumpAndSettle();

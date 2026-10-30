@@ -98,7 +98,7 @@ void main() {
       await tester.ensureVisible(tile);
       await tester.tap(tile);
       await tester.pumpAndSettle();
-      expect(router.routeInformationProvider.value.uri.path, item.$2);
+      expect(router.routerDelegate.currentConfiguration.uri.path, item.$2);
       router.go('/');
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
