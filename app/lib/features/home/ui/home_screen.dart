@@ -129,14 +129,14 @@ class HomeScreen extends ConsumerWidget {
                     detail: v1Text(context, 'Areca lots', 'ಅಡಿಕೆ ಲಾಟ್‌ಗಳು'),
                     icon: Icons.eco_outlined,
                     green: true,
-                    onTap: () => context.push('/lots'),
+                    onTap: () => context.go('/lots'),
                   ),
                   _FarmSummaryTile(
                     label: v1Text(context, 'Buyer balances', 'ಖರೀದಿದಾರರ ಬಾಕಿ'),
                     value: fmt.money(toReceive),
                     detail: v1Text(context, 'To receive', 'ಬರಬೇಕಾದ ಮೊತ್ತ'),
                     icon: Icons.bar_chart_rounded,
-                    onTap: () => context.push('/sales'),
+                    onTap: () => context.go('/sales'),
                   ),
                 ];
                 return Wrap(
