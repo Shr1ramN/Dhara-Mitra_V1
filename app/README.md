@@ -37,7 +37,7 @@ Database definitions are in `lib/core/db/tables.dart` and `extended_tables.dart`
 - Release build: `flutter build apk --release` produces `build/app/outputs/flutter-apk/app-release.apk`.
 - Both build modes use the existing public test key, `android/app/dev-signing.p12`, and app ID `in.dharamitra.app` for development update compatibility.
 - CI names the installable asset **DharaMitra.apk** and sets the version code to `20000 + github.run_number`.
-- Develop pushes publish a test prerelease. An explicit workflow run on `master` builds an artifact without publishing a release.
+- PRs to develop/master require analysis, tests and an Android build. Develop merges publish prereleases; master merges publish regular releases marked Latest.
 
 Keep the app ID and signing certificate unchanged when testing updates on phones with existing records. Export a backup before updating.
 
