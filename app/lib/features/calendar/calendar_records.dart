@@ -22,18 +22,23 @@ class RecordQuery {
   final String text;
   static const vocabulary = {
     'manure': ['manure', 'ಗೊಬ್ಬರ', 'ಕೊಟ್ಟಿಗೆ'],
-    'fertiliser': ['fertiliser', 'fertilizer', 'ರಸಗೊಬ್ಬರ'],
+    'fertiliser': [
+      'fertiliser',
+      'fertilizer',
+      'fertilisers',
+      'fertilizers',
+      'ರಸಗೊಬ್ಬರ',
+    ],
     'spray': ['spray', 'spraying', 'disease', 'ಸಿಂಪಡ', 'ರೋಗ'],
     'irrigation': ['irrigation', 'water', 'ನೀರು'],
-    'harvest': ['harvest', 'ಕೊಯ್ಲು'],
+    'harvest': ['harvest', 'harvests', 'ಕೊಯ್ಲು'],
     'attendance': ['attendance', 'ಹಾಜರಿ'],
-    'expense': ['expense', 'ಖರ್ಚು'],
+    'expense': ['expense', 'expenses', 'ಖರ್ಚು'],
     'sale': ['sale', 'sales', 'ಮಾರಾಟ'],
-    'payment': ['payment', 'paid', 'ಪಾವತಿ'],
+    'payment': ['payment', 'payments', 'paid', 'ಪಾವತಿ'],
   };
   bool get latest =>
-      text.contains('last') ||
-      text.contains('latest') ||
+      RegExp(r'\b(last|latest|recent|newest)\b').hasMatch(text) ||
       text.contains('ಕೊನೆಯ') ||
       text.contains('ಕೊನೆಗೆ');
   String? get keyword {
@@ -51,11 +56,65 @@ class RecordQuery {
     if (text.isEmpty) return true;
     final haystack = '${record.category} ${record.title} ${record.notes}'
         .toLowerCase();
-    final key = keyword;
-    return key == null
-        ? haystack.contains(text)
-        : vocabulary[key]!.any(haystack.contains);
+    final terms = text
+        .split(RegExp(r'[\s,;.!?"“”]+'))
+        .where((t) => t.isNotEmpty);
+    const filler = {
+      'when',
+      'did',
+      'i',
+      'last',
+      'latest',
+      'recent',
+      'newest',
+      'put',
+      'apply',
+      'applied',
+      'the',
+      'a',
+      'an',
+      'was',
+      'my',
+      'show',
+      'me',
+      'records',
+      'record',
+      'of',
+      'for',
+      'ಕೊನೆಯ',
+      'ಕೊನೆಗೆ',
+    };
+    final conversational =
+        latest ||
+        terms.any(
+          (term) => vocabulary.values.any((aliases) => aliases.contains(term)),
+        );
+    return terms.where((t) => !conversational || !filler.contains(t)).every((
+      term,
+    ) {
+      for (final aliases in vocabulary.values) {
+        if (aliases.contains(term)) {
+          return aliases.any((alias) => _contains(haystack, alias));
+        }
+      }
+      return haystack.contains(term);
+    });
   }
+
+  static bool _contains(String text, String term) =>
+      RegExp(r'^[a-z]+$').hasMatch(term)
+      ? RegExp('\\b${RegExp.escape(term)}\\b').hasMatch(text)
+      : text.contains(term);
+}
+
+DateTime calendarDay(DateTime date) =>
+    DateTime(date.year, date.month, date.day);
+
+/// Date-only comparison includes entries at any time on the final day.
+bool calendarDateInRange(DateTime date, DateTime start, DateTime end) {
+  final value = calendarDay(date);
+  return !value.isBefore(calendarDay(start)) &&
+      !value.isAfter(calendarDay(end));
 }
 
 class CalendarRepository {
