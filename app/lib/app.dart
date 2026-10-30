@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'features/lots/ui/collections_screen.dart';
 import 'features/farm/ui/farms_screen.dart';
@@ -211,7 +212,24 @@ class _DharaMitraAppState extends ConsumerState<DharaMitraApp> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    _router.routeInformationProvider.addListener(_syncFrameworkBackHandling);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncFrameworkBackHandling();
+    });
+  }
+
+  void _syncFrameworkBackHandling() {
+    SystemNavigator.setFrameworkHandlesBack(
+      _backDispatcher.canHandleBack || _router.canPop(),
+    );
+  }
+
+  @override
   void dispose() {
+    _router.routeInformationProvider.removeListener(_syncFrameworkBackHandling);
+    _backDispatcher.dispose();
     _router.dispose();
     super.dispose();
   }
@@ -230,6 +248,14 @@ class _DharaMitraAppState extends ConsumerState<DharaMitraApp> {
       GlobalCupertinoLocalizations.delegate,
     ],
     routerConfig: _routerConfig,
+    // A section opened with go() can still navigate back through our dispatcher
+    // even when its Navigator contains a single page. Tell Android ahead of time.
+    onNavigationNotification: (notification) {
+      SystemNavigator.setFrameworkHandlesBack(
+        notification.canHandlePop || _backDispatcher.canHandleBack,
+      );
+      return true;
+    },
     builder: (_, child) => AppLockGate(child: child!),
   );
 }
