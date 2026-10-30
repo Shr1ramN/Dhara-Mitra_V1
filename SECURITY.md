@@ -1,7 +1,6 @@
 # Security and data handling
 
-Dhara Mitra is a development preview. Production hardening, final device acceptance and cloud backup are incomplete. See the [work tracker](https://github.com/Shr1ramN/Dhara-Mitra/issues/20).
-
+Dhara Mitra stores farm records locally. Cloud backup and private production signing are planned.
 ## Report a vulnerability
 
 Use GitHub's **Security → Report a vulnerability** option if private vulnerability reporting is enabled for this repository. Otherwise, arrange a private reporting channel with the maintainer through the contact methods on their GitHub profile before sending sensitive details. Do not post credentials, real farm records or an exploitable private-data disclosure in a public issue.

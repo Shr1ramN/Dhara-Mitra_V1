@@ -2,7 +2,7 @@ name: Android quality and delivery
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, master]
   pull_request:
     branches: [develop, master]
   workflow_dispatch:
@@ -41,10 +41,7 @@ jobs:
       - run: flutter test
 
   build:
-    name: Build test APK
-    if: >-
-      (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+    name: Android build
     needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -86,8 +83,8 @@ jobs:
           retention-days: 30
 
   publish:
-    name: Publish develop preview
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    name: Publish Android release
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -109,7 +106,14 @@ jobs:
         run: |
           set -euo pipefail
           tag="develop-build-${BUILD_NUMBER}-${BUILD_ATTEMPT}"
-          printf 'Development preview from `%s`.\n\nDownload **DharaMitra.apk** directly below (no ZIP). Uses the public development signing key.\n' "$SOURCE_SHA" > apk-release/notes.md
+          title="Develop preview ${BUILD_NUMBER}.${BUILD_ATTEMPT}"
+          flags=(--prerelease)
+          if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
+            tag="release-${BUILD_NUMBER}-${BUILD_ATTEMPT}"
+            title="Dhara Mitra ${BUILD_NUMBER}.${BUILD_ATTEMPT}"
+            flags=(--latest)
+          fi
+          printf 'Dhara Mitra Android build from `%s`.\n\nDownload **DharaMitra.apk** directly below (no ZIP). Uses the public development signing key.\n' "$SOURCE_SHA" > apk-release/notes.md
           gh release create "$tag" apk-release/DharaMitra.apk apk-release/SHA256SUMS \
-            --target "$SOURCE_SHA" --title "Develop preview ${BUILD_NUMBER}.${BUILD_ATTEMPT}" \
-            --prerelease --notes-file apk-release/notes.md
+            --target "$SOURCE_SHA" --title "$title" \
+            "${flags[@]}" --notes-file apk-release/notes.md

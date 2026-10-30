@@ -60,9 +60,13 @@ The debug APK is at `app/build/app/outputs/flutter-apk/app-debug.apk` from the r
 
 ## Build delivery
 
-Pull requests to `develop` or `master` run analysis and tests. Pushes to `develop` run the same checks, build **DharaMitra.apk**, and publish a **Develop preview** prerelease. Feature branches and pushes to `master` do not automatically build or publish APKs.
+Pull requests to `develop` or `master` require owner review, passing analysis/tests and a successful Android APK build. Download the PR APK from its Actions run to test the proposed change.
 
-A maintainer can explicitly run **Android quality and delivery** on `master` to check and build a downloadable test APK. That manual run does not publish a release. CI version codes use `20000 + github.run_number`, above the earlier `10030` build, while retaining the existing app ID and signing key.
+After an approved merge, `develop` publishes **DharaMitra.apk** as a Develop preview prerelease. `master` publishes a regular GitHub release marked Latest. Both include checksums and the source commit. The current APK retains the existing public development signing key; private production signing is still pending.
+
+## Feedback and contributions
+
+[Report a bug](https://github.com/Shr1ramN/Dhara-Mitra_V1/issues/new/choose) or suggest a farm workflow using the issue templates. See [Contributing](CONTRIBUTING.md) and [Security](SECURITY.md). Use sample records and remove personal farm data from screenshots.
 
 ## License
 
