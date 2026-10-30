@@ -80,6 +80,25 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  for (final keyboard in [true, false]) {
+    testWidgets('search submission reveals results: keyboard=$keyboard', (
+      tester,
+    ) async {
+      await pumpCalendar(tester);
+      await tester.enterText(find.byType(TextField), 'manure south');
+      if (keyboard) {
+        await tester.testTextInput.receiveAction(TextInputAction.search);
+      } else {
+        await tester.tap(find.widgetWithIcon(IconButton, Icons.search_rounded));
+      }
+      await tester.pumpAndSettle();
+      expect(find.text('Manure south'), findsOneWidget);
+      expect(find.text('Manure north'), findsNothing);
+      expect(find.text('Matching records').hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('narrow calendar search, date scope and reset stay consistent', (
     tester,
   ) async {

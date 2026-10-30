@@ -24,10 +24,42 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
   late DateTime day = ref.read(todayProvider);
   late DateTime month = DateTime(day.year, day.month);
   final searchController = TextEditingController();
+  final resultsKey = GlobalKey();
+  final pageScroll = ScrollController();
+
+  void submitSearch() {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      search = searchController.text.trim();
+      older = false;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || !pageScroll.hasClients) return;
+      // The lazy list may not have built the results heading yet.
+      if (resultsKey.currentContext == null) {
+        await pageScroll.animateTo(
+          pageScroll.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+      if (!mounted) return;
+      final target = resultsKey.currentContext;
+      if (target != null) {
+        await Scrollable.ensureVisible(
+          target,
+          duration: const Duration(milliseconds: 200),
+          alignment: 0.1,
+        );
+      }
+    });
+  }
+
   String search = '', category = '';
 
   @override
   void dispose() {
+    pageScroll.dispose();
     searchController.dispose();
     super.dispose();
   }
@@ -301,6 +333,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
               child: ListView(
+                controller: pageScroll,
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
                 children: [
                   Container(
@@ -359,6 +392,8 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                   const SizedBox(height: 20),
                   TextField(
                     controller: searchController,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (_) => submitSearch(),
                     decoration: InputDecoration(
                       labelText: context.l.xSearch,
                       hintText: v1Text(
@@ -366,10 +401,11 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                         'Try “last manure” or a buyer’s name',
                         '“ಕೊನೆಯ ಗೊಬ್ಬರ” ಅಥವಾ ಖರೀದಿದಾರರ ಹೆಸರು',
                       ),
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      suffixIcon: search.isEmpty
-                          ? null
-                          : IconButton(
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (searchController.text.isNotEmpty)
+                            IconButton(
                               tooltip: v1Text(
                                 context,
                                 'Clear search',
@@ -382,6 +418,13 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                                 older = false;
                               }),
                             ),
+                          IconButton(
+                            tooltip: context.l.xSearch,
+                            onPressed: submitSearch,
+                            icon: const Icon(Icons.search_rounded),
+                          ),
+                        ],
+                      ),
                     ),
                     onChanged: (v) => setState(() {
                       search = v;
@@ -644,6 +687,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                   ),
                   const SizedBox(height: 20),
                   Row(
+                    key: resultsKey,
                     children: [
                       Expanded(
                         child: Text(
