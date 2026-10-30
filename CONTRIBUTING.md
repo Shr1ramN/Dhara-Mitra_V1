@@ -1,7 +1,6 @@
 # Contributing
 
-Start with the [README](README.md), [development guide](docs/DEVELOPMENT.md), [plan](docs/PLAN.md) and [remaining-work tracker](https://github.com/Shr1ramN/Dhara-Mitra/issues/20).
-
+Start with the [README](README.md) and [app development notes](app/README.md).
 ## Issues
 
 - Check existing issues before opening one. Include a plan feature ID such as F3.4 when relevant.
@@ -11,14 +10,14 @@ Start with the [README](README.md), [development guide](docs/DEVELOPMENT.md), [p
 
 ## Pull requests
 
-1. Branch from the intended base (`develop` for current development). Use a descriptive branch; Codex changes use `codex/` by default.
+1. Branch from the intended base (`develop` for current development). Use a descriptive branch; use `dev/` for development branches.
 2. Keep changes focused and link the relevant issue. Preserve unrelated work.
 3. Add a regression test for financial logic, migrations or data-integrity fixes; use appropriate widget checks for form behavior.
 4. Update both English and Kannada strings and regenerate committed code when required.
 5. Run `flutter analyze`, `flutter test` and an appropriate Android build from `app/`.
 6. Explain the concrete behavior changed, validation performed, migration implications and remaining limitations.
 
-CI must pass before merging. Do not disable analyzer findings or tests to make a check green. Do not mark physical-device behavior tested unless it was exercised.
+The repository owner must approve changes to develop and master. Analysis, tests and the Android build must pass before merging. Do not disable analyzer findings or tests to make a check green. Do not mark physical-device behavior tested unless it was exercised.
 
 ## Data conventions
 
