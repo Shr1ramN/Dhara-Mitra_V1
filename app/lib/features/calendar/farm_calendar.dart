@@ -45,7 +45,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
       }
       if (!mounted) return;
       final target = resultsKey.currentContext;
-      if (target != null) {
+      if (target != null && target.mounted) {
         await Scrollable.ensureVisible(
           target,
           duration: const Duration(milliseconds: 200),
