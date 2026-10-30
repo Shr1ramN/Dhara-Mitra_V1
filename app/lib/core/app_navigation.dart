@@ -6,27 +6,74 @@ import 'l10n.dart';
 import 'providers.dart';
 import '../features/farm/ui/farms_screen.dart';
 
-/// Give dialogs and nested pages the first chance to handle Back. A section
-/// opened with go() has no previous route, so return to the farm's landing page.
+/// Give dialogs and nested pages the first chance to handle Back, then restore
+/// the previous section when go() or goBranch() replaced the navigator stack.
 class FarmBackButtonDispatcher extends RootBackButtonDispatcher {
   FarmBackButtonDispatcher(
     this.router, {
     required this.landingPage,
     required this.leaveSetup,
-  });
+  }) {
+    _locations.add(router.routeInformationProvider.value.uri);
+    router.routeInformationProvider.addListener(_recordLocation);
+  }
   final GoRouter router;
   final String Function() landingPage;
   final Future<bool> Function() leaveSetup;
+  final _locations = <Uri>[];
+  bool _handlingBack = false;
+
+  bool get canHandleBack =>
+      router.routeInformationProvider.value.uri.path != landingPage() ||
+      landingPage() == '/setup';
+
+  void _recordLocation() {
+    final location = router.routeInformationProvider.value.uri;
+    if (location.path == landingPage()) {
+      _locations
+        ..clear()
+        ..add(location);
+      return;
+    }
+    if (_handlingBack) {
+      final previous = _locations.lastIndexOf(location);
+      if (previous >= 0) {
+        _locations.removeRange(previous + 1, _locations.length);
+        return;
+      }
+    }
+    if (_locations.isEmpty || _locations.last != location) {
+      _locations.add(location);
+    }
+  }
+
+  void dispose() {
+    router.routeInformationProvider.removeListener(_recordLocation);
+  }
 
   @override
   Future<bool> didPopRoute() async {
-    if (await super.didPopRoute()) return true;
-    final landing = landingPage();
-    if (router.routeInformationProvider.value.uri.path == landing) {
-      return landing == '/setup' ? leaveSetup() : false;
+    if (_handlingBack) return true;
+    _handlingBack = true;
+    try {
+      if (await super.didPopRoute()) {
+        _recordLocation();
+        return true;
+      }
+      final landing = landingPage();
+      if (router.routeInformationProvider.value.uri.path == landing) {
+        return landing == '/setup' ? await leaveSetup() : false;
+      }
+      if (_locations.length > 1) {
+        _locations.removeLast();
+        router.go(_locations.last.toString());
+      } else {
+        router.go(landing);
+      }
+      return true;
+    } finally {
+      _handlingBack = false;
     }
-    router.go(landing);
-    return true;
   }
 }
 

@@ -18,6 +18,7 @@ void main() {
   late AppDatabase db;
   late GoRouter router;
   final platformCalls = <String>[];
+  final frameworkBackStates = <bool>[];
   setUpAll(() async {
     await initializeDateFormatting();
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -30,9 +31,13 @@ void main() {
       ),
     );
     platformCalls.clear();
+    frameworkBackStates.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
           platformCalls.add(call.method);
+          if (call.method == 'SystemNavigator.setFrameworkHandlesBack') {
+            frameworkBackStates.add(call.arguments as bool);
+          }
           return null;
         });
   });
@@ -82,6 +87,88 @@ void main() {
     await db.close();
     await tester.pump();
   }
+
+  testWidgets(
+    'Android keeps Back in Flutter for sections with no navigator history',
+    (tester) async {
+      await pump(tester);
+      expect(frameworkBackStates.last, isFalse);
+      for (final path in ['/calendar', '/more', '/labour', '/backup']) {
+        router.go(path);
+        await tester.pumpAndSettle();
+        expect(router.canPop(), isFalse, reason: path);
+        expect(frameworkBackStates.last, isTrue, reason: path);
+        router.go('/');
+        await tester.pumpAndSettle();
+        expect(frameworkBackStates.last, isFalse, reason: path);
+      }
+      await finish(tester);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+
+  testWidgets(
+    'Back retraces bottom navigation and replaced feature routes one step at a time',
+    (tester) async {
+      await pump(tester);
+      await tester.tap(find.byIcon(Icons.calendar_month_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.more_horiz));
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, '/more');
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, '/calendar');
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, '/');
+
+      router.go('/more');
+      await tester.pumpAndSettle();
+      router.go('/labour?tab=attendance');
+      await tester.pumpAndSettle();
+      router.go('/labour?tab=dues');
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(
+        router.routeInformationProvider.value.uri.toString(),
+        '/labour?tab=attendance',
+      );
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, '/more');
+      expect(platformCalls, isNot(contains('SystemNavigator.pop')));
+      router.go('/');
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      expect(platformCalls, contains('SystemNavigator.pop'));
+      await finish(tester);
+    },
+  );
+
+  testWidgets('home summary tiles fit a phone and open their farm tools', (
+    tester,
+  ) async {
+    await pump(tester);
+    expect(find.text('Recent records'), findsNothing);
+    for (final item in <(String, String)>[
+      ('Recent work', '/calendar'),
+      ('Worker dues', '/labour'),
+      ('Harvests', '/lots'),
+      ('Buyer balances', '/sales'),
+    ]) {
+      final tile = find.text(item.$1);
+      await tester.ensureVisible(tile);
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(router.routerDelegate.currentConfiguration.uri.path, item.$2);
+      router.go('/');
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+    await finish(tester);
+  });
 
   testWidgets(
     'Android Back from each section and direct feature returns home without exiting',
