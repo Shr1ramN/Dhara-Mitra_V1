@@ -71,8 +71,23 @@ class HomeScreen extends ConsumerWidget {
           (s, v) => s + v.pending,
         );
     final spent = ref.watch(monthlyCostsProvider).value ?? 0;
+    final records = ref.watch(calendarRecordsProvider).value ?? const [];
+    final startOfWeek = DateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).subtract(Duration(days: today.weekday - 1));
+    final recentWork = records
+        .where(
+          (r) =>
+              r.category == 'activity' &&
+              !calendarDay(r.date).isBefore(startOfWeek) &&
+              !calendarDay(r.date).isAfter(calendarDay(today)),
+        )
+        .length;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF9F0),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
@@ -89,19 +104,52 @@ class HomeScreen extends ConsumerWidget {
               label: Text(l.fFarms),
             ),
             const SizedBox(height: 6),
-            if ((ref.watch(calendarRecordsProvider).value ?? [])
-                .isNotEmpty) ...[
-              SectionTitle(
-                v1Text(context, 'Recent records', 'ಇತ್ತೀಚಿನ ದಾಖಲೆಗಳು'),
-              ),
-              for (final record
-                  in (ref.watch(calendarRecordsProvider).value ?? []).take(3))
-                ListTile(
-                  title: Text(record.title),
-                  subtitle: Text(fmt.date(record.date)),
-                  onTap: () => context.go('/calendar'),
-                ),
-            ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final width = (constraints.maxWidth - 12) / 2;
+                final cards = <Widget>[
+                  _FarmSummaryTile(
+                    label: v1Text(context, 'Recent work', 'ಇತ್ತೀಚಿನ ಕೆಲಸ'),
+                    value: '$recentWork',
+                    detail: v1Text(context, 'This week', 'ಈ ವಾರ'),
+                    icon: Icons.assignment_outlined,
+                    onTap: () => context.go('/calendar'),
+                  ),
+                  _FarmSummaryTile(
+                    label: v1Text(context, 'Worker dues', 'ಕಾರ್ಮಿಕರ ಬಾಕಿ'),
+                    value: fmt.money(toPay),
+                    detail: v1Text(context, 'Pending wages', 'ಬಾಕಿ ವೇತನ'),
+                    icon: Icons.groups_outlined,
+                    green: true,
+                    onTap: () => context.go('/labour?tab=dues'),
+                  ),
+                  _FarmSummaryTile(
+                    label: v1Text(context, 'Harvests', 'ಕೊಯ್ಲುಗಳು'),
+                    value: '${lots.length}',
+                    detail: v1Text(context, 'Areca lots', 'ಅಡಿಕೆ ಲಾಟ್‌ಗಳು'),
+                    icon: Icons.eco_outlined,
+                    green: true,
+                    onTap: () => context.push('/lots'),
+                  ),
+                  _FarmSummaryTile(
+                    label: v1Text(context, 'Buyer balances', 'ಖರೀದಿದಾರರ ಬಾಕಿ'),
+                    value: fmt.money(toReceive),
+                    detail: v1Text(context, 'To receive', 'ಬರಬೇಕಾದ ಮೊತ್ತ'),
+                    icon: Icons.bar_chart_rounded,
+                    onTap: () => context.push('/sales'),
+                  ),
+                ];
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    for (final card in cards)
+                      SizedBox(width: width, child: card),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 12),
             if (drying.isNotEmpty) ...[
               SectionTitle(l.dryingNow),
               for (final v in drying) ...[
@@ -204,6 +252,75 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FarmSummaryTile extends StatelessWidget {
+  const _FarmSummaryTile({
+    required this.label,
+    required this.value,
+    required this.detail,
+    required this.icon,
+    required this.onTap,
+    this.green = false,
+  });
+  final String label, value, detail;
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool green;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = green ? const Color(0xFF365E3D) : AppColors.accent;
+    return Material(
+      color: green ? const Color(0xFFEDF0DF) : const Color(0xFFFFEEDC),
+      borderRadius: BorderRadius.circular(24),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 30),
+              const SizedBox(height: 14),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF183622),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      value,
+                      style: display(24, color: const Color(0xFF183622)),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: Color(0xFF365E3D),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                detail,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

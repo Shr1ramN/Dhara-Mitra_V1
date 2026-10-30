@@ -83,6 +83,29 @@ void main() {
     await tester.pump();
   }
 
+  testWidgets('home summary tiles fit a phone and open their farm tools', (
+    tester,
+  ) async {
+    await pump(tester);
+    expect(find.text('Recent records'), findsNothing);
+    for (final item in <(String, String)>[
+      ('Recent work', '/calendar'),
+      ('Worker dues', '/labour'),
+      ('Harvests', '/lots'),
+      ('Buyer balances', '/sales'),
+    ]) {
+      final tile = find.text(item.$1);
+      await tester.ensureVisible(tile);
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, item.$2);
+      router.go('/');
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+    await finish(tester);
+  });
+
   testWidgets(
     'Android Back from each section and direct feature returns home without exiting',
     (tester) async {
