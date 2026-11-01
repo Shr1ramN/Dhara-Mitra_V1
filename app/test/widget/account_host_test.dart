@@ -91,6 +91,8 @@ void main() {
       tester.element(find.text('Scope test farm · Test village')),
     );
     expect(container.read(accountControllerProvider), same(account));
+    final lotsSubscription = container.listen(lotViewsProvider, (_, _) {});
+    addTearDown(lotsSubscription.close);
     await tester.runAsync(() async {
       for (var i = 0; i < 100; i++) {
         if (container.read(farmProvider).hasValue &&

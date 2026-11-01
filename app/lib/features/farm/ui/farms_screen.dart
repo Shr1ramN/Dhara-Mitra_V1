@@ -85,24 +85,24 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
     body: AsyncBody(
       value: ref.watch(profilesProvider),
       builder: (farms) => ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         children: [
           Text(context.l.fFarmSeparate),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           for (final farm in farms)
             PaddedCard(
               child: ListTile(
-                leading: const Icon(Icons.agriculture_outlined),
+                leading: Icon(Icons.agriculture_outlined),
                 title: Text(farm.$2.isEmpty ? context.l.setupTitle : farm.$2),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (farm.$1 == ref.watch(databaseProvider).profileId)
-                      const Icon(Icons.check_circle),
+                      Icon(Icons.check_circle),
                     IconButton(
                       key: ValueKey('delete-farm-${farm.$1}'),
                       tooltip: context.l.fDeleteFarm,
-                      icon: const Icon(Icons.delete_outline),
+                      icon: Icon(Icons.delete_outline),
                       onPressed: _busy ? null : () => _delete(farm),
                     ),
                   ],
@@ -112,10 +112,10 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
             ),
           FilledButton.icon(
             onPressed: _busy ? null : () => _switch(),
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add),
             label: Text(context.l.fAddFarm),
           ),
-          if (_busy) const Center(child: CircularProgressIndicator()),
+          if (_busy) Center(child: CircularProgressIndicator()),
         ],
       ),
     ),

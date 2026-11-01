@@ -107,18 +107,18 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           ? null
           : IconButton(
               tooltip: context.l.aBack,
-              icon: const Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back),
               onPressed: () => context.go(
                 ref.read(farmProvider).value == null ? '/setup' : '/',
               ),
             ),
     ),
     body: ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       children: [
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Text(context.l.aManualBackup),
           ),
         ),
@@ -126,34 +126,33 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         Text(context.l.fFarmBackup),
         FilledButton.icon(
           onPressed: _busy ? null : () => _bundle(false),
-          icon: const Icon(Icons.backup_outlined),
+          icon: Icon(Icons.backup_outlined),
           label: Text(context.l.fBackupAll),
         ),
         OutlinedButton.icon(
           onPressed: _busy ? null : () => _bundle(true),
-          icon: const Icon(Icons.add_business_outlined),
+          icon: Icon(Icons.add_business_outlined),
           label: Text(context.l.fImportFarms),
         ),
         Text(context.l.fImportHint),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         FilledButton.icon(
           onPressed: _busy ? null : _create,
-          icon: const Icon(Icons.ios_share),
+          icon: Icon(Icons.ios_share),
           label: Text(context.l.xCreateBackup),
         ),
         OutlinedButton.icon(
           onPressed: _busy ? null : _restore,
-          icon: const Icon(Icons.restore),
+          icon: Icon(Icons.restore),
           label: Text(context.l.xRestore),
         ),
         if (_busy)
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(24),
             child: Center(child: CircularProgressIndicator()),
           ),
         if (_safety != null) Text('${context.l.xBackup}: $_safety'),
-        const SizedBox(height: 24),
-
+        SizedBox(height: 24),
       ],
     ),
   );

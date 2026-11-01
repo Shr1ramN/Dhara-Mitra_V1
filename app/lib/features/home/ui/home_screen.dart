@@ -1,6 +1,3 @@
-import '../../../core/v1.dart';
-import '../../calendar/calendar_records.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,254 +6,145 @@ import '../../../core/enums.dart';
 import '../../../core/l10n.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme.dart';
+import '../../../core/v1.dart';
 import '../../../core/widgets.dart';
-import '../../lots/domain/lot_calc.dart';
-import '../../lots/domain/lot_view.dart';
-import '../../lots/ui/lots_screen.dart';
-import '../../sales/sales_screen.dart';
-
-final monthlyCostsProvider = StreamProvider<int>((ref) {
-  final db = ref.watch(databaseProvider);
-  final today = ref.watch(todayProvider);
-  return db.watchAll([db.expenses, db.workerTxns], () async {
-    final expenses = await db.select(db.expenses).get();
-    final wages = await db.select(db.workerTxns).get();
-    bool inMonth(DateTime d) =>
-        d.year == today.year && d.month == today.month && !d.isAfter(today);
-    return expenses
-            .where((e) => !e.deleted && inMonth(e.date))
-            .fold(0, (s, e) => s + e.amount) +
-        wages
-            .where(
-              (w) => !w.deleted && w.kind == TxnKind.work && inMonth(w.date),
-            )
-            .fold(0, (s, w) => s + w.amount);
-  });
-});
+import '../../calendar/calendar_records.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l;
-    final fmt = context.fmt;
-    final today = ref.watch(todayProvider);
-    final lots = ref.watch(lotViewsProvider).value ?? const <LotView>[];
-    final workers = ref.watch(workerSummariesProvider).value ?? const [];
-
-    final drying = lots
-        .where((v) => v.stage == LotStage.drying && v.lot.dryingEndedOn == null)
-        .toList();
-    final waiting = lots
-        .where(
-          (v) =>
-              v.stage == LotStage.harvest ||
-              v.stage == LotStage.peeling ||
-              (v.stage == LotStage.drying && v.lot.dryingEndedOn != null),
-        )
-        .toList();
-    final stored = lots
-        .where(
-          (v) => v.stage == LotStage.storage || v.stage == LotStage.grading,
-        )
-        .toList();
-    final presentToday =
-        (ref.watch(attendanceProvider(today)).value?.values ?? const [])
-            .where((entry) => entry.status != AttendanceStatus.absent)
-            .length;
-    final toPay = workers.fold(
+    final l = context.l, fmt = context.fmt, today = ref.watch(todayProvider);
+    final workers = ref.watch(workerSummariesProvider).value ?? [];
+    final due = workers.fold<int>(
       0,
       (s, w) => s + (w.balance.due > 0 ? w.balance.due : 0),
     );
-    final toReceive =
-        (ref.watch(receivablesProvider).value ?? const <Receivable>[]).fold(
-          0,
-          (s, v) => s + v.pending,
-        );
-    final spent = ref.watch(monthlyCostsProvider).value ?? 0;
-    final records = ref.watch(calendarRecordsProvider).value ?? const [];
-    final startOfWeek = DateTime(
+    final present = (ref.watch(attendanceProvider(today)).value?.values ?? [])
+        .where((e) => e.status != AttendanceStatus.absent)
+        .length;
+    final records = ref.watch(calendarRecordsProvider).value ?? [];
+    final start = DateTime(
       today.year,
       today.month,
       today.day,
     ).subtract(Duration(days: today.weekday - 1));
-    final recentWork = records
+    final work = records
         .where(
           (r) =>
               (r.category == 'activity' || r.category == 'note') &&
-              !calendarDay(r.date).isBefore(startOfWeek) &&
+              !calendarDay(r.date).isBefore(start) &&
               !calendarDay(r.date).isAfter(calendarDay(today)),
         )
         .length;
-
+    final harvests = records
+        .where((r) => calendarCategoryMatches(r, 'harvest'))
+        .length;
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9F0),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
+          padding: EdgeInsets.fromLTRB(16, 18, 16, 32),
           children: [
             Text(
               fmt.weekdayDate(today),
-              style: const TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: context.appColors.textMuted),
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: 2),
             Text('${l.namaskara} 🙏', style: display(26)),
             OutlinedButton.icon(
               onPressed: () => context.push('/farms'),
-              icon: const Icon(Icons.swap_horiz),
+              icon: Icon(Icons.swap_horiz),
               label: Text(l.fFarms),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 8),
             LayoutBuilder(
               builder: (context, constraints) {
-                final largeText =
-                    MediaQuery.textScalerOf(context).scale(16) > 19.2;
-                final width = largeText && constraints.maxWidth < 400
+                final large = MediaQuery.textScalerOf(context).scale(16) > 19.2;
+                final width = large && constraints.maxWidth < 400
                     ? constraints.maxWidth
                     : (constraints.maxWidth - 12) / 2;
-                final cards = <Widget>[
-                  _FarmSummaryTile(
-                    label: l.tabAttendance,
-                    value: '$presentToday',
-                    detail: v1Text(context, 'Present today', 'ಇಂದು ಹಾಜರು'),
-                    icon: Icons.groups_outlined,
-                    onTap: () => context.go('/labour?tab=attendance'),
-                  ),
-                  _FarmSummaryTile(
-                    label: v1Text(context, 'Worker dues', 'ಕಾರ್ಮಿಕರ ಬಾಕಿ'),
-                    value: fmt.money(toPay),
-                    detail: v1Text(context, 'Pending wages', 'ಬಾಕಿ ವೇತನ'),
-                    icon: Icons.groups_outlined,
-                    green: true,
-                    onTap: () => context.go('/labour?tab=dues'),
-                  ),
-                  _FarmSummaryTile(
-                    label: v1Text(context, 'Recent work', 'ಇತ್ತೀಚಿನ ಕೆಲಸ'),
-                    value: '$recentWork',
-                    detail: v1Text(context, 'This week', 'ಈ ವಾರ'),
-                    icon: Icons.assignment_outlined,
-                    onTap: () => context.go('/calendar'),
-                  ),
-                  _FarmSummaryTile(
-                    label: v1Text(context, 'Harvests', 'ಕೊಯ್ಲುಗಳು'),
-                    value: '${lots.length}',
-                    detail: v1Text(context, 'Saved lots', 'ಉಳಿಸಿದ ಲಾಟ್‌ಗಳು'),
-                    icon: Icons.eco_outlined,
-                    green: true,
-                    onTap: () => context.go('/lots'),
-                  ),
-                ];
                 return Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    for (final card in cards)
-                      SizedBox(width: width, child: card),
+                    SizedBox(
+                      width: width,
+                      child: _FarmSummaryTile(
+                        label: l.tabAttendance,
+                        value: '$present',
+                        detail: v1Text(context, 'Present today', 'ಇಂದು ಹಾಜರು'),
+                        icon: Icons.how_to_reg,
+                        onTap: () => context.push('/labour?tab=attendance'),
+                      ),
+                    ),
+                    SizedBox(
+                      width: width,
+                      child: _FarmSummaryTile(
+                        label: v1Text(context, 'Worker dues', 'ಕಾರ್ಮಿಕರ ಬಾಕಿ'),
+                        value: fmt.money(due),
+                        detail: v1Text(context, 'Pending wages', 'ಬಾಕಿ ವೇತನ'),
+                        icon: Icons.groups_outlined,
+                        green: true,
+                        onTap: () => context.push('/labour?tab=dues'),
+                      ),
+                    ),
+                    SizedBox(
+                      width: width,
+                      child: _FarmSummaryTile(
+                        label: v1Text(context, 'Recent work', 'ಇತ್ತೀಚಿನ ಕೆಲಸ'),
+                        value: '$work',
+                        detail: v1Text(context, 'This week', 'ಈ ವಾರ'),
+                        icon: Icons.assignment_outlined,
+                        onTap: () => context.go('/calendar'),
+                      ),
+                    ),
+                    SizedBox(
+                      width: width,
+                      child: _FarmSummaryTile(
+                        label: v1Text(context, 'Harvests', 'ಕೊಯ್ಲುಗಳು'),
+                        value: '$harvests',
+                        detail: v1Text(
+                          context,
+                          'Saved records',
+                          'ಉಳಿಸಿದ ದಾಖಲೆಗಳು',
+                        ),
+                        icon: Icons.eco_outlined,
+                        green: true,
+                        onTap: () => context.go('/calendar?category=harvest'),
+                      ),
+                    ),
                   ],
                 );
               },
-            ),
-            const SizedBox(height: 12),
-            if (drying.isNotEmpty) ...[
-              SectionTitle(l.dryingNow),
-              for (final v in drying) ...[
-                _DryingCard(v),
-                const SizedBox(height: 10),
-              ],
-            ],
-            if (waiting.isNotEmpty) ...[
-              SectionTitle(l.waitingForYou),
-              for (final v in waiting) ...[
-                LotCard(v),
-                const SizedBox(height: 10),
-              ],
-            ],
-            if (stored.isNotEmpty) ...[
-              SectionTitle(l.inStorage),
-              for (final v in stored) ...[
-                LotCard(v),
-                const SizedBox(height: 10),
-              ],
-            ],
-            if (lots.isEmpty)
-              PaddedCard(
-                child: EmptyState(
-                  icon: Icons.eco_outlined,
-                  text: l.homeEmpty,
-                  action: FilledButton.icon(
-                    onPressed: () => context.push('/harvest-form'),
-                    icon: const Icon(Icons.add),
-                    label: Text(l.newHarvest),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                _QuickAction(
-                  icon: Icons.eco_outlined,
-                  label: l.qaHarvest,
-                  onTap: () => context.push('/date-note?label=harvest'),
-                ),
-                const SizedBox(width: 10),
-                _QuickAction(
-                  icon: Icons.how_to_reg_outlined,
-                  label: l.qaAttendance,
-                  onTap: () => context.go('/labour?tab=attendance'),
-                ),
-                const SizedBox(width: 10),
-                _QuickAction(
-                  icon: Icons.payments_outlined,
-                  label: l.qaPay,
-                  onTap: () => context.go('/labour?tab=dues'),
-                ),
-              ],
             ),
             SectionTitle(l.nFarmTools),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final feature in <(String, IconData, String)>[
+                for (final item in <(String, IconData, String)>[
+                  (l.farmActivity, Icons.grass, '/date-note'),
                   (
-                    v1Text(context, 'Add farm activity', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ'),
-                    Icons.add_circle_outline,
-                    '/date-note',
+                    l.navHarvest,
+                    Icons.eco_outlined,
+                    '/date-note?label=harvest',
                   ),
                   (l.xCalendar, Icons.calendar_month, '/calendar'),
-                  (l.navLabour, Icons.groups_outlined, '/labour'),
-                  (
-                    context.l.labourReports,
-                    Icons.bar_chart,
-                    '/labour?tab=reports',
-                  ),
-                  (l.navMore, Icons.more_horiz, '/more'),
+                  (l.labourManagement, Icons.groups_outlined, '/labour'),
                 ])
                   ActionChip(
-                    avatar: Icon(feature.$2, size: 18),
-                    label: Text(feature.$1),
-                    onPressed: () => context.push(feature.$3),
+                    avatar: Icon(item.$2, size: 18),
+                    label: Text(item.$1),
+                    onPressed: () => context.push(item.$3),
                   ),
               ],
             ),
-            const SizedBox(height: 12),
             SectionTitle(l.money),
-            KvRow(l.xSpentMonth, fmt.money(spent)),
-            KpiRow(
-              children: [
-                Kpi(
-                  label: l.toPayWorkers,
-                  value: fmt.moneyCompact(toPay),
-                  highlight: toPay > 0,
-                  onTap: () => context.go('/labour?tab=dues'),
-                ),
-                Kpi(
-                  label: l.toReceive,
-                  value: fmt.moneyCompact(toReceive),
-                  onTap: () => context.push('/sales'),
-                ),
-              ],
+            KvRow(l.toPayWorkers, fmt.money(due)),
+            OutlinedButton.icon(
+              onPressed: () => context.push('/labour?tab=reports'),
+              icon: Icon(Icons.bar_chart),
+              label: Text(l.labourReports),
             ),
           ],
         ),
@@ -281,28 +169,28 @@ class _FarmSummaryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = green ? const Color(0xFF365E3D) : AppColors.accent;
+    final color = green ? context.appColors.okText : context.appColors.accent;
     return Material(
-      color: green ? const Color(0xFFEDF0DF) : const Color(0xFFFFEEDC),
+      color: green ? context.appColors.okBg : context.appColors.accentSoft,
       borderRadius: BorderRadius.circular(24),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(icon, color: color, size: 30),
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF183622),
+                  color: context.appColors.text,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -313,23 +201,23 @@ class _FarmSummaryTile extends StatelessWidget {
                         value,
                         maxLines: 1,
                         softWrap: false,
-                        style: display(24, color: const Color(0xFF183622)),
+                        style: display(24, color: context.appColors.text),
                       ),
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right,
                     size: 20,
-                    color: Color(0xFF365E3D),
+                    color: context.appColors.okText,
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 detail,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textMuted,
+                  color: context.appColors.textMuted,
                 ),
               ),
             ],
@@ -338,111 +226,4 @@ class _FarmSummaryTile extends StatelessWidget {
       ),
     );
   }
-}
-
-class _DryingCard extends ConsumerWidget {
-  const _DryingCard(this.v);
-
-  final LotView v;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l;
-    final fmt = context.fmt;
-    final lot = v.lot;
-    final day = v.dryingDayOn(ref.watch(todayProvider))!;
-    return PaddedCard(
-      onTap: () => context.push('/lot/${lot.id}'),
-      color: const Color(0xFFFFFAF6),
-      borderColor: AppColors.accent.withValues(alpha: 0.35),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  lot.title,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-              Text(
-                lot.code,
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            l.dayOf(day, lot.dryingTargetDays),
-            style: display(22, color: AppColors.accentDark),
-          ),
-          const SizedBox(height: 8),
-          ProgressLine(dryingProgress(day, lot.dryingTargetDays)),
-          const SizedBox(height: 8),
-          Text(
-            [
-              l.expectedDone(
-                fmt.dayMonth(
-                  expectedDryingEnd(lot.dryingStartedOn!, lot.dryingTargetDays),
-                ),
-              ),
-              '${l.coveredForRain}: ${l.nTimes(v.count(LotEventKind.cover))}',
-            ].join(' · '),
-            style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: () async {
-              await ref
-                  .read(lotsRepositoryProvider)
-                  .addEvent(lot.id, LotEventKind.cover);
-              if (context.mounted) showSnack(context, l.coverLogged);
-            },
-            icon: const Icon(Icons.umbrella_outlined, size: 18),
-            label: Text(l.logRainCover),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Expanded(
-    child: PaddedCard(
-      onTap: onTap,
-      child: Column(
-        children: [
-          RoundIcon(
-            icon,
-            color: AppColors.accent,
-            background: AppColors.accentSoft,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    ),
-  );
 }

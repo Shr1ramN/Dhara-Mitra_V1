@@ -1928,4 +1928,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get myCrops => 'My crops';
+
+  @override
+  String get appearance => 'Appearance';
+
+  @override
+  String get themeSelector => 'Theme';
+
+  @override
+  String get systemTheme => 'System default';
+
+  @override
+  String get lightTheme => 'Light';
+
+  @override
+  String get darkTheme => 'Dark';
+
+  @override
+  String get farmActivity => 'Farm Activity';
+
+  @override
+  String get labourManagement => 'Labour Management';
+
+  @override
+  String get whatDoYouGrow => 'What do you grow?';
+
+  @override
+  String get addCrop => 'Add a crop';
+
+  @override
+  String get cropHistorySafe =>
+      'You can edit this list anytime. Past harvest and activity records stay unchanged.';
+
+  @override
+  String get exportExcel => 'Export to Excel';
+
+  @override
+  String get excelSnapshotHelp =>
+      'An editable copy for analysis. Changes in Excel do not change the app.';
 }

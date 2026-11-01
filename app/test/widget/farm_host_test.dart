@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'dart:io';
 
 import 'package:dhara_mitra/core/farm_host.dart';
@@ -25,6 +27,7 @@ class _Paths extends PathProviderPlatform {
 
 void main() {
   setUpAll(() {
+    SharedPreferences.setMockInitialValues({});
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     AndroidFlutterLocalNotificationsPlugin.registerWith();
   });
@@ -79,12 +82,23 @@ void main() {
         await tester.runAsync(() async {
           var done = false;
           final operation = action().whenComplete(() => done = true);
-          for (var attempt = 0; !done && attempt < 200; attempt++) {
+          for (var attempt = 0; !done && attempt < 750; attempt++) {
             await Future<void>.delayed(const Duration(milliseconds: 20));
             await tester.pump(const Duration(milliseconds: 20));
           }
           expect(done, isTrue, reason: 'Farm operation did not finish');
           await operation;
+          // New farm setup reads its editable crop list through the real
+          // database isolate. Allow that I/O to finish before fake-time settle.
+          for (
+            var i = 0;
+            i < 250 &&
+                find.byType(CircularProgressIndicator).evaluate().isNotEmpty;
+            i++
+          ) {
+            await Future<void>.delayed(const Duration(milliseconds: 20));
+            await tester.pump(const Duration(milliseconds: 20));
+          }
         });
         await tester.pumpAndSettle();
       }

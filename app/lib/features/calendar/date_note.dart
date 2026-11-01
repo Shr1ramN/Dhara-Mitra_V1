@@ -1,3 +1,5 @@
+import '../farm/data/farm_crops.dart';
+
 import 'dart:convert';
 
 import 'package:drift/drift.dart' show Value;
@@ -37,10 +39,11 @@ String readableNote(String text) {
 
 final myCropsProvider = StreamProvider<List<String>>((ref) {
   final db = ref.watch(databaseProvider);
-  return db.watchAll([db.appSettings], () async {
-    final raw = await db.setting('my_crops');
-    return raw == null ? <String>[] : (jsonDecode(raw) as List).cast<String>();
-  });
+  return db.watchAll([
+    db.appSettings,
+    db.plots,
+    db.plotCrops,
+  ], () => loadFarmCrops(db));
 });
 
 class DateNoteEditor extends ConsumerStatefulWidget {
@@ -115,7 +118,7 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
               ),
             );
         if (crop.text.trim().isNotEmpty) {
-          final all = [...?ref.read(myCropsProvider).value];
+          final all = await loadFarmCrops(db);
           if (!all.contains(crop.text.trim())) {
             all.add(crop.text.trim());
             await db.putSetting('my_crops', jsonEncode(all));
@@ -138,7 +141,7 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
     final l = context.l;
     final crops = ref.watch(myCropsProvider).value ?? [];
     return Scaffold(
-      appBar: AppBar(title: Text(context.l.farmDateNote)),
+      appBar: AppBar(title: Text(harvest ? l.navHarvest : l.farmActivity)),
       body: Form(
         key: form,
         child: ListView(
@@ -149,33 +152,34 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: label,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                labelText: v1Text(context, 'Label', 'ವರ್ಗ'),
+            if (!harvest)
+              TextFormField(
+                controller: label,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  labelText: v1Text(context, 'Label', 'ವರ್ಗ'),
+                ),
+                validator: (v) =>
+                    (v ?? '').trim().isEmpty ? l.requiredField : null,
               ),
-              validator: (v) =>
-                  (v ?? '').trim().isEmpty ? l.requiredField : null,
-            ),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                for (final pair in [
-                  ('Fertiliser', 'ಗೊಬ್ಬರ'),
-                  ('Spray', 'ಸಿಂಪಡಣೆ'),
-                  ('Harvest', 'ಕೊಯ್ಲು'),
-                  ('Irrigation', 'ನೀರಾವರಿ'),
-                ])
-                  ActionChip(
-                    label: Text(v1Text(context, pair.$1, pair.$2)),
-                    onPressed: () => setState(
-                      () => label.text = v1Text(context, pair.$1, pair.$2),
+            if (!harvest)
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  for (final pair in [
+                    ('Fertiliser', 'ಗೊಬ್ಬರ'),
+                    ('Spray', 'ಸಿಂಪಡಣೆ'),
+                    ('Irrigation', 'ನೀರಾವರಿ'),
+                  ])
+                    ActionChip(
+                      label: Text(v1Text(context, pair.$1, pair.$2)),
+                      onPressed: () => setState(
+                        () => label.text = v1Text(context, pair.$1, pair.$2),
+                      ),
                     ),
-                  ),
-              ],
-            ),
+                ],
+              ),
             TextFormField(
               controller: description,
               minLines: 3,
@@ -184,7 +188,7 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
                 labelText: v1Text(context, 'What was done?', 'ಏನು ಮಾಡಲಾಯಿತು?'),
               ),
               validator: (v) =>
-                  (v ?? '').trim().isEmpty ? l.requiredField : null,
+                  !harvest && (v ?? '').trim().isEmpty ? l.requiredField : null,
             ),
             const SizedBox(height: 16),
             TextField(

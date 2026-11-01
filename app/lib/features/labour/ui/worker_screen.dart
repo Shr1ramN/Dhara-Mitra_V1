@@ -62,7 +62,7 @@ class WorkerScreen extends ConsumerWidget {
             title: Text(w.name),
             actions: [
               IconButton(
-                icon: const Icon(Icons.ios_share),
+                icon: Icon(Icons.ios_share),
                 tooltip: l.xShareStatement,
                 onPressed: () => SharePlus.instance.share(
                   ShareParams(
@@ -70,7 +70,7 @@ class WorkerScreen extends ConsumerWidget {
                       l.appName,
                       w.name,
                       l.ledger,
-                      for (final line in ledger.value ?? const <LedgerLine>[])
+                      for (final line in ledger.value ?? <LedgerLine>[])
                         '${fmt.date(line.txn.date)} · ${l.txnKind(line.txn.kind)} · ${line.txn.note} · ${fmt.money(line.txn.amount)} · ${l.due}: ${fmt.money(line.dueAfter)}',
                       '${l.due}: ${fmt.money(s.balance.due)}',
                     ].join('\n'),
@@ -81,18 +81,18 @@ class WorkerScreen extends ConsumerWidget {
               IconButton(
                 tooltip: l.editWorker,
                 onPressed: () => context.push('/worker-form?id=${w.id}'),
-                icon: const Icon(Icons.edit_outlined),
+                icon: Icon(Icons.edit_outlined),
               ),
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+            padding: EdgeInsets.fromLTRB(16, 4, 16, 32),
             children: [
               PaddedCard(
                 child: Row(
                   children: [
                     WorkerAvatar(w.name, size: 48),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,9 +103,7 @@ class WorkerScreen extends ConsumerWidget {
                                 rolesText(l, w.roles),
                                 ...w.customRoles,
                               ].where((r) => r.isNotEmpty).join(', '),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
                           Text(
                             [
@@ -114,9 +112,9 @@ class WorkerScreen extends ConsumerWidget {
 
                               if (w.phone.isNotEmpty) w.phone,
                             ].join(' · '),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textMuted,
+                              color: context.appColors.textMuted,
                             ),
                           ),
                         ],
@@ -131,7 +129,7 @@ class WorkerScreen extends ConsumerWidget {
                   for (final contact in [(w.phone, false), (w.telephone, true)])
                     if (contact.$1.isNotEmpty)
                       OutlinedButton.icon(
-                        icon: const Icon(Icons.call_outlined),
+                        icon: Icon(Icons.call_outlined),
                         label: Text('${l.fCall} · ${contact.$1}'),
                         onPressed: () async {
                           final number = indianPhone(
@@ -181,7 +179,7 @@ class WorkerScreen extends ConsumerWidget {
                       child: Text(context.l.workerLoan),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Expanded(
                     child: FilledButton(
                       onPressed: () => showPaymentSheet(
@@ -221,7 +219,7 @@ class WorkerScreen extends ConsumerWidget {
                       ),
                     ),
                     OutlinedButton.icon(
-                      icon: const Icon(Icons.bar_chart),
+                      icon: Icon(Icons.bar_chart),
                       onPressed: () => Navigator.push<void>(
                         context,
                         MaterialPageRoute(
@@ -275,17 +273,17 @@ class WorkerScreen extends ConsumerWidget {
                                       ? Icons.handyman_outlined
                                       : Icons.payments_outlined,
                                   color: line.txn.kind == TxnKind.work
-                                      ? AppColors.text
-                                      : AppColors.okText,
+                                      ? context.appColors.text
+                                      : context.appColors.okText,
                                   background: line.txn.kind == TxnKind.work
-                                      ? AppColors.background
-                                      : AppColors.okBg,
+                                      ? context.appColors.background
+                                      : context.appColors.okBg,
                                 ),
                                 title: Text(
                                   line.txn.note.isNotEmpty
                                       ? line.txn.note
                                       : l.txnKind(line.txn.kind),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
@@ -309,15 +307,15 @@ class WorkerScreen extends ConsumerWidget {
                                       ),
                                     ),
                                   ].join(' · '),
-                                  style: const TextStyle(fontSize: 12),
+                                  style: TextStyle(fontSize: 12),
                                 ),
                                 trailing: Text(
                                   '${line.txn.kind == TxnKind.work ? '+' : '−'} ${formatRupees(settlements[line.txn.refId]?.cashPaid ?? line.txn.amount, showPaise: true)}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     color: line.txn.kind == TxnKind.work
-                                        ? AppColors.text
-                                        : AppColors.okText,
+                                        ? context.appColors.text
+                                        : context.appColors.okText,
                                   ),
                                 ),
                               ),

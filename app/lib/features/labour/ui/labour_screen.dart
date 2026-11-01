@@ -42,7 +42,7 @@ class LabourScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
             _WorkersTab(),
             AttendanceTab(),
@@ -67,12 +67,12 @@ class WorkerAvatar extends StatelessWidget {
     height: size,
     alignment: Alignment.center,
     decoration: BoxDecoration(
-      color: AppColors.accentSoft,
+      color: context.appColors.accentSoft,
       borderRadius: BorderRadius.circular(size / 3),
     ),
     child: Text(
       name.isEmpty ? '?' : name.characters.first.toUpperCase(),
-      style: display(size * 0.42, color: AppColors.accentDark),
+      style: display(size * 0.42, color: context.appColors.accentDark),
     ),
   );
 }
@@ -97,13 +97,15 @@ class DueText extends StatelessWidget {
               : l.settled,
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: due > 0 ? AppColors.accentDark : AppColors.okText,
+            color: due > 0
+                ? context.appColors.accentDark
+                : context.appColors.okText,
           ),
         ),
         if (due > 0)
           Text(
             l.due,
-            style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+            style: TextStyle(fontSize: 11, color: context.appColors.textMuted),
           ),
       ],
     );
@@ -123,23 +125,23 @@ class _WorkersTab extends ConsumerWidget {
       body: AsyncBody(
         value: ref.watch(workerSummariesProvider),
         builder: (workers) => ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 96),
           children: [
             Align(
               alignment: Alignment.centerLeft,
               child: FilledButton.icon(
                 onPressed: () => context.push('/worker-form'),
-                icon: const Icon(Icons.person_add_alt),
+                icon: Icon(Icons.person_add_alt),
                 label: Text(l.addWorker),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: () => context.push('/labour?tab=reports'),
-              icon: const Icon(Icons.bar_chart),
+              icon: Icon(Icons.bar_chart),
               label: Text(l.labourReports),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             if (workers.isEmpty)
               EmptyState(icon: Icons.groups_outlined, text: l.noWorkers),
             for (final s in workers)
@@ -148,14 +150,14 @@ class _WorkersTab extends ConsumerWidget {
                 child: Row(
                   children: [
                     WorkerAvatar(s.worker.name),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             s.worker.name,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                           Text(
                             [
@@ -172,9 +174,9 @@ class _WorkersTab extends ConsumerWidget {
                                 ),
                               if (!s.worker.active) l.inactive,
                             ].join(' · '),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textMuted,
+                              color: context.appColors.textMuted,
                             ),
                           ),
                         ],
@@ -204,13 +206,13 @@ class _DuesTab extends ConsumerWidget {
           ..sort((a, b) => b.balance.due.compareTo(a.balance.due));
         final total = owed.fold(0, (sum, s) => sum + s.balance.due);
         return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 32),
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.all(16),
+              margin: EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: AppColors.text,
+                color: context.appColors.okBg,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
@@ -221,22 +223,22 @@ class _DuesTab extends ConsumerWidget {
                       children: [
                         Text(
                           l.totalDue,
-                          style: const TextStyle(
-                            color: Colors.white70,
+                          style: TextStyle(
+                            color: context.appColors.textMuted,
                             fontSize: 12,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           formatRupees(total, showPaise: true),
-                          style: display(26, color: Colors.white),
+                          style: display(26, color: context.appColors.text),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.account_balance_wallet_outlined,
-                    color: Colors.white,
+                    color: context.appColors.text,
                     size: 28,
                   ),
                 ],
@@ -253,22 +255,20 @@ class _DuesTab extends ConsumerWidget {
                     Row(
                       children: [
                         WorkerAvatar(s.worker.name),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 s.worker.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.w600),
                               ),
                               Text(
                                 formatRupees(s.balance.due, showPaise: true),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.accentDark,
+                                  color: context.appColors.accentDark,
                                 ),
                               ),
                             ],
@@ -276,7 +276,7 @@ class _DuesTab extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     FilledButton(
                       onPressed: () => showPaymentSheet(
                         context,

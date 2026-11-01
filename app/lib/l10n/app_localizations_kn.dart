@@ -1924,4 +1924,42 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get myCrops => 'ನನ್ನ ಬೆಳೆಗಳು';
+
+  @override
+  String get appearance => 'ನೋಟ';
+
+  @override
+  String get themeSelector => 'ಥೀಮ್';
+
+  @override
+  String get systemTheme => 'ಫೋನ್‌ನ ಆಯ್ಕೆಯಂತೆ';
+
+  @override
+  String get lightTheme => 'ಬೆಳಕಿನ ನೋಟ';
+
+  @override
+  String get darkTheme => 'ಕತ್ತಲಿನ ನೋಟ';
+
+  @override
+  String get farmActivity => 'ತೋಟದ ಕೆಲಸ';
+
+  @override
+  String get labourManagement => 'ಕಾರ್ಮಿಕರ ನಿರ್ವಹಣೆ';
+
+  @override
+  String get whatDoYouGrow => 'ನೀವು ಯಾವ ಬೆಳೆ ಬೆಳೆಯುತ್ತೀರಿ?';
+
+  @override
+  String get addCrop => 'ಬೆಳೆ ಸೇರಿಸಿ';
+
+  @override
+  String get cropHistorySafe =>
+      'ಈ ಪಟ್ಟಿಯನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಾಯಿಸಬಹುದು. ಹಿಂದಿನ ಕೊಯ್ಲು ಮತ್ತು ಕೆಲಸದ ದಾಖಲೆಗಳು ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ.';
+
+  @override
+  String get exportExcel => 'Excel ಗೆ ರಫ್ತು ಮಾಡಿ';
+
+  @override
+  String get excelSnapshotHelp =>
+      'ವಿಶ್ಲೇಷಣೆಗೆ ಬಳಸಬಹುದಾದ ಪ್ರತಿ. Excel ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್‌ನ ದಾಖಲೆಗಳನ್ನು ಬದಲಾಯಿಸುವುದಿಲ್ಲ.';
 }

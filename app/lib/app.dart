@@ -1,3 +1,4 @@
+import 'core/appearance.dart';
 import 'core/v1.dart';
 import 'features/calendar/date_note.dart';
 
@@ -16,7 +17,7 @@ import 'features/calendar/farm_calendar.dart';
 import 'core/app_navigation.dart';
 import 'core/providers.dart';
 import 'core/theme.dart';
-import 'features/farm/ui/farm_screen.dart';
+import 'features/farm/ui/simple_farm_form.dart';
 import 'features/farm/ui/plot_form_screen.dart';
 import 'features/home/ui/home_screen.dart';
 import 'features/labour/ui/labour_screen.dart';
@@ -99,11 +100,11 @@ GoRouter buildRouter({
         GoRoute(path: '/reports', builder: (_, _) => const ReportsScreen()),
         GoRoute(
           path: '/setup',
-          builder: (_, _) => const FarmScreen(isSetup: true),
+          builder: (_, _) => const SimpleFarmForm(isSetup: true),
         ),
         GoRoute(
           path: '/farm',
-          builder: (_, _) => const FarmScreen(isSetup: false),
+          builder: (_, _) => const SimpleFarmForm(isSetup: false),
         ),
         GoRoute(
           path: '/plot',
@@ -145,7 +146,10 @@ GoRouter buildRouter({
               routes: [
                 GoRoute(
                   path: '/calendar',
-                  builder: (_, _) => const FarmCalendarScreen(),
+                  builder: (_, s) => FarmCalendarScreen(
+                    key: ValueKey(s.uri.toString()),
+                    initialCategory: s.uri.queryParameters['category'] ?? '',
+                  ),
                 ),
               ],
             ),
@@ -252,6 +256,8 @@ class _DharaMitraAppState extends ConsumerState<DharaMitraApp> {
     onGenerateTitle: (context) => context.l.appName,
     debugShowCheckedModeBanner: false,
     theme: buildTheme(),
+    darkTheme: buildTheme(brightness: Brightness.dark),
+    themeMode: ref.watch(themeModeProvider),
     locale: ref.watch(localeProvider),
     supportedLocales: AppLocalizations.supportedLocales,
     localizationsDelegates: const [

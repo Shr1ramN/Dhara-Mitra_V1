@@ -135,12 +135,7 @@ void main() {
       );
       await lots.addEvent(lotId, LotEventKind.cover);
     });
-    await pumpApp(tester, hasFarm: true);
-
-    await tester.scrollUntilVisible(find.text('Day 50 of ~40'), 200);
-    expect(find.text('Day 50 of ~40'), findsOneWidget);
-    await tester.tap(find.text('Harvest round 1').first);
-    await tester.pumpAndSettle();
+    await pumpApp(tester, hasFarm: true, initialLocation: '/lot/$lotId');
     expect(find.text('A-2627-01'), findsWidgets);
     expect(find.text('Drying finished'), findsOneWidget);
 

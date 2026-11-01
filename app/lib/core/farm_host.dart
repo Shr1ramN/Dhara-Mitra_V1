@@ -1,3 +1,7 @@
+import 'appearance.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -16,7 +20,14 @@ import '../features/farm/ui/farms_screen.dart';
 import '../features/security/security.dart';
 
 class FarmSession {
-  FarmSession(this.db, this.language, this.hasFarm, this.locked);
+  FarmSession(
+    this.db,
+    this.language,
+    this.hasFarm,
+    this.locked, {
+    this.themeMode = ThemeMode.system,
+  });
+  final ThemeMode themeMode;
   final AppDatabase db;
   final String language;
   final bool hasFarm, locked;
@@ -38,6 +49,9 @@ class FarmSession {
         (await db.setting(languageSetting))!,
         await FarmRepository(db).getFarm() != null,
         await db.setting('app_lock') == 'true',
+        themeMode: parseThemeMode(
+          (await SharedPreferences.getInstance()).getString(themePreferenceKey),
+        ),
       );
     } catch (_) {
       await db.close();
@@ -202,6 +216,7 @@ class _FarmHostState extends State<FarmHost> {
       databaseProvider.overrideWithValue(_session.db),
       farmCatalogueProvider.overrideWithValue(Future.value(widget.catalogue)),
       initialLanguageProvider.overrideWithValue(_session.language),
+      initialThemeModeProvider.overrideWithValue(_session.themeMode),
       initialLockProvider.overrideWithValue(_session.locked),
       switchFarmProvider.overrideWithValue(_switch),
       returnToFarmProvider.overrideWithValue(_returnToFarm),
