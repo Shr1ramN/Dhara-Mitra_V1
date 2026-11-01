@@ -91,9 +91,9 @@ class DueText extends StatelessWidget {
       children: [
         Text(
           due > 0
-              ? formatRupees(due)
+              ? formatRupees(due, showPaise: true)
               : due < 0
-              ? l.advanceHeld(formatRupees(-due))
+              ? l.advanceHeld(formatRupees(-due, showPaise: true))
               : l.settled,
           style: TextStyle(
             fontWeight: FontWeight.w700,
@@ -228,7 +228,7 @@ class _DuesTab extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          formatRupees(total),
+                          formatRupees(total, showPaise: true),
                           style: display(26, color: Colors.white),
                         ),
                       ],
@@ -265,7 +265,7 @@ class _DuesTab extends ConsumerWidget {
                                 ),
                               ),
                               Text(
-                                formatRupees(s.balance.due),
+                                formatRupees(s.balance.due, showPaise: true),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.accentDark,

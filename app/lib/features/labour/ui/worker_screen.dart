@@ -156,14 +156,17 @@ class WorkerScreen extends ConsumerWidget {
               ),
               KpiRow(
                 children: [
-                  Kpi(label: l.earned, value: formatRupees(s.balance.earned)),
+                  Kpi(
+                    label: l.earned,
+                    value: formatRupees(s.balance.earned, showPaise: true),
+                  ),
                   Kpi(
                     label: v1Text(context, 'Wages settled', 'ಪಾವತಿಸಿದ ಕೂಲಿ'),
-                    value: formatRupees(s.balance.given),
+                    value: formatRupees(s.balance.given, showPaise: true),
                   ),
                   Kpi(
                     label: s.balance.due < 0 ? l.advance : l.due,
-                    value: formatRupees(s.balance.due.abs()),
+                    value: formatRupees(s.balance.due.abs(), showPaise: true),
                     highlight: s.balance.due > 0,
                   ),
                 ],
@@ -301,12 +304,17 @@ class WorkerScreen extends ConsumerWidget {
                                             ?.loanDeduction
                                         case final int amount when amount > 0)
                                       '${v1Text(context, 'Loan deduction', 'ಸಾಲದ ಕಡಿತ')}: ${fmt.money(amount)}',
-                                    l.balanceAfter(formatRupees(line.dueAfter)),
+                                    l.balanceAfter(
+                                      formatRupees(
+                                        line.dueAfter,
+                                        showPaise: true,
+                                      ),
+                                    ),
                                   ].join(' · '),
                                   style: const TextStyle(fontSize: 12),
                                 ),
                                 trailing: Text(
-                                  '${line.txn.kind == TxnKind.work ? '+' : '−'} ${formatRupees(settlements[line.txn.refId]?.cashPaid ?? line.txn.amount)}',
+                                  '${line.txn.kind == TxnKind.work ? '+' : '−'} ${formatRupees(settlements[line.txn.refId]?.cashPaid ?? line.txn.amount, showPaise: true)}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     color: line.txn.kind == TxnKind.work

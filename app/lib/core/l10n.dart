@@ -30,7 +30,7 @@ class Formats {
   String month(int month) =>
       DateFormat.MMMM(locale).format(DateTime(2000, month));
 
-  String money(int paise) => formatRupees(paise);
+  String money(int paise) => formatRupees(paise, showPaise: true);
 
   String moneyCompact(int paise) => formatMoneyCompact(paise, l.lakhUnit);
 

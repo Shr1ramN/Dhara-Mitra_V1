@@ -127,6 +127,7 @@ void main() {
           33333,
         );
       });
+      expect(find.textContaining('₹333.33'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(seconds: 1));
       await db.close();
