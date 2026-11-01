@@ -1,3 +1,6 @@
+import '../../core/add_chip.dart';
+import 'sale_editor.dart';
+import '../../core/draft_guard.dart';
 import '../farm/data/farm_crops.dart';
 
 import 'dart:convert';
@@ -33,11 +36,19 @@ String readableNote(String text) {
   final n = noteValues(text);
   return [
     n['description'],
-    n['crop'],
+    if (n['items'] is List)
+      for (final item
+          in (n['items'] as List).whereType<Map<Object?, Object?>>().map(
+            (e) => e.cast<String, dynamic>(),
+          ))
+        "${item['crop']} · ${item['quantity']} ${item['unit']}"
+    else
+      n['crop'],
     if (n['buyer'] != null) n['buyer'],
     if (n['incomePaise'] is int)
       formatRupees(n['incomePaise'] as int, showPaise: true),
-    if (n['quantity'] != null) '${n['quantity']} ${n['unit']}',
+    if (n['items'] is! List && n['quantity'] != null)
+      '${n['quantity']} ${n['unit']}',
   ].where((v) => v != null && v.toString().isNotEmpty).join(' · ');
 }
 
@@ -68,15 +79,32 @@ final workLabelsProvider = StreamProvider<List<String>>((ref) {
   });
 });
 
+final hiddenWorkLabelsProvider = StreamProvider<Set<String>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchAll([db.appSettings], () async {
+    final value = await db.setting('hidden_work_labels');
+    return value == null
+        ? <String>{}
+        : (jsonDecode(value) as List).cast<String>().toSet();
+  });
+});
+
 String localizedNote(BuildContext context, String raw) {
   if (!raw.startsWith(notePrefix)) return raw;
   final n = noteValues(raw);
   return [
     n['description'],
-    n['crop'],
+    if (n['items'] is List)
+      for (final item
+          in (n['items'] as List).whereType<Map<Object?, Object?>>().map(
+            (e) => e.cast<String, dynamic>(),
+          ))
+        "${item['crop']} · ${item['quantity']} ${item['unit'] == 'bags' ? v1Text(context, 'bags', 'ಚೀಲಗಳು') : v1Text(context, 'kg', 'ಕೆಜಿ')}"
+    else
+      n['crop'],
     n['buyer'],
     if (n['incomePaise'] is int) context.fmt.money(n['incomePaise'] as int),
-    if (n['quantity'] != null)
+    if (n['items'] is! List && n['quantity'] != null)
       "${n['quantity']} ${n['unit'] == 'bags' ? v1Text(context, 'bags', 'ಚೀಲಗಳು') : v1Text(context, 'kg', 'ಕೆಜಿ')}",
   ].where((v) => v != null && v.toString().isNotEmpty).join(' · ');
 }
@@ -149,32 +177,48 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
     super.dispose();
   }
 
-  Future<void> addWorkType() async {
-    var text = '';
-    final value = await showDialog<String>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text(v1Text(c, 'Add work type', 'ಕೆಲಸದ ಪ್ರಕಾರ ಸೇರಿಸಿ')),
-        content: TextField(
-          autofocus: true,
-          onChanged: (v) => text = v,
-          decoration: InputDecoration(
-            labelText: v1Text(c, 'Work type', 'ಕೆಲಸದ ಪ್ರಕಾರ'),
+  Future<void> hideWorkType(String key) async {
+    final remove =
+        await showDialog<bool>(
+          context: context,
+          builder: (c) => AlertDialog(
+            title: Text(
+              v1Text(c, 'Remove suggestion?', 'ಸೂಚನೆ ತೆಗೆದುಹಾಕಬೇಕೇ?'),
+            ),
+            content: Text(
+              v1Text(
+                c,
+                'This removes only this work-type suggestion. Saved farm records stay unchanged. Add it again with Add work type.',
+                'ಈ ಕೆಲಸದ ಸೂಚನೆ ಮಾತ್ರ ತೆಗೆದುಹಾಕುತ್ತದೆ. ಉಳಿಸಿದ ದಾಖಲೆಗಳು ಬದಲಾಗುವುದಿಲ್ಲ. ಹೊಸ ಕೆಲಸದ ಪ್ರಕಾರವಾಗಿ ಮತ್ತೆ ಸೇರಿಸಬಹುದು.',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c, false),
+                child: Text(c.l.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(c, true),
+                child: Text(v1Text(c, 'Remove', 'ತೆಗೆದುಹಾಕಿ')),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(c),
-            child: Text(c.l.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(c, text.trim()),
-            child: Text(c.l.save),
-          ),
-        ],
-      ),
-    );
-    if (!mounted || value == null || value.isEmpty) return;
+        ) ??
+        false;
+    if (!remove || !mounted) return;
+    final db = ref.read(databaseProvider);
+    await db.transaction(() async {
+      final saved = await db.setting('hidden_work_labels');
+      final all = saved == null
+          ? <String>{}
+          : (jsonDecode(saved) as List).cast<String>().toSet();
+      all.add(key);
+      await db.putSetting('hidden_work_labels', jsonEncode(all.toList()));
+    });
+  }
+
+  Future<void> addWorkType(String value) async {
+    if (!mounted || value.isEmpty) return;
     setState(() {
       label.text = value;
       customLabel = true;
@@ -189,6 +233,12 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
         labels.add(value);
       }
       await db.putSetting('custom_work_labels', jsonEncode(labels));
+      final hiddenValue = await db.setting('hidden_work_labels');
+      final hidden = hiddenValue == null
+          ? <String>{}
+          : (jsonDecode(hiddenValue) as List).cast<String>().toSet();
+      hidden.remove('custom:$value');
+      await db.putSetting('hidden_work_labels', jsonEncode(hidden.toList()));
     });
   }
 
@@ -246,6 +296,7 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
         }
       });
       if (mounted) {
+        acceptDrafts();
         showSavedTick(context, context.l.saved);
         Navigator.pop(context);
       }
@@ -258,8 +309,16 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
 
   @override
   Widget build(BuildContext context) {
+    if (sale) {
+      return SaleEditor(
+        date: widget.date,
+        existing: widget.existing,
+        initialValues: widget.initialValues,
+      );
+    }
     final l = context.l;
     final crops = ref.watch(myCropsProvider).value ?? [];
+    final hidden = ref.watch(hiddenWorkLabelsProvider).value ?? <String>{};
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -270,196 +329,278 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
               : l.farmActivity,
         ),
       ),
-      body: Form(
-        key: form,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              context.fmt.weekdayDate(date),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            if (sale)
-              TextButton.icon(
-                icon: const Icon(Icons.calendar_today_outlined),
-                label: Text(
-                  v1Text(context, 'Change sale date', 'ಮಾರಾಟದ ದಿನಾಂಕ ಬದಲಿಸಿ'),
-                ),
-                onPressed: () async {
-                  final selected = await showDatePicker(
-                    context: context,
-                    initialDate: date,
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime(2200),
-                  );
-                  if (mounted && selected != null) {
-                    setState(() => date = selected);
-                  }
-                },
+      body: DraftGuard(
+        controllers: [label, description, crop, quantity, buyer, income],
+        extra: () => [date.toIso8601String(), unit],
+        child: Form(
+          key: form,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Text(
+                context.fmt.weekdayDate(date),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-            const SizedBox(height: 16),
-            if (!harvest && !sale)
-              TextFormField(
-                controller: label,
-                onChanged: (_) => setState(() => customLabel = true),
-                decoration: InputDecoration(
-                  labelText: v1Text(context, 'Label', 'ವರ್ಗ'),
-                ),
-                validator: (v) =>
-                    (v ?? '').trim().isEmpty ? l.requiredField : null,
-              ),
-            if (!harvest && !sale)
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  for (final pair in [
-                    ('Fertiliser', 'ಗೊಬ್ಬರ'),
-                    ('Spray', 'ಸಿಂಪಡಣೆ'),
-                    ('Irrigation', 'ನೀರಾವರಿ'),
-                  ])
-                    ActionChip(
-                      label: Text(v1Text(context, pair.$1, pair.$2)),
-                      onPressed: () => setState(() {
-                        label.text = v1Text(context, pair.$1, pair.$2);
-                        customLabel = false;
-                      }),
-                    ),
-                ],
-              ),
-            if (!harvest && !sale)
-              Wrap(
-                spacing: 8,
-                children: [
-                  for (final custom
-                      in ref.watch(workLabelsProvider).value ?? <String>[])
-                    ActionChip(
-                      label: Text(custom),
-                      onPressed: () => setState(() {
-                        label.text = custom;
-                        customLabel = true;
-                      }),
-                    ),
-                ],
-              ),
-            if (!harvest && !sale)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () => perform(context, addWorkType),
-                  icon: const Icon(Icons.add),
+              if (sale)
+                TextButton.icon(
+                  icon: const Icon(Icons.calendar_today_outlined),
                   label: Text(
-                    v1Text(context, 'Add work type', 'ಕೆಲಸದ ಪ್ರಕಾರ ಸೇರಿಸಿ'),
+                    v1Text(context, 'Change sale date', 'ಮಾರಾಟದ ದಿನಾಂಕ ಬದಲಿಸಿ'),
+                  ),
+                  onPressed: () async {
+                    final selected = await showDatePicker(
+                      context: context,
+                      initialDate: date,
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime(2200),
+                    );
+                    if (mounted && selected != null) {
+                      setState(() => date = selected);
+                    }
+                  },
+                ),
+              const SizedBox(height: 16),
+              if (!harvest && !sale)
+                FormField<String>(
+                  validator: (_) =>
+                      label.text.trim().isEmpty ? l.requiredField : null,
+                  builder: (state) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        v1Text(
+                          context,
+                          'Work type (required)',
+                          'ಕೆಲಸದ ಪ್ರಕಾರ (ಅಗತ್ಯ)',
+                        ),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      if (label.text.isNotEmpty)
+                        Text(
+                          customLabel
+                              ? label.text
+                              : translatedLabel(context, label.text),
+                        ),
+                      if (state.hasError)
+                        Text(
+                          state.errorText!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-              ),
-            TextFormField(
-              controller: description,
-              minLines: 3,
-              maxLines: 6,
-              decoration: InputDecoration(
-                labelText: v1Text(context, 'What was done?', 'ಏನು ಮಾಡಲಾಯಿತು?'),
-              ),
-              validator: (v) => !harvest && !sale && (v ?? '').trim().isEmpty
-                  ? l.requiredField
-                  : null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              validator: (v) =>
-                  sale && (v ?? '').trim().isEmpty ? l.requiredField : null,
-              controller: crop,
-              decoration: InputDecoration(
-                labelText: v1Text(context, 'Crop (optional)', 'ಬೆಳೆ (ಐಚ್ಛಿಕ)'),
-              ),
-            ),
-            if (crops.isNotEmpty)
-              Wrap(
-                spacing: 8,
-                children: [
-                  for (final c in crops)
-                    ActionChip(label: Text(c), onPressed: () => crop.text = c),
-                ],
-              ),
-            if (harvest || sale) ...[
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: quantity,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(labelText: l.xQuantity),
-                validator: (v) =>
-                    (parseQty(v ?? '') ?? 0) <= 0 ? l.invalidNumber : null,
-              ),
-              RadioGroup<String>(
-                groupValue: unit,
-                onChanged: (v) => setState(() => unit = v!),
-                child: Column(
+              if (!harvest && !sale)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
-                    RadioListTile(
-                      value: 'bags',
-                      title: Text(v1Text(context, 'Bags', 'ಚೀಲಗಳು')),
+                    for (final pair in [
+                      ('Fertiliser', 'ಗೊಬ್ಬರ'),
+                      ('Spray', 'ಸಿಂಪಡಣೆ'),
+                      ('Irrigation', 'ನೀರಾವರಿ'),
+                    ])
+                      if (!hidden.contains(pair.$1.toLowerCase()))
+                        GestureDetector(
+                          onLongPress: () => perform(
+                            context,
+                            () => hideWorkType(pair.$1.toLowerCase()),
+                          ),
+                          child: ActionChip(
+                            label: Text(v1Text(context, pair.$1, pair.$2)),
+                            onPressed: () => setState(() {
+                              label.text = v1Text(context, pair.$1, pair.$2);
+                              customLabel = false;
+                            }),
+                          ),
+                        ),
+                  ],
+                ),
+              if (!harvest && !sale)
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    for (final custom
+                        in ref.watch(workLabelsProvider).value ?? <String>[])
+                      if (!hidden.contains('custom:$custom'))
+                        GestureDetector(
+                          onLongPress: () => perform(
+                            context,
+                            () => hideWorkType('custom:$custom'),
+                          ),
+                          child: ActionChip(
+                            label: Text(custom),
+                            onPressed: () => setState(() {
+                              label.text = custom;
+                              customLabel = true;
+                            }),
+                          ),
+                        ),
+                  ],
+                ),
+              if (!harvest && !sale)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: AddChip(
+                    title: v1Text(
+                      context,
+                      'Add work type',
+                      'ಕೆಲಸದ ಪ್ರಕಾರ ಸೇರಿಸಿ',
                     ),
-                    RadioListTile(value: 'kg', title: Text(l.kgUnit)),
+                    onAdd: addWorkType,
+                  ),
+                ),
+              TextFormField(
+                controller: description,
+                minLines: 3,
+                maxLines: 6,
+                decoration: InputDecoration(
+                  labelText: v1Text(
+                    context,
+                    'What was done?',
+                    'ಏನು ಮಾಡಲಾಯಿತು?',
+                  ),
+                ),
+                validator: (v) => !harvest && !sale && (v ?? '').trim().isEmpty
+                    ? l.requiredField
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              FormField<String>(
+                validator: (_) => harvest && crop.text.trim().isEmpty
+                    ? l.requiredField
+                    : null,
+                builder: (state) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      harvest
+                          ? v1Text(context, 'Crop (required)', 'ಬೆಳೆ (ಅಗತ್ಯ)')
+                          : v1Text(context, 'Crop (optional)', 'ಬೆಳೆ (ಐಚ್ಛಿಕ)'),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        for (final c in {
+                          ...crops,
+                          if (crop.text.isNotEmpty) crop.text,
+                        })
+                          ChoiceChip(
+                            label: Text(c),
+                            selected: crop.text == c,
+                            onSelected: (selected) =>
+                                setState(() => crop.text = selected ? c : ''),
+                          ),
+                        AddChip(
+                          title: v1Text(context, 'Add crop', 'ಬೆಳೆ ಸೇರಿಸಿ'),
+                          onAdd: (value) async {
+                            final db = ref.read(databaseProvider);
+                            await db.transaction(() async {
+                              final all = await loadFarmCrops(db);
+                              if (!all.contains(value)) {
+                                all.add(value);
+                              }
+                              await saveFarmCrops(db, all);
+                            });
+                            if (mounted) {
+                              setState(() => crop.text = value);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    if (state.hasError)
+                      Text(
+                        state.errorText!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
                   ],
                 ),
               ),
-            ],
-            if (sale) ...[
-              TextFormField(
-                controller: buyer,
-                decoration: InputDecoration(
-                  labelText: v1Text(
-                    context,
-                    'Sold to whom?',
-                    'ಯಾರಿಗೆ ಮಾರಾಟ ಮಾಡಲಾಗಿದೆ?',
+              if (harvest || sale) ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: quantity,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(labelText: l.xQuantity),
+                  validator: (v) =>
+                      (parseQty(v ?? '') ?? 0) <= 0 ? l.invalidNumber : null,
+                ),
+                RadioGroup<String>(
+                  groupValue: unit,
+                  onChanged: (v) => setState(() => unit = v!),
+                  child: Column(
+                    children: [
+                      RadioListTile(
+                        value: 'bags',
+                        title: Text(v1Text(context, 'Bags', 'ಚೀಲಗಳು')),
+                      ),
+                      RadioListTile(value: 'kg', title: Text(l.kgUnit)),
+                    ],
                   ),
                 ),
-                validator: (v) =>
-                    (v ?? '').trim().isEmpty ? l.requiredField : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: income,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: v1Text(
-                    context,
-                    'Income received (₹)',
-                    'ಪಡೆದ ಆದಾಯ (₹)',
+              ],
+              if (sale) ...[
+                TextFormField(
+                  controller: buyer,
+                  decoration: InputDecoration(
+                    labelText: v1Text(
+                      context,
+                      'Sold to whom?',
+                      'ಯಾರಿಗೆ ಮಾರಾಟ ಮಾಡಲಾಗಿದೆ?',
+                    ),
                   ),
+                  validator: (v) =>
+                      (v ?? '').trim().isEmpty ? l.requiredField : null,
                 ),
-                validator: (v) =>
-                    (parseRupees(v ?? '') ?? 0) <= 0 ? l.invalidNumber : null,
-              ),
-            ],
-            if (harvest && widget.existing != null)
-              OutlinedButton.icon(
-                icon: const Icon(Icons.payments_outlined),
-                label: Text(
-                  v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: income,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: v1Text(
+                      context,
+                      'Income received (₹)',
+                      'ಪಡೆದ ಆದಾಯ (₹)',
+                    ),
+                  ),
+                  validator: (v) =>
+                      (parseRupees(v ?? '') ?? 0) <= 0 ? l.invalidNumber : null,
                 ),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => DateNoteEditor(
-                      date: DateTime.now(),
-                      suggested: 'sale',
-                      initialValues: {
-                        'crop': crop.text,
-                        'quantity': parseQty(quantity.text),
-                        'unit': unit,
-                        'harvestId': widget.existing!.id,
-                      },
+              ],
+              if (harvest && widget.existing != null)
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.payments_outlined),
+                  label: Text(
+                    v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
+                  ),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => DateNoteEditor(
+                        date: DateTime.now(),
+                        suggested: 'sale',
+                        initialValues: {
+                          'crop': crop.text,
+                          'quantity': parseQty(quantity.text),
+                          'unit': unit,
+                          'harvestId': widget.existing!.id,
+                        },
+                      ),
                     ),
                   ),
                 ),
-              ),
-            const SizedBox(height: 24),
-            FilledButton(onPressed: busy ? null : save, child: Text(l.save)),
-          ],
+              const SizedBox(height: 24),
+              FilledButton(onPressed: busy ? null : save, child: Text(l.save)),
+            ],
+          ),
         ),
       ),
     );
@@ -518,6 +659,7 @@ class _CropsState extends ConsumerState<MyCropsScreen> {
                           );
                       name.clear();
                       if (context.mounted) {
+                        acceptDrafts();
                         showSavedTick(context, context.l.saved);
                       }
                     } catch (e) {

@@ -1,3 +1,5 @@
+import '../../../core/draft_guard.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -111,6 +113,7 @@ class _WorkerLoanState extends ConsumerState<WorkerLoanForm> {
         note: note.text.trim(),
       );
       if (mounted) {
+        acceptDrafts();
         showSavedTick(context, context.l.saved);
         Navigator.pop(context);
       }
@@ -127,66 +130,70 @@ class _WorkerLoanState extends ConsumerState<WorkerLoanForm> {
     final p = ref.watch(payrollDataProvider).value;
     return Scaffold(
       appBar: AppBar(title: Text(widget.worker.name)),
-      body: Form(
-        key: form,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              widget.repayment
-                  ? loanKind(context, 'repayment')
-                  : context.l.workerLoan,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            if (p != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  '${context.l.workerLoanOutstanding}: ${context.fmt.money(p.loan(widget.worker.id, dateOnly(DateTime.now())))}',
+      body: DraftGuard(
+        controllers: [amount, note],
+        extra: () => [date.toIso8601String(), kind],
+        child: Form(
+          key: form,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Text(
+                widget.repayment
+                    ? loanKind(context, 'repayment')
+                    : context.l.workerLoan,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              if (p != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    '${context.l.workerLoanOutstanding}: ${context.fmt.money(p.loan(widget.worker.id, dateOnly(DateTime.now())))}',
+                  ),
+                ),
+              if (!widget.repayment)
+                RadioGroup<String>(
+                  groupValue: kind,
+                  onChanged: (v) => setState(() => kind = v!),
+                  child: Column(
+                    children: [
+                      for (final k in ['previous', 'new'])
+                        RadioListTile(
+                          value: k,
+                          title: Text(loanKind(context, k)),
+                        ),
+                    ],
+                  ),
+                ),
+              MoneyField(
+                controller: amount,
+                label: l.amountRupees,
+                required: true,
+                validator: (v) =>
+                    (parseRupees(v) ?? 0) <= 0 ? l.invalidNumber : null,
+              ),
+              fieldGap,
+              DateField(
+                label: l.date,
+                value: date,
+                onChanged: (v) => setState(() => date = v),
+              ),
+              fieldGap,
+              Text(
+                v1Text(
+                  context,
+                  'Use the date the loan was given. Future-work loans are recorded when the money is given.',
+                  'ಸಾಲ ನೀಡಿದ ದಿನಾಂಕವನ್ನು ಬಳಸಿ. ಮುಂದಿನ ಕೆಲಸದ ಸಾಲವನ್ನು ಹಣ ನೀಡಿದಾಗ ದಾಖಲಿಸಿ.',
                 ),
               ),
-            if (!widget.repayment)
-              RadioGroup<String>(
-                groupValue: kind,
-                onChanged: (v) => setState(() => kind = v!),
-                child: Column(
-                  children: [
-                    for (final k in ['previous', 'new'])
-                      RadioListTile(
-                        value: k,
-                        title: Text(loanKind(context, k)),
-                      ),
-                  ],
-                ),
+              TextField(
+                controller: note,
+                decoration: InputDecoration(labelText: l.note),
               ),
-            MoneyField(
-              controller: amount,
-              label: l.amountRupees,
-              required: true,
-              validator: (v) =>
-                  (parseRupees(v) ?? 0) <= 0 ? l.invalidNumber : null,
-            ),
-            fieldGap,
-            DateField(
-              label: l.date,
-              value: date,
-              onChanged: (v) => setState(() => date = v),
-            ),
-            fieldGap,
-            Text(
-              v1Text(
-                context,
-                'Use the date the loan was given. Future-work loans are recorded when the money is given.',
-                'ಸಾಲ ನೀಡಿದ ದಿನಾಂಕವನ್ನು ಬಳಸಿ. ಮುಂದಿನ ಕೆಲಸದ ಸಾಲವನ್ನು ಹಣ ನೀಡಿದಾಗ ದಾಖಲಿಸಿ.',
-              ),
-            ),
-            TextField(
-              controller: note,
-              decoration: InputDecoration(labelText: l.note),
-            ),
-            const SizedBox(height: 20),
-            FilledButton(onPressed: busy ? null : save, child: Text(l.save)),
-          ],
+              const SizedBox(height: 20),
+              FilledButton(onPressed: busy ? null : save, child: Text(l.save)),
+            ],
+          ),
         ),
       ),
     );
@@ -233,6 +240,7 @@ class _SettlementState extends ConsumerState<SettlementForm> {
         note: note.text.trim(),
       );
       if (mounted) {
+        acceptDrafts();
         showSavedTick(context, context.l.saved);
         Navigator.pop(context);
       }
@@ -266,136 +274,152 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                     inPeriod(e.date),
               )
               .fold<int>(0, (s, e) => s + e.amount);
-          return Form(
-            key: form,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Text(
-                  widget.worker.name,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                fieldGap,
-                DateField(
-                  label: v1Text(context, 'Period from', 'ಅವಧಿ ಆರಂಭ'),
-                  value: start,
-                  onChanged: (d) => setState(() => start = dateOnly(d)),
-                ),
-                fieldGap,
-                DateField(
-                  label: v1Text(context, 'Period to', 'ಅವಧಿ ಅಂತ್ಯ'),
-                  value: end,
-                  onChanged: (d) => setState(() => end = dateOnly(d)),
-                ),
-                fieldGap,
-                PaddedCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      KvRow(
-                        l.present,
-                        '${entries.where((e) => e.status == AttendanceStatus.present).length}',
-                      ),
-                      KvRow(
-                        l.attendance(AttendanceStatus.half),
-                        '${entries.where((e) => e.status == AttendanceStatus.half).length}',
-                      ),
-                      KvRow(
-                        v1Text(
-                          context,
-                          'Wages earned in period',
-                          'ಈ ಅವಧಿಯ ಗಳಿಕೆ',
-                        ),
-                        context.fmt.money(earned),
-                      ),
-                      KvRow(
-                        v1Text(
-                          context,
-                          'Opening unpaid balance',
-                          'ಆರಂಭಿಕ ಬಾಕಿ',
-                        ),
-                        context.fmt.money(
-                          data.due(id, start.subtract(const Duration(days: 1))),
-                        ),
-                      ),
-                      KvRow(
-                        v1Text(
-                          context,
-                          'Unpaid through period end',
-                          'ಅವಧಿ ಅಂತ್ಯದ ಬಾಕಿ',
-                        ),
-                        context.fmt.money(data.due(id, end)),
-                      ),
-                      KvRow(
-                        v1Text(
-                          context,
-                          'Available to settle now',
-                          'ಈಗ ಪಾವತಿಸಬಹುದಾದ ಮೊತ್ತ',
-                        ),
-                        context.fmt.money(
-                          data.available(id, end).clamp(0, 1 << 62),
-                        ),
-                      ),
-                      KvRow(
-                        context.l.workerLoanOutstanding,
-                        context.fmt.money(data.loan(id, paidOn)),
-                      ),
-                    ],
+          return DraftGuard(
+            controllers: [cash, deduction, note],
+            extra: () => [
+              start.toIso8601String(),
+              end.toIso8601String(),
+              paidOn.toIso8601String(),
+              mode.name,
+            ],
+            child: Form(
+              key: form,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Text(
+                    widget.worker.name,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                ),
-                DateField(
-                  label: v1Text(context, 'Payment date', 'ಪಾವತಿ ದಿನಾಂಕ'),
-                  value: paidOn,
-                  onChanged: (d) => setState(() => paidOn = dateOnly(d)),
-                ),
-                fieldGap,
-                MoneyField(
-                  controller: cash,
-                  label: v1Text(
-                    context,
-                    'Paid to worker (₹)',
-                    'ಪಾವತಿ ಮೊತ್ತ (₹)',
+                  fieldGap,
+                  DateField(
+                    label: v1Text(context, 'Period from', 'ಅವಧಿ ಆರಂಭ'),
+                    value: start,
+                    onChanged: (d) => setState(() => start = dateOnly(d)),
                   ),
-                  validator: (v) =>
-                      v.trim().isNotEmpty && parseRupees(v) == null
-                      ? l.invalidNumber
-                      : null,
-                ),
-                fieldGap,
-                MoneyField(
-                  controller: deduction,
-                  label: v1Text(context, 'Loan deduction (₹)', 'ಸಾಲದ ಕಡಿತ (₹)'),
-                  validator: (v) =>
-                      v.trim().isNotEmpty && parseRupees(v) == null
-                      ? l.invalidNumber
-                      : null,
-                ),
-                fieldGap,
-                Text(
-                  v1Text(
-                    context,
-                    'Partial payment is allowed. The remainder stays due. Loan deductions require your entry.',
-                    'ಭಾಗಶಃ ಪಾವತಿ ಮಾಡಬಹುದು. ಉಳಿದ ಮೊತ್ತ ಬಾಕಿ ಇರುತ್ತದೆ. ಸಾಲದ ಕಡಿತವನ್ನು ನೀವೇ ನಮೂದಿಸಬೇಕು.',
+                  fieldGap,
+                  DateField(
+                    label: v1Text(context, 'Period to', 'ಅವಧಿ ಅಂತ್ಯ'),
+                    value: end,
+                    onChanged: (d) => setState(() => end = dateOnly(d)),
                   ),
-                ),
-                ChoiceChips(
-                  values: PayMode.values,
-                  selected: mode,
-                  label: l.payMode,
-                  onSelected: (m) => setState(() => mode = m),
-                ),
-                TextField(
-                  controller: note,
-                  decoration: InputDecoration(labelText: l.note),
-                ),
-                const SizedBox(height: 20),
-                FilledButton(
-                  onPressed: busy ? null : save,
-                  child: Text(
-                    v1Text(context, 'Record settlement', 'ಪಾವತಿ ದಾಖಲಿಸಿ'),
+                  fieldGap,
+                  PaddedCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        KvRow(
+                          l.present,
+                          '${entries.where((e) => e.status == AttendanceStatus.present).length}',
+                        ),
+                        KvRow(
+                          l.attendance(AttendanceStatus.half),
+                          '${entries.where((e) => e.status == AttendanceStatus.half).length}',
+                        ),
+                        KvRow(
+                          v1Text(
+                            context,
+                            'Wages earned in period',
+                            'ಈ ಅವಧಿಯ ಗಳಿಕೆ',
+                          ),
+                          context.fmt.money(earned),
+                        ),
+                        KvRow(
+                          v1Text(
+                            context,
+                            'Opening unpaid balance',
+                            'ಆರಂಭಿಕ ಬಾಕಿ',
+                          ),
+                          context.fmt.money(
+                            data.due(
+                              id,
+                              start.subtract(const Duration(days: 1)),
+                            ),
+                          ),
+                        ),
+                        KvRow(
+                          v1Text(
+                            context,
+                            'Unpaid through period end',
+                            'ಅವಧಿ ಅಂತ್ಯದ ಬಾಕಿ',
+                          ),
+                          context.fmt.money(data.due(id, end)),
+                        ),
+                        KvRow(
+                          v1Text(
+                            context,
+                            'Available to settle now',
+                            'ಈಗ ಪಾವತಿಸಬಹುದಾದ ಮೊತ್ತ',
+                          ),
+                          context.fmt.money(
+                            data.available(id, end).clamp(0, 1 << 62),
+                          ),
+                        ),
+                        KvRow(
+                          context.l.workerLoanOutstanding,
+                          context.fmt.money(data.loan(id, paidOn)),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  DateField(
+                    label: v1Text(context, 'Payment date', 'ಪಾವತಿ ದಿನಾಂಕ'),
+                    value: paidOn,
+                    onChanged: (d) => setState(() => paidOn = dateOnly(d)),
+                  ),
+                  fieldGap,
+                  MoneyField(
+                    controller: cash,
+                    label: v1Text(
+                      context,
+                      'Paid to worker (₹)',
+                      'ಪಾವತಿ ಮೊತ್ತ (₹)',
+                    ),
+                    validator: (v) =>
+                        v.trim().isNotEmpty && parseRupees(v) == null
+                        ? l.invalidNumber
+                        : null,
+                  ),
+                  fieldGap,
+                  MoneyField(
+                    controller: deduction,
+                    label: v1Text(
+                      context,
+                      'Loan deduction (₹)',
+                      'ಸಾಲದ ಕಡಿತ (₹)',
+                    ),
+                    validator: (v) =>
+                        v.trim().isNotEmpty && parseRupees(v) == null
+                        ? l.invalidNumber
+                        : null,
+                  ),
+                  fieldGap,
+                  Text(
+                    v1Text(
+                      context,
+                      'Partial payment is allowed. The remainder stays due. Loan deductions require your entry.',
+                      'ಭಾಗಶಃ ಪಾವತಿ ಮಾಡಬಹುದು. ಉಳಿದ ಮೊತ್ತ ಬಾಕಿ ಇರುತ್ತದೆ. ಸಾಲದ ಕಡಿತವನ್ನು ನೀವೇ ನಮೂದಿಸಬೇಕು.',
+                    ),
+                  ),
+                  ChoiceChips(
+                    values: PayMode.values,
+                    selected: mode,
+                    label: l.payMode,
+                    onSelected: (m) => setState(() => mode = m),
+                  ),
+                  TextField(
+                    controller: note,
+                    decoration: InputDecoration(labelText: l.note),
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    onPressed: busy ? null : save,
+                    child: Text(
+                      v1Text(context, 'Record settlement', 'ಪಾವತಿ ದಾಖಲಿಸಿ'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },

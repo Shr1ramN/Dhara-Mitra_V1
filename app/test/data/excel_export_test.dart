@@ -161,7 +161,7 @@ void main() {
       );
       expect(book['Harvests'].rows[1][4]!.value.toString(), 'bags');
       expect(book['Raw_sales'].rows.length, 2);
-      expect(book.tables.length, db.allTables.length + 9);
+      expect(book.tables.length, db.allTables.length + 10);
       book['Workers']
           .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 1))
           .value = TextCellValue(

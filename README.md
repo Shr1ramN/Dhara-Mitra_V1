@@ -14,13 +14,15 @@ Dhara Mitra is an Android farm diary for keeping everyday work, labour, harvests
 | Screen | What you can do |
 | --- | --- |
 | **Home** | See attendance, worker dues, recent farm activity and harvests. Open Labour Management, Farm Activity, Harvest or Calendar. |
-| **Calendar** | Tap a date to immediately choose Labour Management, Farm Activity or Harvest. Search saved history by date, words and category. |
+| **Calendar** | Tap a date to immediately choose Labour Management, Farm Activity, Harvest or Sold to Buyer. Search saved history by date, words and category. |
 | **Labour Management** | Add workers, mark full/half/absent attendance with automatic saving, settle wages, manage worker loans and review weekly/monthly/yearly reports. |
 | **More** | Edit farm details and your own crops, switch farms, choose English/Kannada and Light/Dark/System default, export data, back up/restore and manage the app lock. |
 
 Daily-wage workers have a saved rate; other workers have a wage entered for each attended day. Attendance records one description of the day's work. Worker profiles retain previous and new loans, repayments, settlements and balances in integer paise.
 
-Farm Activity combines irrigation, fertiliser, spray and custom labelled notes. Harvest accepts your crop and a quantity in bags or kilograms. Farm setup needs no plots or tree counts: **What do you grow?** is freely editable.
+Farm Activity combines irrigation, fertiliser, spray and custom labelled notes. Use + chips to add named types/crops, and long-press work suggestions to remove them without deleting records. Harvest accepts your crop and a quantity in bags or kilograms. Sales support multiple crops for one buyer, item quantities/units, total income and optional notes. Edited forms warn before discarding unsaved changes. New users receive a language-aware tutorial, replayable from More.
+
+Farm setup needs no plots or tree counts: **What do you grow?** is freely editable.
 
 **Export to Excel** creates an editable `.xlsx` snapshot with readable labour/activity/harvest sheets, stable IDs, exact paise alongside rupee amounts, and raw historical tables. Editing the workbook does not change the app. Backup/restore and database export remain available separately.
 

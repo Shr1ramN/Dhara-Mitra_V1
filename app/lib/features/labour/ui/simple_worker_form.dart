@@ -1,3 +1,4 @@
+import '../../../core/draft_guard.dart';
 import '../../../core/widgets.dart';
 
 import 'package:drift/drift.dart' show Value;
@@ -81,6 +82,7 @@ class _SimpleWorkerState extends ConsumerState<SimpleWorkerForm> {
             ),
           );
       if (mounted) {
+        acceptDrafts();
         showSavedTick(context, context.l.workerSaved);
         Navigator.pop(context);
       }
@@ -100,79 +102,85 @@ class _SimpleWorkerState extends ConsumerState<SimpleWorkerForm> {
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: form,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  TextFormField(
-                    controller: name,
-                    decoration: InputDecoration(labelText: l.workerName),
-                    validator: (v) =>
-                        (v ?? '').trim().isEmpty ? l.requiredField : null,
-                  ),
-                  fieldGap,
-                  TextFormField(
-                    controller: phone,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(labelText: l.phone),
-                    validator: (v) =>
-                        (v ?? '').trim().isEmpty || indianPhone(v!) != null
-                        ? null
-                        : l.fMobileError,
-                  ),
-                  fieldGap,
-                  Text(v1Text(context, 'Worker type', 'ಕಾರ್ಮಿಕರ ವಿಧ')),
-                  RadioGroup<String>(
-                    groupValue: type,
-                    onChanged: (v) => setState(() => type = v!),
-                    child: Column(
-                      children: [
-                        RadioListTile(
-                          value: 'daily',
-                          title: Text(v1Text(context, 'Daily wage', 'ದಿನಗೂಲಿ')),
-                        ),
-                        RadioListTile(
-                          value: 'other',
-                          title: Text(
-                            v1Text(
-                              context,
-                              'Other — enter wage each day',
-                              'ಇತರೆ — ಪ್ರತಿ ದಿನದ ಕೂಲಿ ನಮೂದಿಸಿ',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (type == 'daily') ...[
-                    MoneyField(
-                      controller: rate,
-                      label: l.dayRate,
-                      required: true,
+          : DraftGuard(
+              controllers: [name, phone, rate, half],
+              extra: () => type,
+              child: Form(
+                key: form,
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    TextFormField(
+                      controller: name,
+                      decoration: InputDecoration(labelText: l.workerName),
                       validator: (v) =>
-                          (parseRupees(v) ?? 0) <= 0 ? l.invalidNumber : null,
+                          (v ?? '').trim().isEmpty ? l.requiredField : null,
                     ),
                     fieldGap,
-                    MoneyField(
-                      controller: half,
-                      label: l.halfDayRate,
-                      hint: l.halfDayHint,
+                    TextFormField(
+                      controller: phone,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(labelText: l.phone),
+                      validator: (v) =>
+                          (v ?? '').trim().isEmpty || indianPhone(v!) != null
+                          ? null
+                          : l.fMobileError,
                     ),
-                  ] else
-                    Text(
-                      v1Text(
-                        context,
-                        'Enter the actual wage for each present or half day in attendance.',
-                        'ಹಾಜರಾತಿಯಲ್ಲಿ ಪೂರ್ಣ ಅಥವಾ ಅರ್ಧ ದಿನಕ್ಕೆ ನಿಜವಾದ ಕೂಲಿಯನ್ನು ನಮೂದಿಸಿ.',
+                    fieldGap,
+                    Text(v1Text(context, 'Worker type', 'ಕಾರ್ಮಿಕರ ವಿಧ')),
+                    RadioGroup<String>(
+                      groupValue: type,
+                      onChanged: (v) => setState(() => type = v!),
+                      child: Column(
+                        children: [
+                          RadioListTile(
+                            value: 'daily',
+                            title: Text(
+                              v1Text(context, 'Daily wage', 'ದಿನಗೂಲಿ'),
+                            ),
+                          ),
+                          RadioListTile(
+                            value: 'other',
+                            title: Text(
+                              v1Text(
+                                context,
+                                'Other — enter wage each day',
+                                'ಇತರೆ — ಪ್ರತಿ ದಿನದ ಕೂಲಿ ನಮೂದಿಸಿ',
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: saving ? null : save,
-                    child: Text(l.save),
-                  ),
-                ],
+                    if (type == 'daily') ...[
+                      MoneyField(
+                        controller: rate,
+                        label: l.dayRate,
+                        required: true,
+                        validator: (v) =>
+                            (parseRupees(v) ?? 0) <= 0 ? l.invalidNumber : null,
+                      ),
+                      fieldGap,
+                      MoneyField(
+                        controller: half,
+                        label: l.halfDayRate,
+                        hint: l.halfDayHint,
+                      ),
+                    ] else
+                      Text(
+                        v1Text(
+                          context,
+                          'Enter the actual wage for each present or half day in attendance.',
+                          'ಹಾಜರಾತಿಯಲ್ಲಿ ಪೂರ್ಣ ಅಥವಾ ಅರ್ಧ ದಿನಕ್ಕೆ ನಿಜವಾದ ಕೂಲಿಯನ್ನು ನಮೂದಿಸಿ.',
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                    FilledButton(
+                      onPressed: saving ? null : save,
+                      child: Text(l.save),
+                    ),
+                  ],
+                ),
               ),
             ),
     );
