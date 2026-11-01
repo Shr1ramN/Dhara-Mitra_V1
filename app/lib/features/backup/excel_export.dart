@@ -274,8 +274,11 @@ class FarmExcelExport {
         ['record_id', 'date', 'label', 'description', 'crop', 'source'],
         [
           for (final n in notes.where(
-            (n) =>
-                !['harvest', 'ಕೊಯ್ಲು'].contains(n.title.trim().toLowerCase()),
+            (n) => ![
+              'harvest',
+              'ಕೊಯ್ಲು',
+              'sale',
+            ].contains(n.title.trim().toLowerCase()),
           ))
             [
               n.id,
@@ -295,6 +298,36 @@ class FarmExcelExport {
               a.notes,
               a.crops.join(', '),
               'legacy_activity',
+            ],
+        ],
+      );
+      sheet(
+        'Income',
+        [
+          'record_id',
+          'date',
+          'crop',
+          'buyer',
+          'quantity',
+          'unit',
+          'income_rupees',
+          'income_paise',
+          'description',
+          'harvest_record_id',
+        ],
+        [
+          for (final n in notes.where((n) => n.title == 'sale'))
+            [
+              n.id,
+              n.dueOn,
+              noteValues(n.notes)['crop'],
+              noteValues(n.notes)['buyer'],
+              noteValues(n.notes)['quantity'],
+              noteValues(n.notes)['unit'],
+              (noteValues(n.notes)['incomePaise'] as int) / 100,
+              noteValues(n.notes)['incomePaise'],
+              noteValues(n.notes)['description'],
+              noteValues(n.notes)['harvestId'],
             ],
         ],
       );

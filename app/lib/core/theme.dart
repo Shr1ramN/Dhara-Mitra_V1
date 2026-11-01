@@ -75,8 +75,8 @@ ThemeData buildTheme({Brightness brightness = Brightness.light}) {
 
   return base.copyWith(
     textTheme: text.copyWith(
-      headlineSmall: display(24),
-      titleLarge: display(20),
+      headlineSmall: display(24, color: AppColors.text),
+      titleLarge: display(20, color: AppColors.text),
       titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),
     ),
     appBarTheme: AppBarTheme(
@@ -85,7 +85,7 @@ ThemeData buildTheme({Brightness brightness = Brightness.light}) {
       elevation: 0,
       scrolledUnderElevation: 0,
       foregroundColor: AppColors.text,
-      titleTextStyle: display(20),
+      titleTextStyle: display(20, color: AppColors.text),
     ),
     cardTheme: CardThemeData(
       color: AppColors.surface,
@@ -251,8 +251,8 @@ ThemeData buildDarkTheme() {
   final radius = BorderRadius.circular(14);
   return base.copyWith(
     textTheme: base.textTheme.copyWith(
-      headlineSmall: display(24),
-      titleLarge: display(20),
+      headlineSmall: display(24, color: palette.text),
+      titleLarge: display(20, color: palette.text),
       titleMedium: base.textTheme.titleMedium?.copyWith(
         fontWeight: FontWeight.w600,
       ),

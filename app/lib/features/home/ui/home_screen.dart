@@ -9,6 +9,7 @@ import '../../../core/theme.dart';
 import '../../../core/v1.dart';
 import '../../../core/widgets.dart';
 import '../../calendar/calendar_records.dart';
+import '../../calendar/date_note.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -24,6 +25,13 @@ class HomeScreen extends ConsumerWidget {
         .where((e) => e.status != AttendanceStatus.absent)
         .length;
     final records = ref.watch(calendarRecordsProvider).value ?? [];
+    final income = records
+        .where((r) => r.category == 'note' && r.title == 'sale')
+        .fold<int>(
+          0,
+          (sum, r) =>
+              sum + ((noteValues(r.rawNotes)['incomePaise'] as int?) ?? 0),
+        );
     final start = DateTime(
       today.year,
       today.month,
@@ -125,6 +133,11 @@ class HomeScreen extends ConsumerWidget {
                 for (final item in <(String, IconData, String)>[
                   (l.farmActivity, Icons.grass, '/date-note'),
                   (
+                    v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
+                    Icons.payments_outlined,
+                    '/date-note?label=sale',
+                  ),
+                  (
                     l.navHarvest,
                     Icons.eco_outlined,
                     '/date-note?label=harvest',
@@ -141,6 +154,14 @@ class HomeScreen extends ConsumerWidget {
             ),
             SectionTitle(l.money),
             KvRow(l.toPayWorkers, fmt.money(due)),
+            KvRow(
+              v1Text(context, 'Crop sale income', 'ಬೆಳೆ ಮಾರಾಟದ ಆದಾಯ'),
+              fmt.money(income),
+            ),
+            TextButton(
+              onPressed: () => context.push('/calendar?category=income'),
+              child: Text(v1Text(context, 'View sales', 'ಮಾರಾಟಗಳನ್ನು ನೋಡಿ')),
+            ),
             OutlinedButton.icon(
               onPressed: () => context.push('/labour?tab=reports'),
               icon: Icon(Icons.bar_chart),

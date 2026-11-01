@@ -1,7 +1,7 @@
 name: dhara_mitra
 description: "Dhara Mitra - farm diary for South Karnataka gardens"
 publish_to: 'none'
-version: 0.3.0+20023
+version: 0.3.1+20025
 
 environment:
   sdk: ^3.13.7

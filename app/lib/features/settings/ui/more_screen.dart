@@ -73,30 +73,21 @@ class _MoreState extends ConsumerState<MoreScreen> {
               onTap: () => context.push(item.$3),
             ),
           SectionTitle(l.appearance),
-          DropdownButtonFormField<ThemeMode>(
-            key: ValueKey(mode),
-            initialValue: mode,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: l.themeSelector),
-            items: [
-              DropdownMenuItem(
+          SegmentedButton<ThemeMode>(
+            showSelectedIcon: false,
+            segments: [
+              ButtonSegment(value: ThemeMode.light, label: Text(l.lightTheme)),
+              ButtonSegment(value: ThemeMode.dark, label: Text(l.darkTheme)),
+              ButtonSegment(
                 value: ThemeMode.system,
-                child: Text(l.systemTheme),
+                label: Text(l.systemTheme),
               ),
-              DropdownMenuItem(
-                value: ThemeMode.light,
-                child: Text(l.lightTheme),
-              ),
-              DropdownMenuItem(value: ThemeMode.dark, child: Text(l.darkTheme)),
             ],
-            onChanged: (v) {
-              if (v != null) {
-                perform(
-                  context,
-                  () => ref.read(themeModeProvider.notifier).set(v),
-                );
-              }
-            },
+            selected: {mode},
+            onSelectionChanged: (v) => perform(
+              context,
+              () => ref.read(themeModeProvider.notifier).set(v.first),
+            ),
           ),
           SectionTitle(l.language),
           SegmentedButton<String>(

@@ -104,7 +104,10 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(r.title, style: Theme.of(c).textTheme.titleLarge),
+                  Text(
+                    recordTitle(context, r),
+                    style: Theme.of(c).textTheme.titleLarge,
+                  ),
                   const SizedBox(height: 12),
                   Text(context.fmt.date(r.date)),
                   const SizedBox(height: 12),
@@ -141,6 +144,10 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                 (l.labourManagement, '/labour'),
                 (l.farmActivity, 'note'),
                 (l.navHarvest, 'note:harvest'),
+                (
+                  v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
+                  'note:sale',
+                ),
               ])
                 ListTile(
                   title: Text(item.$1),
@@ -158,6 +165,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
       if (route.startsWith('note:')) {
         final kind = route.substring(5);
         final suggestion = switch (kind) {
+          'sale' => 'sale',
           'harvest' => v1Text(context, 'Harvest', 'ಕೊಯ್ಲು'),
           'irrigation' => v1Text(context, 'Irrigation', 'ನೀರಾವರಿ'),
           'spray' => v1Text(context, 'Spray', 'ಸಿಂಪಡಣೆ'),
@@ -177,6 +185,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
   String label(String key) => switch (key) {
     'activity' => context.l.farmActivity,
     'labour' => context.l.labourManagement,
+    'income' => v1Text(context, 'Income', 'ಆದಾಯ'),
     'expense' => context.l.xExpenses,
     'attendance' => context.l.tabAttendance,
     'payment' => v1Text(context, 'Payments', 'ಪಾವತಿಗಳು'),
@@ -412,7 +421,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        for (final c in ['', 'activity', 'labour', 'harvest'])
+                        for (final c in ['', 'activity', 'labour', 'harvest', 'income'])
                           Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: ChoiceChip(
@@ -743,9 +752,12 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                             color: colors.onPrimaryContainer,
                           ),
                         ),
-                        title: Text(r.title, style: text.titleMedium),
+                        title: Text(
+                          recordTitle(context, r),
+                          style: text.titleMedium,
+                        ),
                         subtitle: Text(
-                          '${context.fmt.date(r.date)} · ${label(r.category)}${r.notes.isEmpty ? '' : '\n${r.notes}'}',
+                          '${context.fmt.date(r.date)} · ${label(r.category)}${r.notes.isEmpty ? '' : '\n${r.rawNotes.startsWith(notePrefix) ? localizedNote(context, r.rawNotes) : r.notes}'}',
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
