@@ -1,3 +1,5 @@
+import 'features/settings/ui/tutorial_screen.dart';
+import 'core/draft_guard.dart';
 import 'core/appearance.dart';
 import 'core/v1.dart';
 import 'features/calendar/date_note.dart';
@@ -53,6 +55,7 @@ GoRouter buildRouter({
       builder: (_, _, child) =>
           FarmNavigationFrame(hasFarm: hasFarm, child: child),
       routes: [
+        GoRoute(path: '/tutorial', builder: (_, _) => const TutorialScreen()),
         GoRoute(
           path: '/account',
           builder: (_, _) => const SignInScreen(settings: true),
@@ -83,6 +86,7 @@ GoRouter buildRouter({
         GoRoute(
           path: '/date-note',
           builder: (c, s) => DateNoteEditor(
+            key: ValueKey(s.uri.toString()),
             date: DateTime.now(),
             suggested: s.uri.queryParameters['label'] == 'harvest'
                 ? v1Text(c, 'Harvest', 'ಕೊಯ್ಲು')
@@ -179,8 +183,11 @@ class _Shell extends StatelessWidget {
       body: shell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
-        onDestinationSelected: (i) =>
-            shell.goBranch(i, initialLocation: i == shell.currentIndex),
+        onDestinationSelected: (i) async {
+          if (await confirmLeaving(context) && context.mounted) {
+            shell.goBranch(i, initialLocation: i == shell.currentIndex);
+          }
+        },
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.home_outlined),

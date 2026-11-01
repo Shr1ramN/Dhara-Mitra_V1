@@ -1,3 +1,5 @@
+import '../../core/draft_guard.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../core/form_fields.dart';
@@ -167,7 +169,10 @@ class _EntryFormState extends State<EntryForm> {
           for (final e in _controllers.entries) e.key: e.value.text,
         }),
       );
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        acceptDrafts();
+        Navigator.pop(context, true);
+      }
     } catch (error) {
       if (mounted) {
         setState(() {
@@ -181,32 +186,36 @@ class _EntryFormState extends State<EntryForm> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(widget.title)),
-    body: Form(
-      key: _form,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          for (final f in widget.fields) ...[_field(f), fieldGap],
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                _error!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+    body: DraftGuard(
+      controllers: _controllers.values.toList(),
+      extra: () => _values,
+      child: Form(
+        key: _form,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            for (final f in widget.fields) ...[_field(f), fieldGap],
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ),
+            FilledButton(
+              onPressed: _saving ? null : _save,
+              child: _saving
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(context.l.save),
             ),
-          FilledButton(
-            onPressed: _saving ? null : _save,
-            child: _saving
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(context.l.save),
-          ),
-          const SizedBox(height: 24),
-        ],
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     ),
   );

@@ -28,6 +28,10 @@ class FarmExcelExport {
         [
           ['Exported at', DateTime.now().toIso8601String()],
           ['Database schema', db.schemaVersion],
+          [
+            'Multi-crop sales',
+            'Income contains one total per sale. SaleItems contains crop quantities; join sale_record_id to Income.record_id. Do not sum a sale total once per crop.',
+          ],
           ['Farm profile ID', db.profileId],
           [
             'Purpose',
@@ -329,6 +333,26 @@ class FarmExcelExport {
               noteValues(n.notes)['description'],
               noteValues(n.notes)['harvestId'],
             ],
+        ],
+      );
+      sheet(
+        'SaleItems',
+        ['sale_record_id', 'crop', 'quantity', 'unit'],
+        [
+          for (final n in notes.where((n) => n.title == 'sale'))
+            if (noteValues(n.notes)['items'] is List)
+              for (final item
+                  in (noteValues(n.notes)['items'] as List)
+                      .whereType<Map<Object?, Object?>>()
+                      .map((e) => e.cast<String, dynamic>()))
+                [n.id, item['crop'], item['quantity'], item['unit']]
+            else
+              [
+                n.id,
+                noteValues(n.notes)['crop'],
+                noteValues(n.notes)['quantity'],
+                noteValues(n.notes)['unit'],
+              ],
         ],
       );
       sheet(

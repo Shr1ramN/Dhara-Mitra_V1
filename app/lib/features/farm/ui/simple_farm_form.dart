@@ -1,3 +1,9 @@
+import '../../../core/add_chip.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../core/draft_guard.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -89,9 +95,15 @@ class _SimpleFarmState extends ConsumerState<SimpleFarmForm> {
         await saveFarmCrops(ref.read(databaseProvider), crops);
       });
       if (mounted) {
+        acceptDrafts();
         showSavedTick(context, context.l.saved);
         if (widget.isSetup) {
-          context.go('/');
+          final prefs = await SharedPreferences.getInstance();
+          if (!mounted) return;
+          final showTutorial = prefs.getBool('tutorial.seen') != true;
+          if (showTutorial) await prefs.setBool('tutorial.seen', true);
+          if (!mounted) return;
+          context.go(showTutorial ? '/tutorial' : '/');
         } else {
           context.pop();
         }
@@ -123,71 +135,72 @@ class _SimpleFarmState extends ConsumerState<SimpleFarmForm> {
           ? const Center(child: CircularProgressIndicator())
           : error != null
           ? Center(child: Text(l.xError))
-          : Form(
-              key: form,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  if (widget.isSetup) ...[
-                    SegmentedButton<String>(
-                      segments: [
-                        ButtonSegment(value: 'en', label: Text(l.english)),
-                        ButtonSegment(value: 'kn', label: Text(l.kannada)),
-                      ],
-                      selected: {ref.watch(localeProvider).languageCode},
-                      onSelectionChanged: (v) =>
-                          ref.read(localeProvider.notifier).set(v.first),
-                    ),
-                    const SizedBox(height: 18),
-                  ],
-                  TextFormField(
-                    controller: name,
-                    decoration: InputDecoration(labelText: l.farmName),
-                    validator: (v) =>
-                        (v ?? '').trim().isEmpty ? l.requiredField : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: location,
-                    decoration: InputDecoration(labelText: l.village),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    l.whatDoYouGrow,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final c in crops)
-                        InputChip(
-                          label: Text(c),
-                          onDeleted: () => setState(() => crops.remove(c)),
-                        ),
+          : DraftGuard(
+              controllers: [name, location, crop],
+              extra: () => crops,
+              child: Form(
+                key: form,
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    if (widget.isSetup) ...[
+                      SegmentedButton<String>(
+                        segments: [
+                          ButtonSegment(value: 'en', label: Text(l.english)),
+                          ButtonSegment(value: 'kn', label: Text(l.kannada)),
+                        ],
+                        selected: {ref.watch(localeProvider).languageCode},
+                        onSelectionChanged: (v) =>
+                            ref.read(localeProvider.notifier).set(v.first),
+                      ),
+                      const SizedBox(height: 18),
                     ],
-                  ),
-                  TextField(
-                    controller: crop,
-                    decoration: InputDecoration(labelText: l.addCrop),
-                    onSubmitted: (_) => addCrop(),
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: addCrop,
-                      icon: const Icon(Icons.add),
-                      label: Text(l.addCrop),
+                    TextFormField(
+                      controller: name,
+                      decoration: InputDecoration(labelText: l.farmName),
+                      validator: (v) =>
+                          (v ?? '').trim().isEmpty ? l.requiredField : null,
                     ),
-                  ),
-                  Text(l.cropHistorySafe),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: saving ? null : save,
-                    child: Text(widget.isSetup ? l.startUsing : l.save),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: location,
+                      decoration: InputDecoration(labelText: l.village),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      l.whatDoYouGrow,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final c in crops)
+                          InputChip(
+                            label: Text(c),
+                            onDeleted: () => setState(() => crops.remove(c)),
+                          ),
+                      ],
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: AddChip(
+                        title: l.addCrop,
+                        onAdd: (value) {
+                          crop.text = value;
+                          addCrop();
+                        },
+                      ),
+                    ),
+                    Text(l.cropHistorySafe),
+                    const SizedBox(height: 24),
+                    FilledButton(
+                      onPressed: saving ? null : save,
+                      child: Text(widget.isSetup ? l.startUsing : l.save),
+                    ),
+                  ],
+                ),
               ),
             ),
     );

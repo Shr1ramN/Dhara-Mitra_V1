@@ -137,6 +137,7 @@ void main() {
     });
     await pumpApp(tester, hasFarm: true, initialLocation: '/lot/$lotId');
     expect(find.text('A-2627-01'), findsWidgets);
+    await tester.scrollUntilVisible(find.text('Drying finished'), 200);
     expect(find.text('Drying finished'), findsOneWidget);
 
     await tester.runAsync(() async {
