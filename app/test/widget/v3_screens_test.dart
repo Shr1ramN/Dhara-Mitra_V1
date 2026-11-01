@@ -218,6 +218,19 @@ void main() {
             expect(find.text(context.l.arecaPalms), findsNothing);
             expect(find.text(context.l.coconutTrees), findsNothing);
           }
+          if (route == '/date-note?label=sale') {
+            expect(
+              find.text(lang == 'en' ? 'Sold to Buyer' : 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
+              findsOneWidget,
+            );
+            expect(
+              find.text(lang == 'en' ? 'What was done?' : 'ಏನು ಮಾಡಲಾಯಿತು?'),
+              findsNothing,
+            );
+          }
+          if (route == '/date-note?label=harvest') {
+            expect(find.text(context.l.navHarvest), findsOneWidget);
+          }
           if (route == '/date-note') {
             expect(find.text(context.l.farmActivity), findsOneWidget);
             expect(find.text('Harvest'), findsNothing);

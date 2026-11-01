@@ -86,6 +86,7 @@ GoRouter buildRouter({
         GoRoute(
           path: '/date-note',
           builder: (c, s) => DateNoteEditor(
+            key: ValueKey(s.uri.toString()),
             date: DateTime.now(),
             suggested: s.uri.queryParameters['label'] == 'harvest'
                 ? v1Text(c, 'Harvest', 'ಕೊಯ್ಲು')
