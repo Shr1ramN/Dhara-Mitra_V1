@@ -61,6 +61,10 @@ class HomeScreen extends ConsumerWidget {
           (v) => v.stage == LotStage.storage || v.stage == LotStage.grading,
         )
         .toList();
+    final presentToday =
+        (ref.watch(attendanceProvider(today)).value?.values ?? const [])
+            .where((entry) => entry.status != AttendanceStatus.absent)
+            .length;
     final toPay = workers.fold(
       0,
       (s, w) => s + (w.balance.due > 0 ? w.balance.due : 0),
@@ -106,14 +110,18 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: 6),
             LayoutBuilder(
               builder: (context, constraints) {
-                final width = (constraints.maxWidth - 12) / 2;
+                final largeText =
+                    MediaQuery.textScalerOf(context).scale(16) > 19.2;
+                final width = largeText && constraints.maxWidth < 400
+                    ? constraints.maxWidth
+                    : (constraints.maxWidth - 12) / 2;
                 final cards = <Widget>[
                   _FarmSummaryTile(
-                    label: v1Text(context, 'Recent work', 'ಇತ್ತೀಚಿನ ಕೆಲಸ'),
-                    value: '$recentWork',
-                    detail: v1Text(context, 'This week', 'ಈ ವಾರ'),
-                    icon: Icons.assignment_outlined,
-                    onTap: () => context.go('/calendar'),
+                    label: l.tabAttendance,
+                    value: '$presentToday',
+                    detail: v1Text(context, 'Present today', 'ಇಂದು ಹಾಜರು'),
+                    icon: Icons.groups_outlined,
+                    onTap: () => context.go('/labour?tab=attendance'),
                   ),
                   _FarmSummaryTile(
                     label: v1Text(context, 'Worker dues', 'ಕಾರ್ಮಿಕರ ಬಾಕಿ'),
@@ -124,23 +132,19 @@ class HomeScreen extends ConsumerWidget {
                     onTap: () => context.go('/labour?tab=dues'),
                   ),
                   _FarmSummaryTile(
+                    label: v1Text(context, 'Recent work', 'ಇತ್ತೀಚಿನ ಕೆಲಸ'),
+                    value: '$recentWork',
+                    detail: v1Text(context, 'This week', 'ಈ ವಾರ'),
+                    icon: Icons.assignment_outlined,
+                    onTap: () => context.go('/calendar'),
+                  ),
+                  _FarmSummaryTile(
                     label: v1Text(context, 'Harvests', 'ಕೊಯ್ಲುಗಳು'),
                     value: '${lots.length}',
                     detail: v1Text(context, 'Saved lots', 'ಉಳಿಸಿದ ಲಾಟ್‌ಗಳು'),
                     icon: Icons.eco_outlined,
                     green: true,
                     onTap: () => context.go('/lots'),
-                  ),
-                  _FarmSummaryTile(
-                    label: l.tabWorkers,
-                    value: '${workers.where((w) => w.worker.active).length}',
-                    detail: v1Text(
-                      context,
-                      'Manage workers',
-                      'ಕಾರ್ಮಿಕರ ನಿರ್ವಹಣೆ',
-                    ),
-                    icon: Icons.groups_outlined,
-                    onTap: () => context.go('/labour?tab=attendance'),
                   ),
                 ];
                 return Wrap(
@@ -302,9 +306,15 @@ class _FarmSummaryTile extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      value,
-                      style: display(24, color: const Color(0xFF183622)),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        value,
+                        maxLines: 1,
+                        softWrap: false,
+                        style: display(24, color: const Color(0xFF183622)),
+                      ),
                     ),
                   ),
                   const Icon(

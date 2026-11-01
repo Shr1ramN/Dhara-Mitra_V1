@@ -161,7 +161,7 @@ void main() {
             .insertReturning(
               WorkersCompanion.insert(
                 name: lang == 'kn' ? 'ರಾಮಚಂದ್ರ ಗೌಡ' : 'Ramachandra Gowda',
-                dayRate: const Value(70000),
+                dayRate: const Value(70033),
               ),
             );
         await db
@@ -205,6 +205,18 @@ void main() {
         router.go(route);
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: '$lang $route');
+        if (route == '/') {
+          final amount = find.text('₹700.33').first;
+          final paragraph = tester.renderObject<RenderParagraph>(amount);
+          final boxes = paragraph.getBoxesForSelection(
+            const TextSelection(baseOffset: 0, extentOffset: 7),
+          );
+          expect(
+            boxes.map((b) => b.top).toSet().length,
+            1,
+            reason: 'A money amount must stay on one line',
+          );
+        }
         await capture(
           tester,
           '$lang-${route.replaceAll(RegExp('[^a-z]+'), '-')}',

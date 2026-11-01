@@ -154,22 +154,20 @@ class WorkerScreen extends ConsumerWidget {
                       ),
                 ],
               ),
-              KpiRow(
-                children: [
-                  Kpi(
-                    label: l.earned,
-                    value: formatRupees(s.balance.earned, showPaise: true),
-                  ),
-                  Kpi(
-                    label: v1Text(context, 'Wages settled', 'ಪಾವತಿಸಿದ ಕೂಲಿ'),
-                    value: formatRupees(s.balance.given, showPaise: true),
-                  ),
-                  Kpi(
-                    label: s.balance.due < 0 ? l.advance : l.due,
-                    value: formatRupees(s.balance.due.abs(), showPaise: true),
-                    highlight: s.balance.due > 0,
-                  ),
-                ],
+              PaddedCard(
+                child: Column(
+                  children: [
+                    KvRow(l.earned, fmt.money(s.balance.earned)),
+                    KvRow(
+                      v1Text(context, 'Wages settled', 'ಪಾವತಿಸಿದ ಕೂಲಿ'),
+                      fmt.money(s.balance.given),
+                    ),
+                    KvRow(
+                      s.balance.due < 0 ? l.advance : l.due,
+                      fmt.money(s.balance.due.abs()),
+                    ),
+                  ],
+                ),
               ),
               Row(
                 children: [

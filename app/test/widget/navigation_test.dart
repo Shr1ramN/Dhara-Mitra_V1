@@ -156,10 +156,12 @@ void main() {
       ('Recent work', '/calendar'),
       ('Worker dues', '/labour'),
       ('Harvests', '/lots'),
-      ('Workers', '/labour'),
+      ('Attendance', '/labour'),
     ]) {
       final tile = find.text(item.$1);
       await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      expect(tile.hitTestable(), findsOneWidget);
       await tester.tap(tile);
       await tester.pumpAndSettle();
       expect(router.routerDelegate.currentConfiguration.uri.path, item.$2);
