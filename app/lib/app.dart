@@ -86,6 +86,8 @@ GoRouter buildRouter({
             date: DateTime.now(),
             suggested: s.uri.queryParameters['label'] == 'harvest'
                 ? v1Text(c, 'Harvest', 'ಕೊಯ್ಲು')
+                : s.uri.queryParameters['label'] == 'sale'
+                ? 'sale'
                 : '',
           ),
         ),

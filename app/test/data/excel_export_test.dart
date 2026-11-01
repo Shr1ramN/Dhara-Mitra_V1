@@ -92,6 +92,26 @@ void main() {
               ),
             ),
           );
+      await db
+          .into(db.reminders)
+          .insert(
+            RemindersCompanion.insert(
+              title: 'sale',
+              dueOn: day,
+              kind: const Value('dateNote'),
+              done: const Value(true),
+              notes: Value(
+                notePrefix +
+                    jsonEncode({
+                      'crop': 'Mango',
+                      'buyer': '=Buyer',
+                      'quantity': 2.5,
+                      'unit': 'kg',
+                      'incomePaise': 123456,
+                    }),
+              ),
+            ),
+          );
       final buyer = await db
           .into(db.buyers)
           .insertReturning(BuyersCompanion.insert(name: 'Legacy buyer'));
@@ -103,6 +123,8 @@ void main() {
           .balance
           .due;
       final book = Excel.decodeBytes(await FarmExcelExport(db).bytes());
+      expect(book['Income'].rows[1][3]!.value, isA<TextCellValue>());
+      expect((book['Income'].rows[1][7]!.value as IntCellValue).value, 123456);
       expect(book.getDefaultSheet(), 'Guide');
       expect(book.tables.containsKey('Sheet1'), isFalse);
       expect(
@@ -139,7 +161,7 @@ void main() {
       );
       expect(book['Harvests'].rows[1][4]!.value.toString(), 'bags');
       expect(book['Raw_sales'].rows.length, 2);
-      expect(book.tables.length, db.allTables.length + 8);
+      expect(book.tables.length, db.allTables.length + 9);
       book['Workers']
           .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 1))
           .value = TextCellValue(

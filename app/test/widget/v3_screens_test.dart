@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:dhara_mitra/app.dart';
 import 'package:dhara_mitra/core/appearance.dart';
+import 'package:dhara_mitra/features/calendar/date_note.dart';
+import 'package:dhara_mitra/features/calendar/calendar_records.dart';
 import 'package:dhara_mitra/core/db/database.dart';
 import 'package:dhara_mitra/core/l10n.dart';
 import 'package:dhara_mitra/core/providers.dart';
@@ -126,6 +129,7 @@ void main() {
           '/farm',
           '/date-note',
           '/date-note?label=harvest',
+          '/date-note?label=sale',
           '/more',
           '/backup',
           '/calendar',
@@ -135,6 +139,10 @@ void main() {
           final context = tester.element(find.byType(Scaffold).last),
               theme = Theme.of(tester.element(find.byType(Scaffold).last));
           expect(
+            theme.textTheme.titleLarge!.color!.computeLuminance(),
+            mode == ThemeMode.light ? lessThan(0.2) : greaterThan(0.6),
+          );
+          expect(
             theme.brightness,
             mode == ThemeMode.light ? Brightness.light : Brightness.dark,
           );
@@ -142,6 +150,36 @@ void main() {
             tester.takeException(),
             isNull,
             reason: '$lang ${mode.name} $route',
+          );
+          expect(
+            recordTitle(
+              context,
+              CalendarRecord(
+                'id',
+                DateTime(2026),
+                'attendance',
+                'Ramu half',
+                '',
+                '',
+              ),
+            ),
+            lang == 'en' ? 'Ramu · Half day' : 'Ramu · ಅರ್ಧ ದಿನ',
+          );
+          expect(translatedLabel(context, 'My custom work'), 'My custom work');
+          expect(
+            recordTitle(
+              context,
+              CalendarRecord(
+                'id',
+                DateTime(2026),
+                'note',
+                'Spray',
+                '',
+                '',
+                rawNotes: '$notePrefix{"labelSource":"custom"}',
+              ),
+            ),
+            'Spray',
           );
           if (route == '/more') {
             final l = context.l;
@@ -201,7 +239,7 @@ void main() {
         final sheet = find.byType(BottomSheet), l = tester.element(sheet).l;
         expect(
           find.descendant(of: sheet, matching: find.byType(ListTile)),
-          findsNWidgets(3),
+          findsNWidgets(4),
         );
         for (final name in [l.labourManagement, l.farmActivity, l.navHarvest]) {
           expect(
@@ -242,8 +280,6 @@ void main() {
         child: const DharaMitraApp(hasFarm: true, initialLocation: '/more'),
       ),
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<ThemeMode>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Dark').last);
     await tester.pumpAndSettle();
@@ -314,4 +350,57 @@ void main() {
     await db.close();
     await tester.pump();
   });
+  testWidgets(
+    'crop sale records buyer, quantity and exact income without changing wages',
+    (tester) async {
+      final db = AppDatabase(
+        DatabaseConnection(
+          NativeDatabase.memory(),
+          closeStreamsSynchronously: true,
+        ),
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [databaseProvider.overrideWithValue(db)],
+          child: const DharaMitraApp(hasFarm: true),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(Scaffold).first));
+      unawaited(router.push('/date-note?label=sale'));
+      await tester.pumpAndSettle();
+      Future<void> enter(String label, String value) async {
+        final field = find.byWidgetPredicate(
+          (w) => w is TextField && w.decoration?.labelText == label,
+        );
+        await tester.ensureVisible(field);
+        await tester.enterText(field, value);
+        await tester.pumpAndSettle();
+      }
+
+      await enter('Crop (optional)', 'Mango');
+      await enter('Quantity', '3.5');
+      await enter('Sold to whom?', 'Local buyer');
+      await enter('Income received (₹)', '1234.56');
+      final save = find.widgetWithText(FilledButton, 'Save');
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      await tester.runAsync(() async {
+        final row = await db.select(db.reminders).getSingle();
+        final data = noteValues(row.notes);
+        expect(row.title, 'sale');
+        expect(data['incomePaise'], 123456);
+        expect(data['buyer'], 'Local buyer');
+        expect(data['crop'], 'Mango');
+        expect(data['quantity'], 3.5);
+        expect(data['unit'], 'kg');
+        expect(await db.select(db.workerTxns).get(), isEmpty);
+      });
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(const SizedBox());
+      await db.close();
+      await tester.pump();
+    },
+  );
 }

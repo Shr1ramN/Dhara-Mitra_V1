@@ -1,5 +1,9 @@
 import 'date_note.dart';
 
+import 'package:flutter/widgets.dart';
+
+import '../../core/v1.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/db/database.dart';
@@ -12,9 +16,10 @@ class CalendarRecord {
     this.category,
     this.title,
     this.notes,
-    this.route,
-  );
-  final String id, category, title, notes, route;
+    this.route, {
+    this.rawNotes = '',
+  });
+  final String id, category, title, notes, route, rawNotes;
   final DateTime date;
 }
 
@@ -116,11 +121,15 @@ DateTime calendarDay(DateTime date) =>
 bool calendarCategoryMatches(CalendarRecord record, String category) =>
     category.isEmpty ||
     record.category == category ||
+    (category == 'income' &&
+        record.category == 'note' &&
+        record.title == 'sale') ||
     (category == 'labour' &&
         ['attendance', 'payment', 'loan'].contains(record.category)) ||
     (category == 'activity' &&
         record.category == 'note' &&
         !const [
+          'sale',
           'harvest',
           'ಕೊಯ್ಲು',
         ].contains(record.title.trim().toLowerCase())) ||
@@ -168,6 +177,7 @@ ORDER BY day DESC, id
             r.read<String>('title'),
             readableNote(r.read<String>('notes')),
             r.read<String>('route'),
+            rawNotes: r.read<String>('notes'),
           ),
         )
         .toList();
@@ -184,3 +194,30 @@ final calendarRecordsProvider = StreamProvider(
         .toList(),
   ),
 );
+
+String recordTitle(BuildContext context, CalendarRecord record) {
+  if (record.category == 'note') {
+    return noteValues(record.rawNotes)['labelSource'] == 'custom'
+        ? record.title
+        : translatedLabel(context, record.title);
+  }
+  if (['attendance', 'payment', 'loan'].contains(record.category)) {
+    final split = record.title.lastIndexOf(' ');
+    if (split < 0) return record.title;
+    final status = record.title.substring(split + 1);
+    final text = switch (status) {
+      'payment' => v1Text(context, 'Payment', 'ಪಾವತಿ'),
+      'advance' => v1Text(context, 'Previous advance', 'ಹಿಂದಿನ ಮುಂಗಡ'),
+      'previous' => v1Text(context, 'Previous loan', 'ಹಿಂದಿನ ಸಾಲ'),
+      'new' => v1Text(context, 'New loan', 'ಹೊಸ ಸಾಲ'),
+      'repayment' => v1Text(context, 'Loan repayment', 'ಸಾಲ ಮರುಪಾವತಿ'),
+      'work' => v1Text(context, 'Wage', 'ವೇತನ'),
+      'present' => v1Text(context, 'Present', 'ಹಾಜರು'),
+      'half' => v1Text(context, 'Half day', 'ಅರ್ಧ ದಿನ'),
+      'absent' => v1Text(context, 'Absent', 'ಗೈರು'),
+      _ => status,
+    };
+    return '${record.title.substring(0, split)} · $text';
+  }
+  return record.title;
+}
