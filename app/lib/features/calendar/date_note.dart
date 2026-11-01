@@ -116,7 +116,9 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
         ? translatedLabel(context, widget.existing!.title)
         : widget.existing?.title ?? widget.suggested,
   );
-  late final values = widget.existing == null ? widget.initialValues : noteValues(widget.existing!.notes);
+  late final values = widget.existing == null
+      ? widget.initialValues
+      : noteValues(widget.existing!.notes);
   late final description = TextEditingController(
     text: values['description']?.toString() ?? '',
   );
@@ -221,7 +223,8 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
                   notePrefix +
                       jsonEncode({
                         'description': description.text.trim(),
-                        if (values['harvestId'] != null) 'harvestId': values['harvestId'],
+                        if (values['harvestId'] != null)
+                          'harvestId': values['harvestId'],
                         'labelSource': customLabel ? 'custom' : 'builtin',
                         if (sale) 'buyer': buyer.text.trim(),
                         if (sale) 'incomePaise': parseRupees(income.text),
@@ -276,6 +279,24 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
               context.fmt.weekdayDate(date),
               style: Theme.of(context).textTheme.titleMedium,
             ),
+            if (sale)
+              TextButton.icon(
+                icon: const Icon(Icons.calendar_today_outlined),
+                label: Text(
+                  v1Text(context, 'Change sale date', 'ಮಾರಾಟದ ದಿನಾಂಕ ಬದಲಿಸಿ'),
+                ),
+                onPressed: () async {
+                  final selected = await showDatePicker(
+                    context: context,
+                    initialDate: date,
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(2200),
+                  );
+                  if (mounted && selected != null) {
+                    setState(() => date = selected);
+                  }
+                },
+              ),
             const SizedBox(height: 16),
             if (!harvest && !sale)
               TextFormField(
@@ -415,11 +436,27 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
                     (parseRupees(v ?? '') ?? 0) <= 0 ? l.invalidNumber : null,
               ),
             ],
-            if (harvest && widget.existing != null) OutlinedButton.icon(
-              icon: const Icon(Icons.payments_outlined),
-              label: Text(v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ')),
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => DateNoteEditor(date: date, suggested: 'sale', initialValues: {'crop': crop.text, 'quantity': parseQty(quantity.text), 'unit': unit, 'harvestId': widget.existing!.id}))),
-            ),
+            if (harvest && widget.existing != null)
+              OutlinedButton.icon(
+                icon: const Icon(Icons.payments_outlined),
+                label: Text(
+                  v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
+                ),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => DateNoteEditor(
+                      date: DateTime.now(),
+                      suggested: 'sale',
+                      initialValues: {
+                        'crop': crop.text,
+                        'quantity': parseQty(quantity.text),
+                        'unit': unit,
+                        'harvestId': widget.existing!.id,
+                      },
+                    ),
+                  ),
+                ),
+              ),
             const SizedBox(height: 24),
             FilledButton(onPressed: busy ? null : save, child: Text(l.save)),
           ],
