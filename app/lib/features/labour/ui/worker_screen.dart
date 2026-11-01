@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/indian_phone.dart';
 
 import '../../../core/enums.dart';
+import '../../../core/db/database.dart';
 import '../../../core/l10n.dart';
 import '../../../core/money.dart';
 import '../../../core/providers.dart';
@@ -15,7 +16,8 @@ import '../../../core/widgets.dart';
 import '../data/labour_repository.dart';
 import 'labour_screen.dart';
 import 'payment_sheet.dart';
-import 'worker_rates_screen.dart';
+import 'payroll_screens.dart';
+import '../../../core/v1.dart';
 
 /// One worker's account: earned, given and every entry with the running balance (F3.4).
 class WorkerScreen extends ConsumerWidget {
@@ -44,6 +46,11 @@ class WorkerScreen extends ConsumerWidget {
     final fmt = context.fmt;
     final summary = ref.watch(workerSummaryProvider(workerId));
     final ledger = ref.watch(ledgerProvider(workerId));
+    final payroll = ref.watch(payrollDataProvider).value;
+    final settlements = {
+      for (final entry in payroll?.settlements ?? <WorkerSettlement>[])
+        entry.id: entry,
+    };
 
     return AsyncBody(
       value: summary,
@@ -54,16 +61,6 @@ class WorkerScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(w.name),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.price_change_outlined),
-                tooltip: l.xRate,
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => WorkerRatesScreen(workerId),
-                  ),
-                ),
-              ),
               IconButton(
                 icon: const Icon(Icons.ios_share),
                 tooltip: l.xShareStatement,
@@ -114,8 +111,7 @@ class WorkerScreen extends ConsumerWidget {
                             [
                               if (w.dayRate > 0)
                                 fmt.rate(w.dayRate, RateUnit.day),
-                              if (w.pieceRate != null && w.pieceUnit != null)
-                                fmt.rate(w.pieceRate!, w.pieceUnit!),
+
                               if (w.phone.isNotEmpty) w.phone,
                             ].join(' · '),
                             style: const TextStyle(
@@ -162,7 +158,7 @@ class WorkerScreen extends ConsumerWidget {
                 children: [
                   Kpi(label: l.earned, value: formatRupees(s.balance.earned)),
                   Kpi(
-                    label: l.paidAdvance,
+                    label: v1Text(context, 'Wages settled', 'ಪಾವತಿಸಿದ ಕೂಲಿ'),
                     value: formatRupees(s.balance.given),
                   ),
                   Kpi(
@@ -181,7 +177,7 @@ class WorkerScreen extends ConsumerWidget {
                         worker: w,
                         kind: TxnKind.advance,
                       ),
-                      child: Text(l.advance),
+                      child: Text(context.l.workerLoan),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -193,10 +189,70 @@ class WorkerScreen extends ConsumerWidget {
                         kind: TxnKind.payment,
                         suggested: s.balance.due > 0 ? s.balance.due : null,
                       ),
-                      child: Text(l.pay),
+                      child: Text(context.l.settleWages),
                     ),
                   ),
                 ],
+              ),
+              AsyncBody(
+                value: ref.watch(payrollDataProvider),
+                builder: (data) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    KvRow(
+                      context.l.workerLoanOutstanding,
+                      fmt.money(data.loan(w.id, DateTime.now())),
+                    ),
+                    OutlinedButton(
+                      onPressed: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              WorkerLoanForm(worker: w, repayment: true),
+                        ),
+                      ),
+                      child: Text(
+                        v1Text(
+                          context,
+                          'Record loan repayment',
+                          'ಸಾಲ ಮರುಪಾವತಿ ದಾಖಲಿಸಿ',
+                        ),
+                      ),
+                    ),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.bar_chart),
+                      onPressed: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LabourReports(workerId: w.id),
+                        ),
+                      ),
+                      label: Text(context.l.labourReports),
+                    ),
+                    if (data.loans.any((entry) => entry.workerId == w.id)) ...[
+                      SectionTitle(context.l.workerLoan),
+                      for (final entry
+                          in data.loans
+                              .where((entry) => entry.workerId == w.id)
+                              .toList()
+                            ..sort((a, b) => b.date.compareTo(a.date)))
+                        ListTile(
+                          title: Text(loanKind(context, entry.kind)),
+                          subtitle: Text(
+                            '${fmt.date(entry.date)} · ${fmt.money(entry.amount)}${entry.note.isEmpty ? '' : ' · ${entry.note}'}',
+                          ),
+                        ),
+                    ],
+                    if (s.balance.advanced != 0)
+                      Text(
+                        v1Text(
+                          context,
+                          'Previous advances remain wage credits; they are not new loans.',
+                          'ಹಿಂದಿನ ಮುಂಗಡಗಳು ಕೂಲಿ ಜಮಾ ಆಗಿಯೇ ಉಳಿಯುತ್ತವೆ; ಅವು ಹೊಸ ಸಾಲಗಳಲ್ಲ.',
+                        ),
+                      ),
+                  ],
+                ),
               ),
               SectionTitle(l.ledger),
               AsyncBody(
@@ -241,12 +297,16 @@ class WorkerScreen extends ConsumerWidget {
                                     if (line.txn.mode != null &&
                                         line.txn.kind != TxnKind.work)
                                       l.payMode(line.txn.mode!),
+                                    if (settlements[line.txn.refId]
+                                            ?.loanDeduction
+                                        case final int amount when amount > 0)
+                                      '${v1Text(context, 'Loan deduction', 'ಸಾಲದ ಕಡಿತ')}: ${fmt.money(amount)}',
                                     l.balanceAfter(formatRupees(line.dueAfter)),
                                   ].join(' · '),
                                   style: const TextStyle(fontSize: 12),
                                 ),
                                 trailing: Text(
-                                  '${line.txn.kind == TxnKind.work ? '+' : '−'} ${formatRupees(line.txn.amount)}',
+                                  '${line.txn.kind == TxnKind.work ? '+' : '−'} ${formatRupees(settlements[line.txn.refId]?.cashPaid ?? line.txn.amount)}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     color: line.txn.kind == TxnKind.work

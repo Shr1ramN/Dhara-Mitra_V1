@@ -117,6 +117,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('28'));
     await tester.pumpAndSettle();
+    expect(find.text('Labour management'), findsOneWidget);
+    await tester.tapAt(const Offset(10, 30));
+    await tester.pumpAndSettle();
     await reveal(tester, find.text('Manure south'));
     expect(find.text('Manure north'), findsNothing);
     expect(find.text('Manure south'), findsOneWidget);

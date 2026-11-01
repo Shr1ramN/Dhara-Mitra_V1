@@ -3685,6 +3685,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Farm tools'**
   String get nFarmTools;
+
+  /// No description provided for @labourReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Labour Reports'**
+  String get labourReports;
+
+  /// No description provided for @settleWages.
+  ///
+  /// In en, this message translates to:
+  /// **'Settle wages'**
+  String get settleWages;
+
+  /// No description provided for @workerSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Worker saved'**
+  String get workerSaved;
+
+  /// No description provided for @workerLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Worker loan'**
+  String get workerLoan;
+
+  /// No description provided for @previousWorkerLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous loan'**
+  String get previousWorkerLoan;
+
+  /// No description provided for @newWorkerLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'New loan / for future work'**
+  String get newWorkerLoan;
+
+  /// No description provided for @workerLoanRepayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan repayment'**
+  String get workerLoanRepayment;
+
+  /// No description provided for @workerLoanOutstanding.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan outstanding'**
+  String get workerLoanOutstanding;
+
+  /// No description provided for @farmDateNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Date note'**
+  String get farmDateNote;
+
+  /// No description provided for @myCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'My crops'**
+  String get myCrops;
 }
 
 class _AppLocalizationsDelegate

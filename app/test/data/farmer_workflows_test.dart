@@ -246,6 +246,9 @@ void main() {
         await disk.customStatement('ALTER TABLE lots DROP COLUMN $c');
       }
       await disk.customStatement('DROP TABLE IF EXISTS sale_receipts');
+      await disk.customStatement('DROP TABLE worker_loan_entries');
+      await disk.customStatement('DROP TABLE worker_settlements');
+      await disk.customStatement('ALTER TABLE workers DROP COLUMN wage_type');
       await disk.customStatement('PRAGMA user_version = 2');
       await disk.close();
       disk = AppDatabase(NativeDatabase(File('${dir.path}/v2.sqlite')));

@@ -1,3 +1,6 @@
+import 'core/v1.dart';
+import 'features/calendar/date_note.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -17,7 +20,7 @@ import 'features/farm/ui/farm_screen.dart';
 import 'features/farm/ui/plot_form_screen.dart';
 import 'features/home/ui/home_screen.dart';
 import 'features/labour/ui/labour_screen.dart';
-import 'features/labour/ui/worker_form_screen.dart';
+import 'features/labour/ui/simple_worker_form.dart';
 import 'features/labour/ui/worker_screen.dart';
 import 'features/lots/ui/harvest_form_screen.dart';
 import 'features/lots/ui/lot_screen.dart';
@@ -75,6 +78,16 @@ GoRouter buildRouter({
         GoRoute(path: '/security', builder: (_, _) => const SecurityScreen()),
         GoRoute(path: '/diary', builder: (_, _) => const DiaryScreen()),
         GoRoute(path: '/fertilizer', builder: (_, _) => const DiaryForm()),
+        GoRoute(path: '/my-crops', builder: (_, _) => const MyCropsScreen()),
+        GoRoute(
+          path: '/date-note',
+          builder: (c, s) => DateNoteEditor(
+            date: DateTime.now(),
+            suggested: s.uri.queryParameters['label'] == 'harvest'
+                ? v1Text(c, 'Harvest', 'ಕೊಯ್ಲು')
+                : '',
+          ),
+        ),
         GoRoute(path: '/stock', builder: (_, _) => const StockScreen()),
         GoRoute(path: '/expenses', builder: (_, _) => const ExpensesScreen()),
         GoRoute(path: '/land', builder: (_, _) => const LandScreen()),
@@ -100,7 +113,7 @@ GoRouter buildRouter({
         GoRoute(
           path: '/worker-form',
           builder: (_, s) =>
-              WorkerFormScreen(workerId: s.uri.queryParameters['id']),
+              SimpleWorkerForm(workerId: s.uri.queryParameters['id']),
         ),
         GoRoute(
           path: '/worker/:id',

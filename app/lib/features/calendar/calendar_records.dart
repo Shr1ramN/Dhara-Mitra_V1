@@ -1,3 +1,5 @@
+import 'date_note.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/db/database.dart';
@@ -36,6 +38,7 @@ class RecordQuery {
     'expense': ['expense', 'expenses', 'ಖರ್ಚು'],
     'sale': ['sale', 'sales', 'ಮಾರಾಟ'],
     'payment': ['payment', 'payments', 'paid', 'ಪಾವತಿ'],
+    'loan': ['loan', 'loans', 'ಸಾಲ'],
   };
   bool get latest =>
       RegExp(r'\b(last|latest|recent|newest)\b').hasMatch(text) ||
@@ -127,6 +130,7 @@ SELECT id, date AS day, 'activity' AS category, kind || ' ' || title AS title, n
 UNION ALL SELECT id, date, 'expense', category, notes, '/expenses' FROM expenses WHERE deleted = 0
 UNION ALL SELECT a.id, a.date, 'attendance', w.name || ' ' || a.status, a.work, '/labour?tab=attendance' FROM attendance_entries a JOIN workers w ON w.id=a.worker_id WHERE a.deleted=0
 UNION ALL SELECT t.id, t.date, 'payment', w.name || ' ' || t.kind, t.note, '/worker/' || w.id FROM worker_txns t JOIN workers w ON w.id=t.worker_id WHERE t.deleted=0 AND t.kind != 'work'
+UNION ALL SELECT t.id, t.date, 'loan', w.name || ' ' || t.kind, t.note, '/worker/' || w.id FROM worker_loan_entries t JOIN workers w ON w.id=t.worker_id WHERE t.deleted=0
 UNION ALL SELECT id, harvested_on, 'harvest', 'areca ' || title, notes, '/lot/' || id FROM lots WHERE deleted=0
 UNION ALL SELECT id, collected_on, 'harvest', 'areca collection', notes, '/collections' FROM areca_collections WHERE deleted=0
 UNION ALL SELECT id, harvested_on, 'harvest', crop || ' ' || title, notes, '/produce' FROM produce_lots WHERE deleted=0
@@ -144,7 +148,7 @@ ORDER BY day DESC, id
             r.read<DateTime>('day'),
             r.read<String>('category'),
             r.read<String>('title'),
-            r.read<String>('notes'),
+            readableNote(r.read<String>('notes')),
             r.read<String>('route'),
           ),
         )

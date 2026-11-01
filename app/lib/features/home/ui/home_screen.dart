@@ -126,17 +126,21 @@ class HomeScreen extends ConsumerWidget {
                   _FarmSummaryTile(
                     label: v1Text(context, 'Harvests', 'ಕೊಯ್ಲುಗಳು'),
                     value: '${lots.length}',
-                    detail: v1Text(context, 'Areca lots', 'ಅಡಿಕೆ ಲಾಟ್‌ಗಳು'),
+                    detail: v1Text(context, 'Saved lots', 'ಉಳಿಸಿದ ಲಾಟ್‌ಗಳು'),
                     icon: Icons.eco_outlined,
                     green: true,
                     onTap: () => context.go('/lots'),
                   ),
                   _FarmSummaryTile(
-                    label: v1Text(context, 'Buyer balances', 'ಖರೀದಿದಾರರ ಬಾಕಿ'),
-                    value: fmt.money(toReceive),
-                    detail: v1Text(context, 'To receive', 'ಬರಬೇಕಾದ ಮೊತ್ತ'),
-                    icon: Icons.bar_chart_rounded,
-                    onTap: () => context.go('/sales'),
+                    label: v1Text(context, 'Attendance', 'ಹಾಜರಾತಿ'),
+                    value: '${workers.where((w) => w.worker.active).length}',
+                    detail: v1Text(
+                      context,
+                      'Manage workers',
+                      'ಕಾರ್ಮಿಕರ ನಿರ್ವಹಣೆ',
+                    ),
+                    icon: Icons.groups_outlined,
+                    onTap: () => context.go('/labour?tab=attendance'),
                   ),
                 ];
                 return Wrap(
@@ -189,7 +193,7 @@ class HomeScreen extends ConsumerWidget {
                 _QuickAction(
                   icon: Icons.eco_outlined,
                   label: l.qaHarvest,
-                  onTap: () => context.push('/harvest-form'),
+                  onTap: () => context.push('/date-note?label=harvest'),
                 ),
                 const SizedBox(width: 10),
                 _QuickAction(
@@ -211,20 +215,19 @@ class HomeScreen extends ConsumerWidget {
               runSpacing: 8,
               children: [
                 for (final feature in <(String, IconData, String)>[
-                  (l.fFertilizer, Icons.grass, '/fertilizer'),
                   (
-                    l.fCollections,
-                    Icons.shopping_basket_outlined,
-                    '/collections',
+                    v1Text(context, 'Add farm activity', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ'),
+                    Icons.add_circle_outline,
+                    '/date-note',
                   ),
                   (l.xCalendar, Icons.calendar_month, '/calendar'),
-                  (l.xProduce, Icons.eco_outlined, '/produce'),
-                  (l.navHarvest, Icons.eco_outlined, '/lots'),
                   (l.navLabour, Icons.groups_outlined, '/labour'),
-                  (l.xDiary, Icons.menu_book_outlined, '/diary'),
-                  (l.xSales, Icons.receipt_long_outlined, '/sales'),
-                  (l.xExpenses, Icons.payments_outlined, '/expenses'),
-                  (l.xReports, Icons.bar_chart_outlined, '/reports'),
+                  (
+                    context.l.labourReports,
+                    Icons.bar_chart,
+                    '/labour?tab=reports',
+                  ),
+                  (l.navMore, Icons.more_horiz, '/more'),
                 ])
                   ActionChip(
                     avatar: Icon(feature.$2, size: 18),

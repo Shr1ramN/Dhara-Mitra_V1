@@ -725,5 +725,15 @@
   "wOpeningShares": "Opening shares",
   "wTransactionHint": "Tap a transaction to edit; hold to remove.",
   "wDailyHint": "Daily work reuses attendance wages. Enter 0.5 for half a day. Split a shared day between jobs; record extra piecework separately. Existing attendance rates apply.",
-  "nFarmTools": "Farm tools"
+  "nFarmTools": "Farm tools",
+  "labourReports": "Labour Reports",
+  "settleWages": "Settle wages",
+  "workerSaved": "Worker saved",
+  "workerLoan": "Worker loan",
+  "previousWorkerLoan": "Previous loan",
+  "newWorkerLoan": "New loan / for future work",
+  "workerLoanRepayment": "Loan repayment",
+  "workerLoanOutstanding": "Loan outstanding",
+  "farmDateNote": "Date note",
+  "myCrops": "My crops"
 }

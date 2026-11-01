@@ -1894,4 +1894,34 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get nFarmTools => 'ತೋಟದ ಕೆಲಸಗಳು';
+
+  @override
+  String get labourReports => 'ಕಾರ್ಮಿಕರ ವರದಿಗಳು';
+
+  @override
+  String get settleWages => 'ಕೂಲಿ ಪಾವತಿ';
+
+  @override
+  String get workerSaved => 'ಕಾರ್ಮಿಕರ ಮಾಹಿತಿ ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get workerLoan => 'ಕಾರ್ಮಿಕರ ಸಾಲ';
+
+  @override
+  String get previousWorkerLoan => 'ಹಿಂದಿನ ಸಾಲ';
+
+  @override
+  String get newWorkerLoan => 'ಹೊಸ ಸಾಲ / ಮುಂದಿನ ಕೆಲಸಕ್ಕೆ';
+
+  @override
+  String get workerLoanRepayment => 'ಸಾಲ ಮರುಪಾವತಿ';
+
+  @override
+  String get workerLoanOutstanding => 'ಸಾಲದ ಬಾಕಿ';
+
+  @override
+  String get farmDateNote => 'ದಿನದ ಟಿಪ್ಪಣಿ';
+
+  @override
+  String get myCrops => 'ನನ್ನ ಬೆಳೆಗಳು';
 }

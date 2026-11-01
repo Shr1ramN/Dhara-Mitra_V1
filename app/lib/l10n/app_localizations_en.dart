@@ -1898,4 +1898,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nFarmTools => 'Farm tools';
+
+  @override
+  String get labourReports => 'Labour Reports';
+
+  @override
+  String get settleWages => 'Settle wages';
+
+  @override
+  String get workerSaved => 'Worker saved';
+
+  @override
+  String get workerLoan => 'Worker loan';
+
+  @override
+  String get previousWorkerLoan => 'Previous loan';
+
+  @override
+  String get newWorkerLoan => 'New loan / for future work';
+
+  @override
+  String get workerLoanRepayment => 'Loan repayment';
+
+  @override
+  String get workerLoanOutstanding => 'Loan outstanding';
+
+  @override
+  String get farmDateNote => 'Date note';
+
+  @override
+  String get myCrops => 'My crops';
 }

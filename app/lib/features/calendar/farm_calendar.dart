@@ -1,14 +1,13 @@
-import 'package:drift/drift.dart' show Value;
+import 'date_note.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/db/database.dart';
 import '../../core/l10n.dart';
 import '../../core/providers.dart';
 import '../../core/v1.dart';
 import '../../core/widgets.dart';
-import '../common/forms.dart';
 import '../diary/ui/diary_screen.dart';
 import '../finance/finance_screens.dart';
 import 'calendar_records.dart';
@@ -70,7 +69,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
   bool sameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  Future<void> note([String? id]) async {
+  Future<void> note([String? id, String suggested = '']) async {
     final db = ref.read(databaseProvider);
     final old = id == null
         ? null
@@ -78,43 +77,12 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
             db.reminders,
           )..where((t) => t.id.equals(id))).getSingle();
     if (!mounted) return;
-    await openEntryForm(
+    await Navigator.push<void>(
       context,
-      title: v1Text(context, 'Date note', 'ದಿನದ ಟಿಪ್ಪಣಿ'),
-      fields: [
-        EntryField(
-          'date',
-          context.l.date,
-          kind: InputKind.date,
-          required: true,
-          initial: old?.dueOn ?? day,
-        ),
-        EntryField(
-          'title',
-          context.l.xTitle,
-          required: true,
-          initial: old?.title,
-        ),
-        EntryField(
-          'notes',
-          context.l.notes,
-          kind: InputKind.notes,
-          initial: old?.notes,
-        ),
-      ],
-      onSave: (v) => db
-          .into(db.reminders)
-          .insertOnConflictUpdate(
-            RemindersCompanion.insert(
-              id: id == null ? const Value.absent() : Value(id),
-              title: v.text('title'),
-              dueOn: v.date('date'),
-              kind: const Value('dateNote'),
-              done: const Value(true),
-              notes: Value(v.text('notes')),
-              updatedAt: Value(DateTime.now()),
-            ),
-          ),
+      MaterialPageRoute(
+        builder: (_) =>
+            DateNoteEditor(date: day, existing: old, suggested: suggested),
+      ),
     );
   }
 
@@ -158,22 +126,35 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  context.fmt.weekdayDate(day),
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              ListTile(
+                title: Text(
+                  v1Text(context, 'Labour management', 'ಕಾರ್ಮಿಕರ ನಿರ್ವಹಣೆ'),
+                ),
+              ),
               for (final item in <(String, String)>[
-                (l.xActivity, '/fertilizer'),
                 (l.tabAttendance, '/labour?tab=attendance'),
-                (l.qaPay, '/labour?tab=dues'),
-                (l.xExpenses, '/expenses'),
+                (context.l.settleWages, '/labour?tab=dues'),
+                (l.tabDues, '/labour?tab=dues'),
+                (context.l.labourReports, '/labour?tab=reports'),
+                (context.l.navHarvest, 'note:harvest'),
+                (v1Text(context, 'Irrigation', 'ನೀರಾವರಿ'), 'note:irrigation'),
+                (v1Text(context, 'Fertiliser', 'ಗೊಬ್ಬರ'), 'note:fertiliser'),
+                (v1Text(context, 'Spray', 'ಸಿಂಪಡಣೆ'), 'note:spray'),
                 (
-                  '${l.navHarvest} · ${v1Text(context, 'Arecanut', 'ಅಡಿಕೆ')}',
-                  '/harvest-form',
+                  v1Text(
+                    context,
+                    'Date note / farm activity',
+                    'ದಿನದ ಟಿಪ್ಪಣಿ / ತೋಟದ ಕೆಲಸ',
+                  ),
+                  'note',
                 ),
-                (
-                  '${l.navHarvest} · ${v1Text(context, 'Coconut', 'ತೆಂಗು')}',
-                  '/produce',
-                ),
-                (l.fCollections, '/collections'),
-                (l.xSales, '/sales'),
-                (v1Text(context, 'Date note', 'ದಿನದ ಟಿಪ್ಪಣಿ'), 'note'),
               ])
                 ListTile(
                   title: Text(item.$1),
@@ -188,7 +169,16 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
     if (route == null || !mounted) return;
     ref.read(entryDateProvider.notifier).select(day);
     try {
-      if (route == 'note') {
+      if (route.startsWith('note:')) {
+        final kind = route.substring(5);
+        final suggestion = switch (kind) {
+          'harvest' => v1Text(context, 'Harvest', 'ಕೊಯ್ಲು'),
+          'irrigation' => v1Text(context, 'Irrigation', 'ನೀರಾವರಿ'),
+          'spray' => v1Text(context, 'Spray', 'ಸಿಂಪಡಣೆ'),
+          _ => v1Text(context, 'Fertiliser', 'ಗೊಬ್ಬರ'),
+        };
+        await note(null, suggestion);
+      } else if (route == 'note') {
         await note();
       } else if (route == '/expenses') {
         await const ExpensesScreen().edit(context, ref);
@@ -208,6 +198,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
     'harvest' => context.l.navHarvest,
     'sale' => context.l.xSales,
     'note' => context.l.notes,
+    'loan' => context.l.workerLoan,
     _ => context.l.xAll,
   };
 
@@ -445,6 +436,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                           'sale',
                           'payment',
                           'note',
+                          'loan',
                         ])
                           Padding(
                             padding: const EdgeInsets.only(right: 8),
@@ -579,7 +571,10 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                                         borderRadius: BorderRadius.circular(14),
                                       ),
                                     ),
-                                    onPressed: () => selectDay(date),
+                                    onPressed: () {
+                                      selectDay(date);
+                                      add();
+                                    },
                                     child: Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
