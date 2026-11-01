@@ -16,9 +16,19 @@ class TutorialScreen extends ConsumerStatefulWidget {
 class _TutorialState extends ConsumerState<TutorialScreen> {
   int step = 0;
   final scroll = ScrollController();
-  void move(int next) { setState(() => step = next); if(scroll.hasClients) { scroll.jumpTo(0); } }
+  void move(int next) {
+    setState(() => step = next);
+    if (scroll.hasClients) {
+      scroll.jumpTo(0);
+    }
+  }
+
   @override
-  void dispose() { scroll.dispose(); super.dispose(); }
+  void dispose() {
+    scroll.dispose();
+    super.dispose();
+  }
+
   static const lessons = <(IconData, String, String, String, String, String)>[
     (
       Icons.home_outlined,
@@ -119,6 +129,37 @@ class _TutorialState extends ConsumerState<TutorialScreen> {
     final kn = ref.watch(localeProvider).languageCode == 'kn';
     return Scaffold(
       appBar: AppBar(title: Text(v1Text(context, 'Tutorial', 'ಬಳಕೆಯ ತರಬೇತಿ'))),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Row(
+            children: [
+              if (step > 0) ...[
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => move(step - 1),
+                    child: Text(v1Text(context, 'Previous', 'ಹಿಂದೆ')),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Expanded(
+                child: FilledButton(
+                  onPressed: step == lessons.length - 1
+                      ? finish
+                      : () => move(step + 1),
+                  child: Text(
+                    step == lessons.length - 1
+                        ? v1Text(context, 'Finish', 'ಮುಗಿಸಿ')
+                        : v1Text(context, 'Next', 'ಮುಂದೆ'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: ListView(
         controller: scroll,
         padding: const EdgeInsets.all(20),
@@ -161,21 +202,6 @@ class _TutorialState extends ConsumerState<TutorialScreen> {
             onPressed: () => context.push(lesson.$6),
           ),
           const SizedBox(height: 16),
-          FilledButton(
-            onPressed: step == lessons.length - 1
-                ? finish
-                : () => move(step + 1),
-            child: Text(
-              step == lessons.length - 1
-                  ? v1Text(context, 'Finish', 'ಮುಗಿಸಿ')
-                  : v1Text(context, 'Next', 'ಮುಂದೆ'),
-            ),
-          ),
-          if (step > 0)
-            TextButton(
-              onPressed: () => move(step - 1),
-              child: Text(v1Text(context, 'Previous', 'ಹಿಂದೆ')),
-            ),
           TextButton(
             onPressed: finish,
             child: Text(
