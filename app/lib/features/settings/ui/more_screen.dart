@@ -14,7 +14,6 @@ import '../../../core/providers.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 
-
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
@@ -90,7 +89,16 @@ class MoreScreen extends ConsumerWidget {
             (l.navHarvest, Icons.eco_outlined, '/lots'),
             (l.navLabour, Icons.groups_outlined, '/labour'),
             (l.fCollections, Icons.shopping_basket_outlined, '/collections'),
+            (context.l.myCrops, Icons.grass, '/my-crops'),
             (l.xDiary, Icons.menu_book_outlined, '/diary'),
+            (l.xStock, Icons.inventory_2_outlined, '/stock'),
+            (l.xLand, Icons.map_outlined, '/land'),
+            (l.xLoans, Icons.account_balance_outlined, '/loans'),
+            (l.xInsurance, Icons.shield_outlined, '/insurance'),
+            (l.xDocuments, Icons.folder_outlined, '/documents'),
+            (l.xPrices, Icons.show_chart, '/prices'),
+            (l.xWeather, Icons.cloud_outlined, '/weather'),
+            (l.xReminders, Icons.notifications_outlined, '/reminders'),
             (l.xSales, Icons.receipt_long_outlined, '/sales'),
             (l.xExpenses, Icons.payments_outlined, '/expenses'),
             (l.xProduce, Icons.eco_outlined, '/produce'),
@@ -151,7 +159,6 @@ class MoreScreen extends ConsumerWidget {
               height: 1.45,
             ),
           ),
-
         ],
       ),
     );

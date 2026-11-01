@@ -61,6 +61,10 @@ class HomeScreen extends ConsumerWidget {
           (v) => v.stage == LotStage.storage || v.stage == LotStage.grading,
         )
         .toList();
+    final presentToday =
+        (ref.watch(attendanceProvider(today)).value?.values ?? const [])
+            .where((entry) => entry.status != AttendanceStatus.absent)
+            .length;
     final toPay = workers.fold(
       0,
       (s, w) => s + (w.balance.due > 0 ? w.balance.due : 0),
@@ -80,7 +84,7 @@ class HomeScreen extends ConsumerWidget {
     final recentWork = records
         .where(
           (r) =>
-              r.category == 'activity' &&
+              (r.category == 'activity' || r.category == 'note') &&
               !calendarDay(r.date).isBefore(startOfWeek) &&
               !calendarDay(r.date).isAfter(calendarDay(today)),
         )
@@ -106,14 +110,18 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: 6),
             LayoutBuilder(
               builder: (context, constraints) {
-                final width = (constraints.maxWidth - 12) / 2;
+                final largeText =
+                    MediaQuery.textScalerOf(context).scale(16) > 19.2;
+                final width = largeText && constraints.maxWidth < 400
+                    ? constraints.maxWidth
+                    : (constraints.maxWidth - 12) / 2;
                 final cards = <Widget>[
                   _FarmSummaryTile(
-                    label: v1Text(context, 'Recent work', 'ಇತ್ತೀಚಿನ ಕೆಲಸ'),
-                    value: '$recentWork',
-                    detail: v1Text(context, 'This week', 'ಈ ವಾರ'),
-                    icon: Icons.assignment_outlined,
-                    onTap: () => context.go('/calendar'),
+                    label: l.tabAttendance,
+                    value: '$presentToday',
+                    detail: v1Text(context, 'Present today', 'ಇಂದು ಹಾಜರು'),
+                    icon: Icons.groups_outlined,
+                    onTap: () => context.go('/labour?tab=attendance'),
                   ),
                   _FarmSummaryTile(
                     label: v1Text(context, 'Worker dues', 'ಕಾರ್ಮಿಕರ ಬಾಕಿ'),
@@ -124,19 +132,19 @@ class HomeScreen extends ConsumerWidget {
                     onTap: () => context.go('/labour?tab=dues'),
                   ),
                   _FarmSummaryTile(
+                    label: v1Text(context, 'Recent work', 'ಇತ್ತೀಚಿನ ಕೆಲಸ'),
+                    value: '$recentWork',
+                    detail: v1Text(context, 'This week', 'ಈ ವಾರ'),
+                    icon: Icons.assignment_outlined,
+                    onTap: () => context.go('/calendar'),
+                  ),
+                  _FarmSummaryTile(
                     label: v1Text(context, 'Harvests', 'ಕೊಯ್ಲುಗಳು'),
                     value: '${lots.length}',
-                    detail: v1Text(context, 'Areca lots', 'ಅಡಿಕೆ ಲಾಟ್‌ಗಳು'),
+                    detail: v1Text(context, 'Saved lots', 'ಉಳಿಸಿದ ಲಾಟ್‌ಗಳು'),
                     icon: Icons.eco_outlined,
                     green: true,
                     onTap: () => context.go('/lots'),
-                  ),
-                  _FarmSummaryTile(
-                    label: v1Text(context, 'Buyer balances', 'ಖರೀದಿದಾರರ ಬಾಕಿ'),
-                    value: fmt.money(toReceive),
-                    detail: v1Text(context, 'To receive', 'ಬರಬೇಕಾದ ಮೊತ್ತ'),
-                    icon: Icons.bar_chart_rounded,
-                    onTap: () => context.go('/sales'),
                   ),
                 ];
                 return Wrap(
@@ -189,7 +197,7 @@ class HomeScreen extends ConsumerWidget {
                 _QuickAction(
                   icon: Icons.eco_outlined,
                   label: l.qaHarvest,
-                  onTap: () => context.push('/harvest-form'),
+                  onTap: () => context.push('/date-note?label=harvest'),
                 ),
                 const SizedBox(width: 10),
                 _QuickAction(
@@ -211,20 +219,19 @@ class HomeScreen extends ConsumerWidget {
               runSpacing: 8,
               children: [
                 for (final feature in <(String, IconData, String)>[
-                  (l.fFertilizer, Icons.grass, '/fertilizer'),
                   (
-                    l.fCollections,
-                    Icons.shopping_basket_outlined,
-                    '/collections',
+                    v1Text(context, 'Add farm activity', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ'),
+                    Icons.add_circle_outline,
+                    '/date-note',
                   ),
                   (l.xCalendar, Icons.calendar_month, '/calendar'),
-                  (l.xProduce, Icons.eco_outlined, '/produce'),
-                  (l.navHarvest, Icons.eco_outlined, '/lots'),
                   (l.navLabour, Icons.groups_outlined, '/labour'),
-                  (l.xDiary, Icons.menu_book_outlined, '/diary'),
-                  (l.xSales, Icons.receipt_long_outlined, '/sales'),
-                  (l.xExpenses, Icons.payments_outlined, '/expenses'),
-                  (l.xReports, Icons.bar_chart_outlined, '/reports'),
+                  (
+                    context.l.labourReports,
+                    Icons.bar_chart,
+                    '/labour?tab=reports',
+                  ),
+                  (l.navMore, Icons.more_horiz, '/more'),
                 ])
                   ActionChip(
                     avatar: Icon(feature.$2, size: 18),
@@ -299,9 +306,15 @@ class _FarmSummaryTile extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      value,
-                      style: display(24, color: const Color(0xFF183622)),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        value,
+                        maxLines: 1,
+                        softWrap: false,
+                        style: display(24, color: const Color(0xFF183622)),
+                      ),
                     ),
                   ),
                   const Icon(

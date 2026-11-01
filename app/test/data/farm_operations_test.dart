@@ -291,6 +291,9 @@ void main() {
           'ALTER TABLE attendance_entries DROP COLUMN source_activity_id',
         );
         await disk.customStatement('DROP TABLE IF EXISTS sale_receipts');
+        await disk.customStatement('DROP TABLE IF EXISTS worker_loan_entries');
+        await disk.customStatement('DROP TABLE IF EXISTS worker_settlements');
+        await disk.customStatement('ALTER TABLE workers DROP COLUMN wage_type');
         await disk.customStatement('PRAGMA user_version = 1');
         for (final column in ['telephone', 'custom_roles']) {
           await disk.customStatement('ALTER TABLE workers DROP COLUMN $column');

@@ -10,6 +10,7 @@ import '../../core/providers.dart';
 import '../../core/validation.dart';
 import '../lots/domain/lot_calc.dart';
 import '../common/forms.dart';
+import '../labour/ui/payroll_screens.dart';
 
 Future<void> editCalendarPayment(
   BuildContext context,
@@ -26,6 +27,15 @@ Future<void> editCalendarPayment(
         )..where((t) => t.id.equals(id))).getSingle()
       : null;
   if (!context.mounted) return;
+  if (worker?.refType == 'settlement') {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LabourReports(workerId: worker!.workerId),
+      ),
+    );
+    return;
+  }
   await openEntryForm(
     context,
     title: context.l.xRecordPayment,

@@ -26,6 +26,8 @@ const databaseName = 'dhara_mitra';
     Farms,
     Plots,
     Workers,
+    WorkerLoanEntries,
+    WorkerSettlements,
     AttendanceEntries,
     WorkerTxns,
     Lots,
@@ -89,12 +91,20 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
+      if (from < 6) {
+        await m.addColumn(workers, workers.wageType);
+        await m.createTable(workerLoanEntries);
+        await m.createTable(workerSettlements);
+        await customStatement(
+          "UPDATE workers SET wage_type = 'other' WHERE day_rate = 0",
+        );
+      }
       if (from < 2) {
         await m.addColumn(attendanceEntries, attendanceEntries.rate);
         await m.addColumn(
@@ -147,12 +157,32 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(saleReceipts);
         for (final sale in await select(sales).get()) {
           if (!sale.deleted && sale.received != 0) {
-            await into(saleReceipts).insert(SaleReceiptsCompanion.insert(saleId: sale.id, produce: false, date: sale.date, amount: sale.received, notes: const Value('Opening received balance / ಆರಂಭಿಕ ಸ್ವೀಕೃತ ಮೊತ್ತ')));
+            await into(saleReceipts).insert(
+              SaleReceiptsCompanion.insert(
+                saleId: sale.id,
+                produce: false,
+                date: sale.date,
+                amount: sale.received,
+                notes: const Value(
+                  'Opening received balance / ಆರಂಭಿಕ ಸ್ವೀಕೃತ ಮೊತ್ತ',
+                ),
+              ),
+            );
           }
         }
         for (final sale in await select(produceSales).get()) {
           if (!sale.deleted && sale.received != 0) {
-            await into(saleReceipts).insert(SaleReceiptsCompanion.insert(saleId: sale.id, produce: true, date: sale.date, amount: sale.received, notes: const Value('Opening received balance / ಆರಂಭಿಕ ಸ್ವೀಕೃತ ಮೊತ್ತ')));
+            await into(saleReceipts).insert(
+              SaleReceiptsCompanion.insert(
+                saleId: sale.id,
+                produce: true,
+                date: sale.date,
+                amount: sale.received,
+                notes: const Value(
+                  'Opening received balance / ಆರಂಭಿಕ ಸ್ವೀಕೃತ ಮೊತ್ತ',
+                ),
+              ),
+            );
           }
         }
       }

@@ -1,3 +1,4 @@
+import '../calendar/date_note.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -146,9 +147,9 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                   ),
                   title: Text(r.title),
                   subtitle: Text(
-                    '${context.fmt.date(r.dueOn)}${!r.done && r.dueOn.isBefore(ref.read(todayProvider)) ? ' · ${l.xOverdue}' : ''}\n${r.notes}',
+                    '${context.fmt.date(r.dueOn)}${!r.done && r.dueOn.isBefore(ref.read(todayProvider)) ? ' · ${l.xOverdue}' : ''}\n${readableNote(r.notes)}',
                   ),
-                  onTap: () => editReminder(context, ref, existing: r),
+                  onTap: () => r.kind == 'dateNote' ? Navigator.push<void>(context, MaterialPageRoute(builder: (_) => DateNoteEditor(date: r.dueOn, existing: r))) : editReminder(context, ref, existing: r),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
                     tooltip: l.delete,
@@ -247,7 +248,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       subtitle: Text(
                         '${context.fmt.date(r.dueOn)} · ${r.notes}',
                       ),
-                      onTap: () => editReminder(context, ref, existing: r),
+                      onTap: () => r.kind == 'dateNote' ? Navigator.push<void>(context, MaterialPageRoute(builder: (_) => DateNoteEditor(date: r.dueOn, existing: r))) : editReminder(context, ref, existing: r),
                       trailing: r.done
                           ? const Icon(Icons.check_circle_outline)
                           : null,

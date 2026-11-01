@@ -1456,6 +1456,18 @@ class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _wageTypeMeta = const VerificationMeta(
+    'wageType',
+  );
+  @override
+  late final GeneratedColumn<String> wageType = GeneratedColumn<String>(
+    'wage_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('daily'),
+  );
   static const VerificationMeta _telephoneMeta = const VerificationMeta(
     'telephone',
   );
@@ -1590,6 +1602,7 @@ class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
     id,
     updatedAt,
     deleted,
+    wageType,
     telephone,
     customRoles,
     name,
@@ -1628,6 +1641,12 @@ class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
       context.handle(
         _deletedMeta,
         deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('wage_type')) {
+      context.handle(
+        _wageTypeMeta,
+        wageType.isAcceptableOrUnknown(data['wage_type']!, _wageTypeMeta),
       );
     }
     if (data.containsKey('telephone')) {
@@ -1710,6 +1729,10 @@ class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
         DriftSqlType.bool,
         data['${effectivePrefix}deleted'],
       )!,
+      wageType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wage_type'],
+      )!,
       telephone: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}telephone'],
@@ -1786,6 +1809,7 @@ class Worker extends DataClass implements Insertable<Worker> {
   final String id;
   final DateTime updatedAt;
   final bool deleted;
+  final String wageType;
   final String telephone;
   final List<String> customRoles;
   final String name;
@@ -1806,6 +1830,7 @@ class Worker extends DataClass implements Insertable<Worker> {
     required this.id,
     required this.updatedAt,
     required this.deleted,
+    required this.wageType,
     required this.telephone,
     required this.customRoles,
     required this.name,
@@ -1825,6 +1850,7 @@ class Worker extends DataClass implements Insertable<Worker> {
     map['id'] = Variable<String>(id);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['deleted'] = Variable<bool>(deleted);
+    map['wage_type'] = Variable<String>(wageType);
     map['telephone'] = Variable<String>(telephone);
     {
       map['custom_roles'] = Variable<String>(
@@ -1861,6 +1887,7 @@ class Worker extends DataClass implements Insertable<Worker> {
       id: Value(id),
       updatedAt: Value(updatedAt),
       deleted: Value(deleted),
+      wageType: Value(wageType),
       telephone: Value(telephone),
       customRoles: Value(customRoles),
       name: Value(name),
@@ -1891,6 +1918,7 @@ class Worker extends DataClass implements Insertable<Worker> {
       id: serializer.fromJson<String>(json['id']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deleted: serializer.fromJson<bool>(json['deleted']),
+      wageType: serializer.fromJson<String>(json['wageType']),
       telephone: serializer.fromJson<String>(json['telephone']),
       customRoles: serializer.fromJson<List<String>>(json['customRoles']),
       name: serializer.fromJson<String>(json['name']),
@@ -1914,6 +1942,7 @@ class Worker extends DataClass implements Insertable<Worker> {
       'id': serializer.toJson<String>(id),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deleted': serializer.toJson<bool>(deleted),
+      'wageType': serializer.toJson<String>(wageType),
       'telephone': serializer.toJson<String>(telephone),
       'customRoles': serializer.toJson<List<String>>(customRoles),
       'name': serializer.toJson<String>(name),
@@ -1935,6 +1964,7 @@ class Worker extends DataClass implements Insertable<Worker> {
     String? id,
     DateTime? updatedAt,
     bool? deleted,
+    String? wageType,
     String? telephone,
     List<String>? customRoles,
     String? name,
@@ -1951,6 +1981,7 @@ class Worker extends DataClass implements Insertable<Worker> {
     id: id ?? this.id,
     updatedAt: updatedAt ?? this.updatedAt,
     deleted: deleted ?? this.deleted,
+    wageType: wageType ?? this.wageType,
     telephone: telephone ?? this.telephone,
     customRoles: customRoles ?? this.customRoles,
     name: name ?? this.name,
@@ -1969,6 +2000,7 @@ class Worker extends DataClass implements Insertable<Worker> {
       id: data.id.present ? data.id.value : this.id,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      wageType: data.wageType.present ? data.wageType.value : this.wageType,
       telephone: data.telephone.present ? data.telephone.value : this.telephone,
       customRoles: data.customRoles.present
           ? data.customRoles.value
@@ -1994,6 +2026,7 @@ class Worker extends DataClass implements Insertable<Worker> {
           ..write('id: $id, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
+          ..write('wageType: $wageType, ')
           ..write('telephone: $telephone, ')
           ..write('customRoles: $customRoles, ')
           ..write('name: $name, ')
@@ -2015,6 +2048,7 @@ class Worker extends DataClass implements Insertable<Worker> {
     id,
     updatedAt,
     deleted,
+    wageType,
     telephone,
     customRoles,
     name,
@@ -2035,6 +2069,7 @@ class Worker extends DataClass implements Insertable<Worker> {
           other.id == this.id &&
           other.updatedAt == this.updatedAt &&
           other.deleted == this.deleted &&
+          other.wageType == this.wageType &&
           other.telephone == this.telephone &&
           other.customRoles == this.customRoles &&
           other.name == this.name &&
@@ -2053,6 +2088,7 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
   final Value<String> id;
   final Value<DateTime> updatedAt;
   final Value<bool> deleted;
+  final Value<String> wageType;
   final Value<String> telephone;
   final Value<List<String>> customRoles;
   final Value<String> name;
@@ -2070,6 +2106,7 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
     this.id = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deleted = const Value.absent(),
+    this.wageType = const Value.absent(),
     this.telephone = const Value.absent(),
     this.customRoles = const Value.absent(),
     this.name = const Value.absent(),
@@ -2088,6 +2125,7 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
     this.id = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deleted = const Value.absent(),
+    this.wageType = const Value.absent(),
     this.telephone = const Value.absent(),
     this.customRoles = const Value.absent(),
     required String name,
@@ -2106,6 +2144,7 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
     Expression<String>? id,
     Expression<DateTime>? updatedAt,
     Expression<bool>? deleted,
+    Expression<String>? wageType,
     Expression<String>? telephone,
     Expression<String>? customRoles,
     Expression<String>? name,
@@ -2124,6 +2163,7 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
       if (id != null) 'id': id,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deleted != null) 'deleted': deleted,
+      if (wageType != null) 'wage_type': wageType,
       if (telephone != null) 'telephone': telephone,
       if (customRoles != null) 'custom_roles': customRoles,
       if (name != null) 'name': name,
@@ -2144,6 +2184,7 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
     Value<String>? id,
     Value<DateTime>? updatedAt,
     Value<bool>? deleted,
+    Value<String>? wageType,
     Value<String>? telephone,
     Value<List<String>>? customRoles,
     Value<String>? name,
@@ -2162,6 +2203,7 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
       id: id ?? this.id,
       updatedAt: updatedAt ?? this.updatedAt,
       deleted: deleted ?? this.deleted,
+      wageType: wageType ?? this.wageType,
       telephone: telephone ?? this.telephone,
       customRoles: customRoles ?? this.customRoles,
       name: name ?? this.name,
@@ -2189,6 +2231,9 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
     }
     if (deleted.present) {
       map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (wageType.present) {
+      map['wage_type'] = Variable<String>(wageType.value);
     }
     if (telephone.present) {
       map['telephone'] = Variable<String>(telephone.value);
@@ -2244,6 +2289,7 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
           ..write('id: $id, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
+          ..write('wageType: $wageType, ')
           ..write('telephone: $telephone, ')
           ..write('customRoles: $customRoles, ')
           ..write('name: $name, ')
@@ -2256,6 +2302,1173 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
           ..write('pieceUnit: $pieceUnit, ')
           ..write('active: $active, ')
           ..write('notes: $notes, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WorkerLoanEntriesTable extends WorkerLoanEntries
+    with TableInfo<$WorkerLoanEntriesTable, WorkerLoanEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkerLoanEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: newId,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _workerIdMeta = const VerificationMeta(
+    'workerId',
+  );
+  @override
+  late final GeneratedColumn<String> workerId = GeneratedColumn<String>(
+    'worker_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES workers (id)',
+    ),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _settlementIdMeta = const VerificationMeta(
+    'settlementId',
+  );
+  @override
+  late final GeneratedColumn<String> settlementId = GeneratedColumn<String>(
+    'settlement_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    updatedAt,
+    deleted,
+    workerId,
+    date,
+    kind,
+    amount,
+    note,
+    settlementId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'worker_loan_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkerLoanEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('worker_id')) {
+      context.handle(
+        _workerIdMeta,
+        workerId.isAcceptableOrUnknown(data['worker_id']!, _workerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workerIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('settlement_id')) {
+      context.handle(
+        _settlementIdMeta,
+        settlementId.isAcceptableOrUnknown(
+          data['settlement_id']!,
+          _settlementIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WorkerLoanEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkerLoanEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      workerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}worker_id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      settlementId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}settlement_id'],
+      ),
+    );
+  }
+
+  @override
+  $WorkerLoanEntriesTable createAlias(String alias) {
+    return $WorkerLoanEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class WorkerLoanEntry extends DataClass implements Insertable<WorkerLoanEntry> {
+  final String id;
+  final DateTime updatedAt;
+  final bool deleted;
+  final String workerId;
+  final DateTime date;
+  final String kind;
+  final int amount;
+  final String note;
+  final String? settlementId;
+  const WorkerLoanEntry({
+    required this.id,
+    required this.updatedAt,
+    required this.deleted,
+    required this.workerId,
+    required this.date,
+    required this.kind,
+    required this.amount,
+    required this.note,
+    this.settlementId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['deleted'] = Variable<bool>(deleted);
+    map['worker_id'] = Variable<String>(workerId);
+    map['date'] = Variable<DateTime>(date);
+    map['kind'] = Variable<String>(kind);
+    map['amount'] = Variable<int>(amount);
+    map['note'] = Variable<String>(note);
+    if (!nullToAbsent || settlementId != null) {
+      map['settlement_id'] = Variable<String>(settlementId);
+    }
+    return map;
+  }
+
+  WorkerLoanEntriesCompanion toCompanion(bool nullToAbsent) {
+    return WorkerLoanEntriesCompanion(
+      id: Value(id),
+      updatedAt: Value(updatedAt),
+      deleted: Value(deleted),
+      workerId: Value(workerId),
+      date: Value(date),
+      kind: Value(kind),
+      amount: Value(amount),
+      note: Value(note),
+      settlementId: settlementId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(settlementId),
+    );
+  }
+
+  factory WorkerLoanEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkerLoanEntry(
+      id: serializer.fromJson<String>(json['id']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      workerId: serializer.fromJson<String>(json['workerId']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      kind: serializer.fromJson<String>(json['kind']),
+      amount: serializer.fromJson<int>(json['amount']),
+      note: serializer.fromJson<String>(json['note']),
+      settlementId: serializer.fromJson<String?>(json['settlementId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deleted': serializer.toJson<bool>(deleted),
+      'workerId': serializer.toJson<String>(workerId),
+      'date': serializer.toJson<DateTime>(date),
+      'kind': serializer.toJson<String>(kind),
+      'amount': serializer.toJson<int>(amount),
+      'note': serializer.toJson<String>(note),
+      'settlementId': serializer.toJson<String?>(settlementId),
+    };
+  }
+
+  WorkerLoanEntry copyWith({
+    String? id,
+    DateTime? updatedAt,
+    bool? deleted,
+    String? workerId,
+    DateTime? date,
+    String? kind,
+    int? amount,
+    String? note,
+    Value<String?> settlementId = const Value.absent(),
+  }) => WorkerLoanEntry(
+    id: id ?? this.id,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deleted: deleted ?? this.deleted,
+    workerId: workerId ?? this.workerId,
+    date: date ?? this.date,
+    kind: kind ?? this.kind,
+    amount: amount ?? this.amount,
+    note: note ?? this.note,
+    settlementId: settlementId.present ? settlementId.value : this.settlementId,
+  );
+  WorkerLoanEntry copyWithCompanion(WorkerLoanEntriesCompanion data) {
+    return WorkerLoanEntry(
+      id: data.id.present ? data.id.value : this.id,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      workerId: data.workerId.present ? data.workerId.value : this.workerId,
+      date: data.date.present ? data.date.value : this.date,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      note: data.note.present ? data.note.value : this.note,
+      settlementId: data.settlementId.present
+          ? data.settlementId.value
+          : this.settlementId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkerLoanEntry(')
+          ..write('id: $id, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deleted: $deleted, ')
+          ..write('workerId: $workerId, ')
+          ..write('date: $date, ')
+          ..write('kind: $kind, ')
+          ..write('amount: $amount, ')
+          ..write('note: $note, ')
+          ..write('settlementId: $settlementId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    updatedAt,
+    deleted,
+    workerId,
+    date,
+    kind,
+    amount,
+    note,
+    settlementId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkerLoanEntry &&
+          other.id == this.id &&
+          other.updatedAt == this.updatedAt &&
+          other.deleted == this.deleted &&
+          other.workerId == this.workerId &&
+          other.date == this.date &&
+          other.kind == this.kind &&
+          other.amount == this.amount &&
+          other.note == this.note &&
+          other.settlementId == this.settlementId);
+}
+
+class WorkerLoanEntriesCompanion extends UpdateCompanion<WorkerLoanEntry> {
+  final Value<String> id;
+  final Value<DateTime> updatedAt;
+  final Value<bool> deleted;
+  final Value<String> workerId;
+  final Value<DateTime> date;
+  final Value<String> kind;
+  final Value<int> amount;
+  final Value<String> note;
+  final Value<String?> settlementId;
+  final Value<int> rowid;
+  const WorkerLoanEntriesCompanion({
+    this.id = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.workerId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.note = const Value.absent(),
+    this.settlementId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkerLoanEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String workerId,
+    required DateTime date,
+    required String kind,
+    required int amount,
+    this.note = const Value.absent(),
+    this.settlementId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : workerId = Value(workerId),
+       date = Value(date),
+       kind = Value(kind),
+       amount = Value(amount);
+  static Insertable<WorkerLoanEntry> custom({
+    Expression<String>? id,
+    Expression<DateTime>? updatedAt,
+    Expression<bool>? deleted,
+    Expression<String>? workerId,
+    Expression<DateTime>? date,
+    Expression<String>? kind,
+    Expression<int>? amount,
+    Expression<String>? note,
+    Expression<String>? settlementId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deleted != null) 'deleted': deleted,
+      if (workerId != null) 'worker_id': workerId,
+      if (date != null) 'date': date,
+      if (kind != null) 'kind': kind,
+      if (amount != null) 'amount': amount,
+      if (note != null) 'note': note,
+      if (settlementId != null) 'settlement_id': settlementId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkerLoanEntriesCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? updatedAt,
+    Value<bool>? deleted,
+    Value<String>? workerId,
+    Value<DateTime>? date,
+    Value<String>? kind,
+    Value<int>? amount,
+    Value<String>? note,
+    Value<String?>? settlementId,
+    Value<int>? rowid,
+  }) {
+    return WorkerLoanEntriesCompanion(
+      id: id ?? this.id,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deleted: deleted ?? this.deleted,
+      workerId: workerId ?? this.workerId,
+      date: date ?? this.date,
+      kind: kind ?? this.kind,
+      amount: amount ?? this.amount,
+      note: note ?? this.note,
+      settlementId: settlementId ?? this.settlementId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (workerId.present) {
+      map['worker_id'] = Variable<String>(workerId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<int>(amount.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (settlementId.present) {
+      map['settlement_id'] = Variable<String>(settlementId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkerLoanEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deleted: $deleted, ')
+          ..write('workerId: $workerId, ')
+          ..write('date: $date, ')
+          ..write('kind: $kind, ')
+          ..write('amount: $amount, ')
+          ..write('note: $note, ')
+          ..write('settlementId: $settlementId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WorkerSettlementsTable extends WorkerSettlements
+    with TableInfo<$WorkerSettlementsTable, WorkerSettlement> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkerSettlementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: newId,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _workerIdMeta = const VerificationMeta(
+    'workerId',
+  );
+  @override
+  late final GeneratedColumn<String> workerId = GeneratedColumn<String>(
+    'worker_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES workers (id)',
+    ),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _periodStartMeta = const VerificationMeta(
+    'periodStart',
+  );
+  @override
+  late final GeneratedColumn<DateTime> periodStart = GeneratedColumn<DateTime>(
+    'period_start',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _periodEndMeta = const VerificationMeta(
+    'periodEnd',
+  );
+  @override
+  late final GeneratedColumn<DateTime> periodEnd = GeneratedColumn<DateTime>(
+    'period_end',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cashPaidMeta = const VerificationMeta(
+    'cashPaid',
+  );
+  @override
+  late final GeneratedColumn<int> cashPaid = GeneratedColumn<int>(
+    'cash_paid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _loanDeductionMeta = const VerificationMeta(
+    'loanDeduction',
+  );
+  @override
+  late final GeneratedColumn<int> loanDeduction = GeneratedColumn<int>(
+    'loan_deduction',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    updatedAt,
+    deleted,
+    workerId,
+    date,
+    periodStart,
+    periodEnd,
+    cashPaid,
+    loanDeduction,
+    note,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'worker_settlements';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkerSettlement> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('worker_id')) {
+      context.handle(
+        _workerIdMeta,
+        workerId.isAcceptableOrUnknown(data['worker_id']!, _workerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_workerIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('period_start')) {
+      context.handle(
+        _periodStartMeta,
+        periodStart.isAcceptableOrUnknown(
+          data['period_start']!,
+          _periodStartMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_periodStartMeta);
+    }
+    if (data.containsKey('period_end')) {
+      context.handle(
+        _periodEndMeta,
+        periodEnd.isAcceptableOrUnknown(data['period_end']!, _periodEndMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_periodEndMeta);
+    }
+    if (data.containsKey('cash_paid')) {
+      context.handle(
+        _cashPaidMeta,
+        cashPaid.isAcceptableOrUnknown(data['cash_paid']!, _cashPaidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cashPaidMeta);
+    }
+    if (data.containsKey('loan_deduction')) {
+      context.handle(
+        _loanDeductionMeta,
+        loanDeduction.isAcceptableOrUnknown(
+          data['loan_deduction']!,
+          _loanDeductionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WorkerSettlement map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkerSettlement(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      workerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}worker_id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      periodStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}period_start'],
+      )!,
+      periodEnd: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}period_end'],
+      )!,
+      cashPaid: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cash_paid'],
+      )!,
+      loanDeduction: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}loan_deduction'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+    );
+  }
+
+  @override
+  $WorkerSettlementsTable createAlias(String alias) {
+    return $WorkerSettlementsTable(attachedDatabase, alias);
+  }
+}
+
+class WorkerSettlement extends DataClass
+    implements Insertable<WorkerSettlement> {
+  final String id;
+  final DateTime updatedAt;
+  final bool deleted;
+  final String workerId;
+  final DateTime date;
+  final DateTime periodStart;
+  final DateTime periodEnd;
+  final int cashPaid;
+  final int loanDeduction;
+  final String note;
+  const WorkerSettlement({
+    required this.id,
+    required this.updatedAt,
+    required this.deleted,
+    required this.workerId,
+    required this.date,
+    required this.periodStart,
+    required this.periodEnd,
+    required this.cashPaid,
+    required this.loanDeduction,
+    required this.note,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['deleted'] = Variable<bool>(deleted);
+    map['worker_id'] = Variable<String>(workerId);
+    map['date'] = Variable<DateTime>(date);
+    map['period_start'] = Variable<DateTime>(periodStart);
+    map['period_end'] = Variable<DateTime>(periodEnd);
+    map['cash_paid'] = Variable<int>(cashPaid);
+    map['loan_deduction'] = Variable<int>(loanDeduction);
+    map['note'] = Variable<String>(note);
+    return map;
+  }
+
+  WorkerSettlementsCompanion toCompanion(bool nullToAbsent) {
+    return WorkerSettlementsCompanion(
+      id: Value(id),
+      updatedAt: Value(updatedAt),
+      deleted: Value(deleted),
+      workerId: Value(workerId),
+      date: Value(date),
+      periodStart: Value(periodStart),
+      periodEnd: Value(periodEnd),
+      cashPaid: Value(cashPaid),
+      loanDeduction: Value(loanDeduction),
+      note: Value(note),
+    );
+  }
+
+  factory WorkerSettlement.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkerSettlement(
+      id: serializer.fromJson<String>(json['id']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      workerId: serializer.fromJson<String>(json['workerId']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      periodStart: serializer.fromJson<DateTime>(json['periodStart']),
+      periodEnd: serializer.fromJson<DateTime>(json['periodEnd']),
+      cashPaid: serializer.fromJson<int>(json['cashPaid']),
+      loanDeduction: serializer.fromJson<int>(json['loanDeduction']),
+      note: serializer.fromJson<String>(json['note']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deleted': serializer.toJson<bool>(deleted),
+      'workerId': serializer.toJson<String>(workerId),
+      'date': serializer.toJson<DateTime>(date),
+      'periodStart': serializer.toJson<DateTime>(periodStart),
+      'periodEnd': serializer.toJson<DateTime>(periodEnd),
+      'cashPaid': serializer.toJson<int>(cashPaid),
+      'loanDeduction': serializer.toJson<int>(loanDeduction),
+      'note': serializer.toJson<String>(note),
+    };
+  }
+
+  WorkerSettlement copyWith({
+    String? id,
+    DateTime? updatedAt,
+    bool? deleted,
+    String? workerId,
+    DateTime? date,
+    DateTime? periodStart,
+    DateTime? periodEnd,
+    int? cashPaid,
+    int? loanDeduction,
+    String? note,
+  }) => WorkerSettlement(
+    id: id ?? this.id,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deleted: deleted ?? this.deleted,
+    workerId: workerId ?? this.workerId,
+    date: date ?? this.date,
+    periodStart: periodStart ?? this.periodStart,
+    periodEnd: periodEnd ?? this.periodEnd,
+    cashPaid: cashPaid ?? this.cashPaid,
+    loanDeduction: loanDeduction ?? this.loanDeduction,
+    note: note ?? this.note,
+  );
+  WorkerSettlement copyWithCompanion(WorkerSettlementsCompanion data) {
+    return WorkerSettlement(
+      id: data.id.present ? data.id.value : this.id,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      workerId: data.workerId.present ? data.workerId.value : this.workerId,
+      date: data.date.present ? data.date.value : this.date,
+      periodStart: data.periodStart.present
+          ? data.periodStart.value
+          : this.periodStart,
+      periodEnd: data.periodEnd.present ? data.periodEnd.value : this.periodEnd,
+      cashPaid: data.cashPaid.present ? data.cashPaid.value : this.cashPaid,
+      loanDeduction: data.loanDeduction.present
+          ? data.loanDeduction.value
+          : this.loanDeduction,
+      note: data.note.present ? data.note.value : this.note,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkerSettlement(')
+          ..write('id: $id, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deleted: $deleted, ')
+          ..write('workerId: $workerId, ')
+          ..write('date: $date, ')
+          ..write('periodStart: $periodStart, ')
+          ..write('periodEnd: $periodEnd, ')
+          ..write('cashPaid: $cashPaid, ')
+          ..write('loanDeduction: $loanDeduction, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    updatedAt,
+    deleted,
+    workerId,
+    date,
+    periodStart,
+    periodEnd,
+    cashPaid,
+    loanDeduction,
+    note,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkerSettlement &&
+          other.id == this.id &&
+          other.updatedAt == this.updatedAt &&
+          other.deleted == this.deleted &&
+          other.workerId == this.workerId &&
+          other.date == this.date &&
+          other.periodStart == this.periodStart &&
+          other.periodEnd == this.periodEnd &&
+          other.cashPaid == this.cashPaid &&
+          other.loanDeduction == this.loanDeduction &&
+          other.note == this.note);
+}
+
+class WorkerSettlementsCompanion extends UpdateCompanion<WorkerSettlement> {
+  final Value<String> id;
+  final Value<DateTime> updatedAt;
+  final Value<bool> deleted;
+  final Value<String> workerId;
+  final Value<DateTime> date;
+  final Value<DateTime> periodStart;
+  final Value<DateTime> periodEnd;
+  final Value<int> cashPaid;
+  final Value<int> loanDeduction;
+  final Value<String> note;
+  final Value<int> rowid;
+  const WorkerSettlementsCompanion({
+    this.id = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.workerId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.periodStart = const Value.absent(),
+    this.periodEnd = const Value.absent(),
+    this.cashPaid = const Value.absent(),
+    this.loanDeduction = const Value.absent(),
+    this.note = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkerSettlementsCompanion.insert({
+    this.id = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String workerId,
+    required DateTime date,
+    required DateTime periodStart,
+    required DateTime periodEnd,
+    required int cashPaid,
+    this.loanDeduction = const Value.absent(),
+    this.note = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : workerId = Value(workerId),
+       date = Value(date),
+       periodStart = Value(periodStart),
+       periodEnd = Value(periodEnd),
+       cashPaid = Value(cashPaid);
+  static Insertable<WorkerSettlement> custom({
+    Expression<String>? id,
+    Expression<DateTime>? updatedAt,
+    Expression<bool>? deleted,
+    Expression<String>? workerId,
+    Expression<DateTime>? date,
+    Expression<DateTime>? periodStart,
+    Expression<DateTime>? periodEnd,
+    Expression<int>? cashPaid,
+    Expression<int>? loanDeduction,
+    Expression<String>? note,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deleted != null) 'deleted': deleted,
+      if (workerId != null) 'worker_id': workerId,
+      if (date != null) 'date': date,
+      if (periodStart != null) 'period_start': periodStart,
+      if (periodEnd != null) 'period_end': periodEnd,
+      if (cashPaid != null) 'cash_paid': cashPaid,
+      if (loanDeduction != null) 'loan_deduction': loanDeduction,
+      if (note != null) 'note': note,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkerSettlementsCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? updatedAt,
+    Value<bool>? deleted,
+    Value<String>? workerId,
+    Value<DateTime>? date,
+    Value<DateTime>? periodStart,
+    Value<DateTime>? periodEnd,
+    Value<int>? cashPaid,
+    Value<int>? loanDeduction,
+    Value<String>? note,
+    Value<int>? rowid,
+  }) {
+    return WorkerSettlementsCompanion(
+      id: id ?? this.id,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deleted: deleted ?? this.deleted,
+      workerId: workerId ?? this.workerId,
+      date: date ?? this.date,
+      periodStart: periodStart ?? this.periodStart,
+      periodEnd: periodEnd ?? this.periodEnd,
+      cashPaid: cashPaid ?? this.cashPaid,
+      loanDeduction: loanDeduction ?? this.loanDeduction,
+      note: note ?? this.note,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (workerId.present) {
+      map['worker_id'] = Variable<String>(workerId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (periodStart.present) {
+      map['period_start'] = Variable<DateTime>(periodStart.value);
+    }
+    if (periodEnd.present) {
+      map['period_end'] = Variable<DateTime>(periodEnd.value);
+    }
+    if (cashPaid.present) {
+      map['cash_paid'] = Variable<int>(cashPaid.value);
+    }
+    if (loanDeduction.present) {
+      map['loan_deduction'] = Variable<int>(loanDeduction.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkerSettlementsCompanion(')
+          ..write('id: $id, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deleted: $deleted, ')
+          ..write('workerId: $workerId, ')
+          ..write('date: $date, ')
+          ..write('periodStart: $periodStart, ')
+          ..write('periodEnd: $periodEnd, ')
+          ..write('cashPaid: $cashPaid, ')
+          ..write('loanDeduction: $loanDeduction, ')
+          ..write('note: $note, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -25049,6 +26262,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $FarmsTable farms = $FarmsTable(this);
   late final $PlotsTable plots = $PlotsTable(this);
   late final $WorkersTable workers = $WorkersTable(this);
+  late final $WorkerLoanEntriesTable workerLoanEntries =
+      $WorkerLoanEntriesTable(this);
+  late final $WorkerSettlementsTable workerSettlements =
+      $WorkerSettlementsTable(this);
   late final $AttendanceEntriesTable attendanceEntries =
       $AttendanceEntriesTable(this);
   late final $WorkerTxnsTable workerTxns = $WorkerTxnsTable(this);
@@ -25108,6 +26325,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     farms,
     plots,
     workers,
+    workerLoanEntries,
+    workerSettlements,
     attendanceEntries,
     workerTxns,
     lots,
@@ -26095,6 +27314,7 @@ typedef $$WorkersTableCreateCompanionBuilder = WorkersCompanion Function({
   Value<String> id,
   Value<DateTime> updatedAt,
   Value<bool> deleted,
+  Value<String> wageType,
   Value<String> telephone,
   Value<List<String>> customRoles,
   required String name,
@@ -26113,6 +27333,7 @@ typedef $$WorkersTableUpdateCompanionBuilder = WorkersCompanion Function({
   Value<String> id,
   Value<DateTime> updatedAt,
   Value<bool> deleted,
+  Value<String> wageType,
   Value<String> telephone,
   Value<List<String>> customRoles,
   Value<String> name,
@@ -26131,6 +27352,48 @@ typedef $$WorkersTableUpdateCompanionBuilder = WorkersCompanion Function({
 final class $$WorkersTableReferences
     extends BaseReferences<_$AppDatabase, $WorkersTable, Worker> {
   $$WorkersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WorkerLoanEntriesTable, List<WorkerLoanEntry>>
+  _workerLoanEntriesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.workerLoanEntries,
+        aliasName: 'workers__id__worker_loan_entries__worker_id',
+      );
+
+  $$WorkerLoanEntriesTableProcessedTableManager get workerLoanEntriesRefs {
+    final manager = $$WorkerLoanEntriesTableTableManager(
+      $_db,
+      $_db.workerLoanEntries,
+    ).filter((f) => f.workerId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _workerLoanEntriesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WorkerSettlementsTable, List<WorkerSettlement>>
+  _workerSettlementsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.workerSettlements,
+        aliasName: 'workers__id__worker_settlements__worker_id',
+      );
+
+  $$WorkerSettlementsTableProcessedTableManager get workerSettlementsRefs {
+    final manager = $$WorkerSettlementsTableTableManager(
+      $_db,
+      $_db.workerSettlements,
+    ).filter((f) => f.workerId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _workerSettlementsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$AttendanceEntriesTable, List<AttendanceEntry>>
   _attendanceEntriesRefsTable(_$AppDatabase db) =>
@@ -26268,6 +27531,11 @@ class $$WorkersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get wageType => $composableBuilder(
+    column: $table.wageType,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get telephone => $composableBuilder(
     column: $table.telephone,
     builder: (column) => ColumnFilters(column),
@@ -26330,6 +27598,56 @@ class $$WorkersTableFilterComposer
     column: $table.notes,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> workerLoanEntriesRefs(
+    Expression<bool> Function($$WorkerLoanEntriesTableFilterComposer f) f,
+  ) {
+    final $$WorkerLoanEntriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workerLoanEntries,
+      getReferencedColumn: (t) => t.workerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkerLoanEntriesTableFilterComposer(
+            $db: $db,
+            $table: $db.workerLoanEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> workerSettlementsRefs(
+    Expression<bool> Function($$WorkerSettlementsTableFilterComposer f) f,
+  ) {
+    final $$WorkerSettlementsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.workerSettlements,
+      getReferencedColumn: (t) => t.workerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkerSettlementsTableFilterComposer(
+            $db: $db,
+            $table: $db.workerSettlements,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> attendanceEntriesRefs(
     Expression<bool> Function($$AttendanceEntriesTableFilterComposer f) f,
@@ -26506,6 +27824,11 @@ class $$WorkersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get wageType => $composableBuilder(
+    column: $table.wageType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get telephone => $composableBuilder(
     column: $table.telephone,
     builder: (column) => ColumnOrderings(column),
@@ -26585,6 +27908,9 @@ class $$WorkersTableAnnotationComposer
   GeneratedColumn<bool> get deleted =>
       $composableBuilder(column: $table.deleted, builder: (column) => column);
 
+  GeneratedColumn<String> get wageType =>
+      $composableBuilder(column: $table.wageType, builder: (column) => column);
+
   GeneratedColumn<String> get telephone =>
       $composableBuilder(column: $table.telephone, builder: (column) => column);
 
@@ -26625,6 +27951,58 @@ class $$WorkersTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  Expression<T> workerLoanEntriesRefs<T extends Object>(
+    Expression<T> Function($$WorkerLoanEntriesTableAnnotationComposer a) f,
+  ) {
+    final $$WorkerLoanEntriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.workerLoanEntries,
+          getReferencedColumn: (t) => t.workerId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$WorkerLoanEntriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.workerLoanEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> workerSettlementsRefs<T extends Object>(
+    Expression<T> Function($$WorkerSettlementsTableAnnotationComposer a) f,
+  ) {
+    final $$WorkerSettlementsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.workerSettlements,
+          getReferencedColumn: (t) => t.workerId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$WorkerSettlementsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.workerSettlements,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 
   Expression<T> attendanceEntriesRefs<T extends Object>(
     Expression<T> Function($$AttendanceEntriesTableAnnotationComposer a) f,
@@ -26792,6 +28170,8 @@ class $$WorkersTableTableManager
           (Worker, $$WorkersTableReferences),
           Worker,
           PrefetchHooks Function({
+            bool workerLoanEntriesRefs,
+            bool workerSettlementsRefs,
             bool attendanceEntriesRefs,
             bool workerTxnsRefs,
             bool lotLabourRefs,
@@ -26816,6 +28196,7 @@ class $$WorkersTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
+                Value<String> wageType = const Value.absent(),
                 Value<String> telephone = const Value.absent(),
                 Value<List<String>> customRoles = const Value.absent(),
                 Value<String> name = const Value.absent(),
@@ -26833,6 +28214,7 @@ class $$WorkersTableTableManager
                 id: id,
                 updatedAt: updatedAt,
                 deleted: deleted,
+                wageType: wageType,
                 telephone: telephone,
                 customRoles: customRoles,
                 name: name,
@@ -26852,6 +28234,7 @@ class $$WorkersTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
+                Value<String> wageType = const Value.absent(),
                 Value<String> telephone = const Value.absent(),
                 Value<List<String>> customRoles = const Value.absent(),
                 required String name,
@@ -26869,6 +28252,7 @@ class $$WorkersTableTableManager
                 id: id,
                 updatedAt: updatedAt,
                 deleted: deleted,
+                wageType: wageType,
                 telephone: telephone,
                 customRoles: customRoles,
                 name: name,
@@ -26893,6 +28277,8 @@ class $$WorkersTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                workerLoanEntriesRefs = false,
+                workerSettlementsRefs = false,
                 attendanceEntriesRefs = false,
                 workerTxnsRefs = false,
                 lotLabourRefs = false,
@@ -26903,6 +28289,8 @@ class $$WorkersTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (workerLoanEntriesRefs) db.workerLoanEntries,
+                    if (workerSettlementsRefs) db.workerSettlements,
                     if (attendanceEntriesRefs) db.attendanceEntries,
                     if (workerTxnsRefs) db.workerTxns,
                     if (lotLabourRefs) db.lotLabour,
@@ -26913,6 +28301,46 @@ class $$WorkersTableTableManager
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (workerLoanEntriesRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Worker,
+                          $WorkersTable,
+                          WorkerLoanEntry,
+                          $WorkerLoanEntriesTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorkersTableReferences
+                              ._workerLoanEntriesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorkersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workerLoanEntriesRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'worker_id',
+                          typedResults: items,
+                        ),
+                      if (workerSettlementsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Worker,
+                          $WorkersTable,
+                          WorkerSettlement,
+                          $WorkerSettlementsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorkersTableReferences
+                              ._workerSettlementsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorkersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).workerSettlementsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'worker_id',
+                          typedResults: items,
+                        ),
                       if (attendanceEntriesRefs)
                         await $_getPrefetchedDataByColumns<
                           Worker,
@@ -27054,6 +28482,8 @@ typedef $$WorkersTableProcessedTableManager =
       (Worker, $$WorkersTableReferences),
       Worker,
       PrefetchHooks Function({
+        bool workerLoanEntriesRefs,
+        bool workerSettlementsRefs,
         bool attendanceEntriesRefs,
         bool workerTxnsRefs,
         bool lotLabourRefs,
@@ -27061,6 +28491,841 @@ typedef $$WorkersTableProcessedTableManager =
         bool produceLabourRefs,
         bool workerRatesRefs,
       })
+    >;
+typedef $$WorkerLoanEntriesTableCreateCompanionBuilder =
+    WorkerLoanEntriesCompanion Function({
+      Value<String> id,
+      Value<DateTime> updatedAt,
+      Value<bool> deleted,
+      required String workerId,
+      required DateTime date,
+      required String kind,
+      required int amount,
+      Value<String> note,
+      Value<String?> settlementId,
+      Value<int> rowid,
+    });
+typedef $$WorkerLoanEntriesTableUpdateCompanionBuilder =
+    WorkerLoanEntriesCompanion Function({
+      Value<String> id,
+      Value<DateTime> updatedAt,
+      Value<bool> deleted,
+      Value<String> workerId,
+      Value<DateTime> date,
+      Value<String> kind,
+      Value<int> amount,
+      Value<String> note,
+      Value<String?> settlementId,
+      Value<int> rowid,
+    });
+
+final class $$WorkerLoanEntriesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $WorkerLoanEntriesTable,
+          WorkerLoanEntry
+        > {
+  $$WorkerLoanEntriesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $WorkersTable _workerIdTable(_$AppDatabase db) =>
+      db.workers.createAlias('worker_loan_entries__worker_id__workers__id');
+
+  $$WorkersTableProcessedTableManager get workerId {
+    final $_column = $_itemColumn<String>('worker_id')!;
+
+    final manager = $$WorkersTableTableManager(
+      $_db,
+      $_db.workers,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WorkerLoanEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkerLoanEntriesTable> {
+  $$WorkerLoanEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get settlementId => $composableBuilder(
+    column: $table.settlementId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorkersTableFilterComposer get workerId {
+    final $$WorkersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workerId,
+      referencedTable: $db.workers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkersTableFilterComposer(
+            $db: $db,
+            $table: $db.workers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkerLoanEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkerLoanEntriesTable> {
+  $$WorkerLoanEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get settlementId => $composableBuilder(
+    column: $table.settlementId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorkersTableOrderingComposer get workerId {
+    final $$WorkersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workerId,
+      referencedTable: $db.workers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkersTableOrderingComposer(
+            $db: $db,
+            $table: $db.workers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkerLoanEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkerLoanEntriesTable> {
+  $$WorkerLoanEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get settlementId => $composableBuilder(
+    column: $table.settlementId,
+    builder: (column) => column,
+  );
+
+  $$WorkersTableAnnotationComposer get workerId {
+    final $$WorkersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workerId,
+      referencedTable: $db.workers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkerLoanEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkerLoanEntriesTable,
+          WorkerLoanEntry,
+          $$WorkerLoanEntriesTableFilterComposer,
+          $$WorkerLoanEntriesTableOrderingComposer,
+          $$WorkerLoanEntriesTableAnnotationComposer,
+          $$WorkerLoanEntriesTableCreateCompanionBuilder,
+          $$WorkerLoanEntriesTableUpdateCompanionBuilder,
+          (WorkerLoanEntry, $$WorkerLoanEntriesTableReferences),
+          WorkerLoanEntry,
+          PrefetchHooks Function({bool workerId})
+        > {
+  $$WorkerLoanEntriesTableTableManager(
+    _$AppDatabase db,
+    $WorkerLoanEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkerLoanEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkerLoanEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkerLoanEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> workerId = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<int> amount = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<String?> settlementId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkerLoanEntriesCompanion(
+                id: id,
+                updatedAt: updatedAt,
+                deleted: deleted,
+                workerId: workerId,
+                date: date,
+                kind: kind,
+                amount: amount,
+                note: note,
+                settlementId: settlementId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String workerId,
+                required DateTime date,
+                required String kind,
+                required int amount,
+                Value<String> note = const Value.absent(),
+                Value<String?> settlementId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkerLoanEntriesCompanion.insert(
+                id: id,
+                updatedAt: updatedAt,
+                deleted: deleted,
+                workerId: workerId,
+                date: date,
+                kind: kind,
+                amount: amount,
+                note: note,
+                settlementId: settlementId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WorkerLoanEntriesTable, WorkerLoanEntry>(table),
+                  $$WorkerLoanEntriesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workerId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workerId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workerId,
+                        referencedTable: $$WorkerLoanEntriesTableReferences
+                            ._workerIdTable(db),
+                        referencedColumn: $$WorkerLoanEntriesTableReferences
+                            ._workerIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WorkerLoanEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkerLoanEntriesTable,
+      WorkerLoanEntry,
+      $$WorkerLoanEntriesTableFilterComposer,
+      $$WorkerLoanEntriesTableOrderingComposer,
+      $$WorkerLoanEntriesTableAnnotationComposer,
+      $$WorkerLoanEntriesTableCreateCompanionBuilder,
+      $$WorkerLoanEntriesTableUpdateCompanionBuilder,
+      (WorkerLoanEntry, $$WorkerLoanEntriesTableReferences),
+      WorkerLoanEntry,
+      PrefetchHooks Function({bool workerId})
+    >;
+typedef $$WorkerSettlementsTableCreateCompanionBuilder =
+    WorkerSettlementsCompanion Function({
+      Value<String> id,
+      Value<DateTime> updatedAt,
+      Value<bool> deleted,
+      required String workerId,
+      required DateTime date,
+      required DateTime periodStart,
+      required DateTime periodEnd,
+      required int cashPaid,
+      Value<int> loanDeduction,
+      Value<String> note,
+      Value<int> rowid,
+    });
+typedef $$WorkerSettlementsTableUpdateCompanionBuilder =
+    WorkerSettlementsCompanion Function({
+      Value<String> id,
+      Value<DateTime> updatedAt,
+      Value<bool> deleted,
+      Value<String> workerId,
+      Value<DateTime> date,
+      Value<DateTime> periodStart,
+      Value<DateTime> periodEnd,
+      Value<int> cashPaid,
+      Value<int> loanDeduction,
+      Value<String> note,
+      Value<int> rowid,
+    });
+
+final class $$WorkerSettlementsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $WorkerSettlementsTable,
+          WorkerSettlement
+        > {
+  $$WorkerSettlementsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $WorkersTable _workerIdTable(_$AppDatabase db) =>
+      db.workers.createAlias('worker_settlements__worker_id__workers__id');
+
+  $$WorkersTableProcessedTableManager get workerId {
+    final $_column = $_itemColumn<String>('worker_id')!;
+
+    final manager = $$WorkersTableTableManager(
+      $_db,
+      $_db.workers,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WorkerSettlementsTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkerSettlementsTable> {
+  $$WorkerSettlementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get periodStart => $composableBuilder(
+    column: $table.periodStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get periodEnd => $composableBuilder(
+    column: $table.periodEnd,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cashPaid => $composableBuilder(
+    column: $table.cashPaid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get loanDeduction => $composableBuilder(
+    column: $table.loanDeduction,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorkersTableFilterComposer get workerId {
+    final $$WorkersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workerId,
+      referencedTable: $db.workers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkersTableFilterComposer(
+            $db: $db,
+            $table: $db.workers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkerSettlementsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkerSettlementsTable> {
+  $$WorkerSettlementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get periodStart => $composableBuilder(
+    column: $table.periodStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get periodEnd => $composableBuilder(
+    column: $table.periodEnd,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cashPaid => $composableBuilder(
+    column: $table.cashPaid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get loanDeduction => $composableBuilder(
+    column: $table.loanDeduction,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorkersTableOrderingComposer get workerId {
+    final $$WorkersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workerId,
+      referencedTable: $db.workers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkersTableOrderingComposer(
+            $db: $db,
+            $table: $db.workers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkerSettlementsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkerSettlementsTable> {
+  $$WorkerSettlementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get periodStart => $composableBuilder(
+    column: $table.periodStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get periodEnd =>
+      $composableBuilder(column: $table.periodEnd, builder: (column) => column);
+
+  GeneratedColumn<int> get cashPaid =>
+      $composableBuilder(column: $table.cashPaid, builder: (column) => column);
+
+  GeneratedColumn<int> get loanDeduction => $composableBuilder(
+    column: $table.loanDeduction,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  $$WorkersTableAnnotationComposer get workerId {
+    final $$WorkersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workerId,
+      referencedTable: $db.workers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WorkerSettlementsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkerSettlementsTable,
+          WorkerSettlement,
+          $$WorkerSettlementsTableFilterComposer,
+          $$WorkerSettlementsTableOrderingComposer,
+          $$WorkerSettlementsTableAnnotationComposer,
+          $$WorkerSettlementsTableCreateCompanionBuilder,
+          $$WorkerSettlementsTableUpdateCompanionBuilder,
+          (WorkerSettlement, $$WorkerSettlementsTableReferences),
+          WorkerSettlement,
+          PrefetchHooks Function({bool workerId})
+        > {
+  $$WorkerSettlementsTableTableManager(
+    _$AppDatabase db,
+    $WorkerSettlementsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkerSettlementsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkerSettlementsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkerSettlementsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> workerId = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<DateTime> periodStart = const Value.absent(),
+                Value<DateTime> periodEnd = const Value.absent(),
+                Value<int> cashPaid = const Value.absent(),
+                Value<int> loanDeduction = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkerSettlementsCompanion(
+                id: id,
+                updatedAt: updatedAt,
+                deleted: deleted,
+                workerId: workerId,
+                date: date,
+                periodStart: periodStart,
+                periodEnd: periodEnd,
+                cashPaid: cashPaid,
+                loanDeduction: loanDeduction,
+                note: note,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String workerId,
+                required DateTime date,
+                required DateTime periodStart,
+                required DateTime periodEnd,
+                required int cashPaid,
+                Value<int> loanDeduction = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkerSettlementsCompanion.insert(
+                id: id,
+                updatedAt: updatedAt,
+                deleted: deleted,
+                workerId: workerId,
+                date: date,
+                periodStart: periodStart,
+                periodEnd: periodEnd,
+                cashPaid: cashPaid,
+                loanDeduction: loanDeduction,
+                note: note,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WorkerSettlementsTable, WorkerSettlement>(table),
+                  $$WorkerSettlementsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workerId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workerId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.workerId,
+                        referencedTable: $$WorkerSettlementsTableReferences
+                            ._workerIdTable(db),
+                        referencedColumn: $$WorkerSettlementsTableReferences
+                            ._workerIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WorkerSettlementsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkerSettlementsTable,
+      WorkerSettlement,
+      $$WorkerSettlementsTableFilterComposer,
+      $$WorkerSettlementsTableOrderingComposer,
+      $$WorkerSettlementsTableAnnotationComposer,
+      $$WorkerSettlementsTableCreateCompanionBuilder,
+      $$WorkerSettlementsTableUpdateCompanionBuilder,
+      (WorkerSettlement, $$WorkerSettlementsTableReferences),
+      WorkerSettlement,
+      PrefetchHooks Function({bool workerId})
     >;
 typedef $$AttendanceEntriesTableCreateCompanionBuilder =
     AttendanceEntriesCompanion Function({
@@ -43602,6 +45867,10 @@ class $AppDatabaseManager {
       $$PlotsTableTableManager(_db, _db.plots);
   $$WorkersTableTableManager get workers =>
       $$WorkersTableTableManager(_db, _db.workers);
+  $$WorkerLoanEntriesTableTableManager get workerLoanEntries =>
+      $$WorkerLoanEntriesTableTableManager(_db, _db.workerLoanEntries);
+  $$WorkerSettlementsTableTableManager get workerSettlements =>
+      $$WorkerSettlementsTableTableManager(_db, _db.workerSettlements);
   $$AttendanceEntriesTableTableManager get attendanceEntries =>
       $$AttendanceEntriesTableTableManager(_db, _db.attendanceEntries);
   $$WorkerTxnsTableTableManager get workerTxns =>

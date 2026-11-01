@@ -33,6 +33,9 @@ void main() {
         received: 3000,
       );
       await db.customStatement('DROP TABLE sale_receipts');
+      await db.customStatement('DROP TABLE worker_loan_entries');
+      await db.customStatement('DROP TABLE worker_settlements');
+      await db.customStatement('ALTER TABLE workers DROP COLUMN wage_type');
       await db.customStatement('PRAGMA user_version = 4');
       await db.close();
       db = AppDatabase(NativeDatabase(file));

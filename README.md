@@ -13,7 +13,7 @@ Dhara Mitra is an Android farm diary for keeping everyday work, labour, harvests
 
 | Screen | What you can do |
 | --- | --- |
-| **Home** | See recent records, drying and stored harvests, worker dues, buyer balances and this month's costs. Open everyday farm tools and switch farms. |
+| **Home** | See recent work, worker dues, attendance and saved harvest lots in the familiar interface. Open everyday work and find the remaining tools under More. |
 | **Calendar** | Select a day to review or add work, attendance, payments, expenses, harvests, sales and date notes. Search existing records by words, category or date range. |
 | **More** | Manage farms and plots, open farm records and reports, switch between English and ಕನ್ನಡ, export data, and manage backup and the optional app lock. |
 
