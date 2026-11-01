@@ -1,4 +1,3 @@
-import 'features/settings/ui/tutorial_screen.dart';
 import 'core/draft_guard.dart';
 import 'core/appearance.dart';
 import 'core/v1.dart';
@@ -55,7 +54,6 @@ GoRouter buildRouter({
       builder: (_, _, child) =>
           FarmNavigationFrame(hasFarm: hasFarm, child: child),
       routes: [
-        GoRoute(path: '/tutorial', builder: (_, _) => const TutorialScreen()),
         GoRoute(
           path: '/account',
           builder: (_, _) => const SignInScreen(settings: true),

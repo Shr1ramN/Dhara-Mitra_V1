@@ -34,3 +34,10 @@ Future<void> saveFarmCrops(AppDatabase db, Iterable<String> crops) =>
         crops.map((e) => e.trim()).where((e) => e.isNotEmpty).toSet().toList(),
       ),
     );
+
+Future<void> removeFarmCrop(AppDatabase db, String crop) =>
+    db.transaction(() async {
+      final crops = await loadFarmCrops(db);
+      crops.removeWhere((value) => value == crop);
+      await saveFarmCrops(db, crops);
+    });

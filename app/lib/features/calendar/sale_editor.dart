@@ -1,3 +1,5 @@
+import '../../core/deletable_chip.dart';
+
 import 'package:go_router/go_router.dart';
 
 import '../../core/add_chip.dart';
@@ -259,11 +261,23 @@ class _SaleState extends ConsumerState<SaleEditor> {
                 spacing: 8,
                 children: [
                   for (final c in crops)
-                    FilterChip(
-                      label: Text(c),
+                    DeletableChip(
+                      label: c,
+                      onRemove: () async {
+                        await removeFarmCrop(ref.read(databaseProvider), c);
+                        if (mounted) {
+                          setState(() {
+                            final removed = items
+                                .where((i) => i.crop == c)
+                                .toList();
+                            items.removeWhere((i) => i.crop == c);
+                            retired.addAll(removed);
+                          });
+                        }
+                      },
                       selected: items.any((i) => i.crop == c),
-                      onSelected: (selected) => setState(() {
-                        if (selected) {
+                      onPressed: () => setState(() {
+                        if (!items.any((i) => i.crop == c)) {
                           items.add(_SaleItem(c));
                         } else {
                           final i = items.firstWhere((i) => i.crop == c);

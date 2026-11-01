@@ -20,7 +20,7 @@ Dhara Mitra is an Android farm diary for keeping everyday work, labour, harvests
 
 Daily-wage workers have a saved rate; other workers have a wage entered for each attended day. Attendance records one description of the day's work. Worker profiles retain previous and new loans, repayments, settlements and balances in integer paise.
 
-Farm Activity combines irrigation, fertiliser, spray and custom labelled notes. Use + chips to add named types/crops, and long-press work suggestions to remove them without deleting records. Harvest accepts your crop and a quantity in bags or kilograms. Sales support multiple crops for one buyer, item quantities/units, total income and optional notes. Edited forms warn before discarding unsaved changes. New users receive a language-aware tutorial, replayable from More.
+Farm Activity combines irrigation, fertiliser, spray and custom labelled notes. Use + chips to add named types/crops, and long-press work suggestions to remove them without deleting records. Harvest accepts your crop and a quantity in bags or kilograms. Sales support multiple crops for one buyer, item quantities/units, total income and optional notes. Edited forms warn before discarding unsaved changes.
 
 Farm setup needs no plots or tree counts: **What do you grow?** is freely editable.
 
