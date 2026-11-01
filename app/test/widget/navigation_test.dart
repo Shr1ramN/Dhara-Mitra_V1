@@ -156,7 +156,7 @@ void main() {
       ('Recent work', '/calendar'),
       ('Worker dues', '/labour'),
       ('Harvests', '/lots'),
-      ('Attendance', '/labour'),
+      ('Workers', '/labour'),
     ]) {
       final tile = find.text(item.$1);
       await tester.ensureVisible(tile);

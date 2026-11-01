@@ -132,7 +132,7 @@ class HomeScreen extends ConsumerWidget {
                     onTap: () => context.go('/lots'),
                   ),
                   _FarmSummaryTile(
-                    label: v1Text(context, 'Attendance', 'ಹಾಜರಾತಿ'),
+                    label: l.tabWorkers,
                     value: '${workers.where((w) => w.worker.active).length}',
                     detail: v1Text(
                       context,
