@@ -286,7 +286,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
               records
                   .where(
                     (r) =>
-                        (category.isEmpty || category == r.category) &&
+                        calendarCategoryMatches(r, category) &&
                         query.matches(r) &&
                         (range == null ||
                             calendarDateInRange(

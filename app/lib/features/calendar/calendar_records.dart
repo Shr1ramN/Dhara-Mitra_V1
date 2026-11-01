@@ -113,6 +113,16 @@ class RecordQuery {
 DateTime calendarDay(DateTime date) =>
     DateTime(date.year, date.month, date.day);
 
+bool calendarCategoryMatches(CalendarRecord record, String category) =>
+    category.isEmpty ||
+    record.category == category ||
+    (category == 'harvest' &&
+        record.category == 'note' &&
+        const [
+          'harvest',
+          'ಕೊಯ್ಲು',
+        ].contains(record.title.trim().toLowerCase()));
+
 /// Date-only comparison includes entries at any time on the final day.
 bool calendarDateInRange(DateTime date, DateTime start, DateTime end) {
   final value = calendarDay(date);

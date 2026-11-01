@@ -175,12 +175,23 @@ void main() {
         await LabourRepository(db).saveAttendance(DateTime(2026, 10, 26), {
           worker.id: const AttendanceMark(AttendanceStatus.present),
         });
+        await db
+            .into(db.reminders)
+            .insert(
+              RemindersCompanion.insert(
+                title: 'Irrigation',
+                dueOn: DateTime(2026, 11, 1),
+                kind: const Value('dateNote'),
+                done: const Value(true),
+              ),
+            );
       });
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             databaseProvider.overrideWithValue(db),
             initialLanguageProvider.overrideWithValue(lang),
+            todayProvider.overrideWithValue(DateTime(2026, 11, 1)),
           ],
           child: RepaintBoundary(
             key: const ValueKey('capture'),
@@ -206,6 +217,16 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: '$lang $route');
         if (route == '/') {
+          final recent = find
+              .ancestor(
+                of: find.text(lang == 'kn' ? 'ಇತ್ತೀಚಿನ ಕೆಲಸ' : 'Recent work'),
+                matching: find.byType(Column),
+              )
+              .first;
+          expect(
+            find.descendant(of: recent, matching: find.text('1')),
+            findsOneWidget,
+          );
           final amount = find.text('₹700.33').first;
           final paragraph = tester.renderObject<RenderParagraph>(amount);
           final boxes = paragraph.getBoxesForSelection(

@@ -84,7 +84,7 @@ class HomeScreen extends ConsumerWidget {
     final recentWork = records
         .where(
           (r) =>
-              r.category == 'activity' &&
+              (r.category == 'activity' || r.category == 'note') &&
               !calendarDay(r.date).isBefore(startOfWeek) &&
               !calendarDay(r.date).isAfter(calendarDay(today)),
         )
