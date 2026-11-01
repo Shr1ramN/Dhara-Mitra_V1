@@ -1,3 +1,4 @@
+import '../../core/deletable_chip.dart';
 import '../../core/add_chip.dart';
 import 'sale_editor.dart';
 import '../../core/draft_guard.dart';
@@ -407,7 +408,14 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
                             context,
                             () => hideWorkType(pair.$1.toLowerCase()),
                           ),
-                          child: ActionChip(
+                          child: InputChip(
+                            selected:
+                                !customLabel &&
+                                label.text == v1Text(context, pair.$1, pair.$2),
+                            onDeleted: () => perform(
+                              context,
+                              () => hideWorkType(pair.$1.toLowerCase()),
+                            ),
                             label: Text(v1Text(context, pair.$1, pair.$2)),
                             onPressed: () => setState(() {
                               label.text = v1Text(context, pair.$1, pair.$2);
@@ -429,7 +437,12 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
                             context,
                             () => hideWorkType('custom:$custom'),
                           ),
-                          child: ActionChip(
+                          child: InputChip(
+                            selected: customLabel && label.text == custom,
+                            onDeleted: () => perform(
+                              context,
+                              () => hideWorkType('custom:$custom'),
+                            ),
                             label: Text(custom),
                             onPressed: () => setState(() {
                               label.text = custom;
@@ -487,11 +500,21 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
                           ...crops,
                           if (crop.text.isNotEmpty) crop.text,
                         })
-                          ChoiceChip(
-                            label: Text(c),
+                          DeletableChip(
+                            label: c,
+                            onRemove: () async {
+                              await removeFarmCrop(
+                                ref.read(databaseProvider),
+                                c,
+                              );
+                              if (mounted && crop.text == c) {
+                                setState(() => crop.clear());
+                              }
+                            },
                             selected: crop.text == c,
-                            onSelected: (selected) =>
-                                setState(() => crop.text = selected ? c : ''),
+                            onPressed: () => setState(
+                              () => crop.text = crop.text == c ? '' : c,
+                            ),
                           ),
                         AddChip(
                           title: v1Text(context, 'Add crop', 'ಬೆಳೆ ಸೇರಿಸಿ'),

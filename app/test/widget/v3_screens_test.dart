@@ -136,7 +136,6 @@ void main() {
           '/date-note?label=harvest',
           '/date-note?label=sale',
           '/more',
-          '/tutorial',
           '/backup',
           '/calendar',
         ]) {
@@ -366,7 +365,7 @@ void main() {
       expect(await loadFarmCrops(db), ['Mango']);
       expect(await db.select(db.plots).get(), isEmpty);
     });
-    expect(find.text('Tutorial'), findsOneWidget);
+    expect(find.textContaining('Namaskara'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 1));
     await db.close();
@@ -456,9 +455,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('What was done?'), findsNothing);
-      await tester.tap(find.widgetWithText(FilterChip, 'Mango'));
+      await tester.tap(find.widgetWithText(InputChip, 'Mango'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilterChip, 'Pepper'));
+      await tester.tap(find.widgetWithText(InputChip, 'Pepper'));
       await tester.pumpAndSettle();
       final fields = find.byWidgetPredicate(
         (w) => w is TextField && w.decoration?.labelText == 'Quantity',
@@ -592,11 +591,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.longPress(find.widgetWithText(ActionChip, 'Spray'));
+      await tester.longPress(find.widgetWithText(InputChip, 'Spray'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Remove'));
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(ActionChip, 'Spray'), findsNothing);
+      expect(find.widgetWithText(InputChip, 'Spray'), findsNothing);
       await tester.runAsync(() async {
         expect(
           (await db.select(db.reminders).getSingle()).notes,
@@ -612,53 +611,113 @@ void main() {
       await tester.pumpAndSettle();
       router.go('/date-note');
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(ActionChip, 'Spray'), findsNothing);
+      expect(find.widgetWithText(InputChip, 'Spray'), findsNothing);
       await tester.pumpWidget(const SizedBox());
       await db.close();
       await tester.pump();
     },
   );
-  for (final lang in ['en', 'kn']) {
-    testWidgets(
-      'tutorial $lang teaches every step and can be replayed from More',
-      (tester) async {
-        tester.view.physicalSize = const Size(320, 820);
-        tester.view.devicePixelRatio = 1;
-        tester.platformDispatcher.textScaleFactorTestValue = 1.3;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-        final db = AppDatabase(
-          DatabaseConnection(
-            NativeDatabase.memory(),
-            closeStreamsSynchronously: true,
-          ),
+  testWidgets(
+    'crop delete works across farm, harvest, activity and sales without deleting history',
+    (tester) async {
+      final db = AppDatabase(
+        DatabaseConnection(
+          NativeDatabase.memory(),
+          closeStreamsSynchronously: true,
+        ),
+      );
+      await tester.runAsync(() async {
+        await db
+            .into(db.farms)
+            .insert(FarmsCompanion.insert(name: 'Crop test farm'));
+        await db
+            .into(db.reminders)
+            .insert(
+              RemindersCompanion.insert(
+                title: 'Harvest',
+                dueOn: DateTime(2026, 11, 1),
+                kind: const Value('dateNote'),
+                notes: Value(
+                  notePrefix +
+                      jsonEncode({
+                        'crop': 'Mango',
+                        'quantity': 10,
+                        'unit': 'bags',
+                      }),
+                ),
+              ),
+            );
+        await db
+            .into(db.reminders)
+            .insert(
+              RemindersCompanion.insert(
+                title: 'sale',
+                dueOn: DateTime(2026, 11, 1),
+                kind: const Value('dateNote'),
+                notes: Value(
+                  notePrefix +
+                      jsonEncode({
+                        'crop': 'Mango',
+                        'quantity': 2,
+                        'unit': 'bags',
+                        'buyer': 'Original buyer',
+                        'incomePaise': 12345,
+                      }),
+                ),
+              ),
+            );
+      });
+      final old = await tester.runAsync(() => db.select(db.reminders).get());
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [databaseProvider.overrideWithValue(db)],
+          child: const DharaMitraApp(hasFarm: true),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(Scaffold).first));
+      for (final route in [
+        '/farm',
+        '/date-note?label=harvest',
+        '/date-note',
+        '/date-note?label=sale',
+      ]) {
+        await tester.runAsync(
+          () => db.putSetting('my_crops', jsonEncode(['Mango', 'Pepper'])),
         );
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              databaseProvider.overrideWithValue(db),
-              initialLanguageProvider.overrideWithValue(lang),
-            ],
-            child: const DharaMitraApp(
-              hasFarm: true,
-              initialLocation: '/tutorial',
-            ),
-          ),
-        );
+        unawaited(router.push(route));
         await tester.pumpAndSettle();
-        for (var i = 1; i <= 10; i++) {
-          expect(find.text('$i / 10'), findsOneWidget);
-          expect(tester.takeException(), isNull);
-          final button = find.widgetWithText(
-            FilledButton,
-            i == 10
-                ? (lang == 'en' ? 'Finish' : 'ಮುಗಿಸಿ')
-                : (lang == 'en' ? 'Next' : 'ಮುಂದೆ'),
-          );
+        final chip = find.widgetWithText(InputChip, 'Mango');
+        await tester.scrollUntilVisible(
+          chip,
+          200,
+          scrollable: find
+              .byWidgetPredicate(
+                (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+              )
+              .first,
+        );
+        await tester.ensureVisible(chip);
+        await tester.pumpAndSettle();
+        final remove = find.descendant(
+          of: chip,
+          matching: find.byTooltip('Delete'),
+        );
+        await tester.tap(remove);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+        expect(chip, findsOneWidget);
+        await tester.longPress(chip);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Remove'));
+        await tester.pumpAndSettle();
+        expect(chip, findsNothing);
+        if (route == '/farm') {
+          final save = find.widgetWithText(FilledButton, 'Save');
           await tester.scrollUntilVisible(
-            button,
-            250,
+            save,
+            200,
             scrollable: find
                 .byWidgetPredicate(
                   (w) =>
@@ -666,25 +725,29 @@ void main() {
                 )
                 .first,
           );
-          await tester.ensureVisible(button);
+          await tester.ensureVisible(save);
           await tester.pumpAndSettle();
-          await tester.tap(button);
+          await tester.tap(save);
           await tester.pumpAndSettle();
+          await tester.pump(const Duration(seconds: 1));
         }
-        expect(
-          (await SharedPreferences.getInstance()).getBool('tutorial.seen'),
-          isTrue,
-        );
-        final router = GoRouter.of(tester.element(find.byType(Scaffold).first));
-        router.go('/more');
+        await tester.runAsync(() async {
+          expect(await loadFarmCrops(db), ['Pepper']);
+          final now = await db.select(db.reminders).get();
+          expect(
+            now.map((r) => r.notes).toList(),
+            old!.map((r) => r.notes).toList(),
+          );
+        });
+        router.go('/');
         await tester.pumpAndSettle();
-        await tester.tap(find.text(lang == 'en' ? 'Tutorial' : 'ಬಳಕೆಯ ತರಬೇತಿ'));
-        await tester.pumpAndSettle();
-        expect(find.text('1 / 10'), findsOneWidget);
-        await tester.pumpWidget(const SizedBox());
-        await db.close();
-        await tester.pump();
-      },
-    );
-  }
+      }
+      router.go('/more');
+      await tester.pumpAndSettle();
+      expect(find.text('Tutorial'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      await db.close();
+      await tester.pump();
+    },
+  );
 }

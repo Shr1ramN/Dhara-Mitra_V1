@@ -1,6 +1,5 @@
+import '../../../core/deletable_chip.dart';
 import '../../../core/add_chip.dart';
-
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/draft_guard.dart';
 
@@ -98,12 +97,7 @@ class _SimpleFarmState extends ConsumerState<SimpleFarmForm> {
         acceptDrafts();
         showSavedTick(context, context.l.saved);
         if (widget.isSetup) {
-          final prefs = await SharedPreferences.getInstance();
-          if (!mounted) return;
-          final showTutorial = prefs.getBool('tutorial.seen') != true;
-          if (showTutorial) await prefs.setBool('tutorial.seen', true);
-          if (!mounted) return;
-          context.go(showTutorial ? '/tutorial' : '/');
+          context.go('/');
         } else {
           context.pop();
         }
@@ -177,9 +171,9 @@ class _SimpleFarmState extends ConsumerState<SimpleFarmForm> {
                       runSpacing: 8,
                       children: [
                         for (final c in crops)
-                          InputChip(
-                            label: Text(c),
-                            onDeleted: () => setState(() => crops.remove(c)),
+                          DeletableChip(
+                            label: c,
+                            onRemove: () => setState(() => crops.remove(c)),
                           ),
                       ],
                     ),

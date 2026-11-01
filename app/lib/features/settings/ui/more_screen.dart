@@ -1,5 +1,3 @@
-import '../../../core/v1.dart';
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -63,11 +61,6 @@ class _MoreState extends ConsumerState<MoreScreen> {
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
         children: [
           for (final item in <(String, IconData, String)>[
-            (
-              v1Text(context, 'Tutorial', 'ಬಳಕೆಯ ತರಬೇತಿ'),
-              Icons.school_outlined,
-              '/tutorial',
-            ),
             (l.farm, Icons.agriculture_outlined, '/farm'),
             (l.fFarms, Icons.swap_horiz, '/farms'),
             (l.xBackup, Icons.backup_outlined, '/backup'),
