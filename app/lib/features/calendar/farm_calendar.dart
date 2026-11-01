@@ -8,13 +8,11 @@ import '../../core/l10n.dart';
 import '../../core/providers.dart';
 import '../../core/v1.dart';
 import '../../core/widgets.dart';
-import '../diary/ui/diary_screen.dart';
-import '../finance/finance_screens.dart';
 import 'calendar_records.dart';
-import 'calendar_editors.dart';
 
 class FarmCalendarScreen extends ConsumerStatefulWidget {
-  const FarmCalendarScreen({super.key});
+  const FarmCalendarScreen({super.key, this.initialCategory = ''});
+  final String initialCategory;
   @override
   ConsumerState<FarmCalendarScreen> createState() => _FarmCalendarState();
 }
@@ -54,7 +52,8 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
     });
   }
 
-  String search = '', category = '';
+  String search = '';
+  late String category = widget.initialCategory;
 
   @override
   void dispose() {
@@ -63,7 +62,8 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
     super.dispose();
   }
 
-  bool allDates = false, older = false;
+  late bool allDates = widget.initialCategory.isNotEmpty;
+  bool older = false;
   bool explicitDay = false;
   DateTimeRange? range;
   bool sameDay(DateTime a, DateTime b) =>
@@ -91,25 +91,29 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
     try {
       if (r.category == 'note') {
         await note(r.id);
-      } else if (r.category == 'payment') {
-        await editCalendarPayment(context, ref, r.id);
-      } else if (r.category == 'sale') {
-        await editCalendarSale(context, ref, r.id);
-      } else if (r.category == 'harvest' && r.route != '/collections') {
-        await editCalendarHarvest(context, ref, r.id);
-      } else if (r.category == 'activity') {
-        await Navigator.push<void>(
-          context,
-          MaterialPageRoute(builder: (_) => DiaryDetail(r.id)),
-        );
-      } else if (r.category == 'expense') {
-        final db = ref.read(databaseProvider);
-        final expense = await (db.select(
-          db.expenses,
-        )..where((t) => t.id.equals(r.id))).getSingle();
-        if (mounted) await const ExpensesScreen().edit(context, ref, expense);
-      } else {
+      } else if (['attendance', 'payment', 'loan'].contains(r.category)) {
         await context.push(r.route);
+      } else {
+        await showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          builder: (c) => SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(r.title, style: Theme.of(c).textTheme.titleLarge),
+                  const SizedBox(height: 12),
+                  Text(context.fmt.date(r.date)),
+                  const SizedBox(height: 12),
+                  Text(r.notes.trim()),
+                ],
+              ),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) ref.read(entryDateProvider.notifier).select(null);
@@ -133,28 +137,10 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
-              ListTile(
-                title: Text(
-                  v1Text(context, 'Labour management', 'ಕಾರ್ಮಿಕರ ನಿರ್ವಹಣೆ'),
-                ),
-              ),
               for (final item in <(String, String)>[
-                (l.tabAttendance, '/labour?tab=attendance'),
-                (context.l.settleWages, '/labour?tab=dues'),
-                (l.tabDues, '/labour?tab=dues'),
-                (context.l.labourReports, '/labour?tab=reports'),
-                (context.l.navHarvest, 'note:harvest'),
-                (v1Text(context, 'Irrigation', 'ನೀರಾವರಿ'), 'note:irrigation'),
-                (v1Text(context, 'Fertiliser', 'ಗೊಬ್ಬರ'), 'note:fertiliser'),
-                (v1Text(context, 'Spray', 'ಸಿಂಪಡಣೆ'), 'note:spray'),
-                (
-                  v1Text(
-                    context,
-                    'Date note / farm activity',
-                    'ದಿನದ ಟಿಪ್ಪಣಿ / ತೋಟದ ಕೆಲಸ',
-                  ),
-                  'note',
-                ),
+                (l.labourManagement, '/labour'),
+                (l.farmActivity, 'note'),
+                (l.navHarvest, 'note:harvest'),
               ])
                 ListTile(
                   title: Text(item.$1),
@@ -180,8 +166,6 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
         await note(null, suggestion);
       } else if (route == 'note') {
         await note();
-      } else if (route == '/expenses') {
-        await const ExpensesScreen().edit(context, ref);
       } else {
         await context.push(route);
       }
@@ -191,7 +175,8 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
   }
 
   String label(String key) => switch (key) {
-    'activity' => v1Text(context, 'Work', 'ಕೆಲಸ'),
+    'activity' => context.l.farmActivity,
+    'labour' => context.l.labourManagement,
     'expense' => context.l.xExpenses,
     'attendance' => context.l.tabAttendance,
     'payment' => v1Text(context, 'Payments', 'ಪಾವತಿಗಳು'),
@@ -389,8 +374,8 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                       labelText: context.l.xSearch,
                       hintText: v1Text(
                         context,
-                        'Try “last manure” or a buyer’s name',
-                        '“ಕೊನೆಯ ಗೊಬ್ಬರ” ಅಥವಾ ಖರೀದಿದಾರರ ಹೆಸರು',
+                        'Try “last fertiliser” or a crop name',
+                        '“ಕೊನೆಯ ಗೊಬ್ಬರ” ಅಥವಾ ಬೆಳೆಯ ಹೆಸರು',
                       ),
                       suffixIcon: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -427,17 +412,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        for (final c in [
-                          '',
-                          'activity',
-                          'attendance',
-                          'expense',
-                          'harvest',
-                          'sale',
-                          'payment',
-                          'note',
-                          'loan',
-                        ])
+                        for (final c in ['', 'activity', 'labour', 'harvest'])
                           Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: ChoiceChip(

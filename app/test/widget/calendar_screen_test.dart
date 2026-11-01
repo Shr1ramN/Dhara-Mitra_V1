@@ -117,7 +117,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('28'));
     await tester.pumpAndSettle();
-    expect(find.text('Labour management'), findsOneWidget);
+    expect(find.text('Labour Management'), findsOneWidget);
     await tester.tapAt(const Offset(10, 30));
     await tester.pumpAndSettle();
     await reveal(tester, find.text('Manure south'));
@@ -136,7 +136,7 @@ void main() {
       await pumpCalendar(tester);
       await tester.enterText(find.byType(TextField), 'manure');
       await tester.pumpAndSettle();
-      final activity = find.widgetWithText(ChoiceChip, 'Work');
+      final activity = find.widgetWithText(ChoiceChip, 'Farm Activity');
       await Scrollable.ensureVisible(tester.element(activity), alignment: 0.5);
       await tester.tap(activity);
       await tester.pumpAndSettle();

@@ -607,5 +607,17 @@
   "workerLoanRepayment": "ಸಾಲ ಮರುಪಾವತಿ",
   "workerLoanOutstanding": "ಸಾಲದ ಬಾಕಿ",
   "farmDateNote": "ದಿನದ ಟಿಪ್ಪಣಿ",
-  "myCrops": "ನನ್ನ ಬೆಳೆಗಳು"
+  "myCrops": "ನನ್ನ ಬೆಳೆಗಳು",
+  "appearance": "ನೋಟ",
+  "themeSelector": "ಥೀಮ್",
+  "systemTheme": "ಫೋನ್‌ನ ಆಯ್ಕೆಯಂತೆ",
+  "lightTheme": "ಬೆಳಕಿನ ನೋಟ",
+  "darkTheme": "ಕತ್ತಲಿನ ನೋಟ",
+  "farmActivity": "ತೋಟದ ಕೆಲಸ",
+  "labourManagement": "ಕಾರ್ಮಿಕರ ನಿರ್ವಹಣೆ",
+  "whatDoYouGrow": "ನೀವು ಯಾವ ಬೆಳೆ ಬೆಳೆಯುತ್ತೀರಿ?",
+  "addCrop": "ಬೆಳೆ ಸೇರಿಸಿ",
+  "cropHistorySafe": "ಈ ಪಟ್ಟಿಯನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಾಯಿಸಬಹುದು. ಹಿಂದಿನ ಕೊಯ್ಲು ಮತ್ತು ಕೆಲಸದ ದಾಖಲೆಗಳು ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ.",
+  "exportExcel": "Excel ಗೆ ರಫ್ತು ಮಾಡಿ",
+  "excelSnapshotHelp": "ವಿಶ್ಲೇಷಣೆಗೆ ಬಳಸಬಹುದಾದ ಪ್ರತಿ. Excel ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್‌ನ ದಾಖಲೆಗಳನ್ನು ಬದಲಾಯಿಸುವುದಿಲ್ಲ."
 }

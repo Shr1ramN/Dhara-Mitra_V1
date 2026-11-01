@@ -38,7 +38,7 @@ class DateField extends StatelessWidget {
     child: InputDecorator(
       decoration: InputDecoration(
         labelText: label,
-        suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
+        suffixIcon: Icon(Icons.calendar_today_outlined, size: 18),
       ),
       child: Text(context.fmt.date(value)),
     ),
@@ -233,12 +233,12 @@ class FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 8, left: 2),
+    padding: EdgeInsets.only(bottom: 8, left: 2),
     child: Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontWeight: FontWeight.w600,
-        color: AppColors.textMuted,
+        color: context.appColors.textMuted,
       ),
     ),
   );

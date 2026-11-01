@@ -3745,6 +3745,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'My crops'**
   String get myCrops;
+
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// No description provided for @themeSelector.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get themeSelector;
+
+  /// No description provided for @systemTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get systemTheme;
+
+  /// No description provided for @lightTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get lightTheme;
+
+  /// No description provided for @darkTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get darkTheme;
+
+  /// No description provided for @farmActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Farm Activity'**
+  String get farmActivity;
+
+  /// No description provided for @labourManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Labour Management'**
+  String get labourManagement;
+
+  /// No description provided for @whatDoYouGrow.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you grow?'**
+  String get whatDoYouGrow;
+
+  /// No description provided for @addCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a crop'**
+  String get addCrop;
+
+  /// No description provided for @cropHistorySafe.
+  ///
+  /// In en, this message translates to:
+  /// **'You can edit this list anytime. Past harvest and activity records stay unchanged.'**
+  String get cropHistorySafe;
+
+  /// No description provided for @exportExcel.
+  ///
+  /// In en, this message translates to:
+  /// **'Export to Excel'**
+  String get exportExcel;
+
+  /// No description provided for @excelSnapshotHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'An editable copy for analysis. Changes in Excel do not change the app.'**
+  String get excelSnapshotHelp;
 }
 
 class _AppLocalizationsDelegate
