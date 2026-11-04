@@ -24,31 +24,34 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
   final resultsKey = GlobalKey();
   final pageScroll = ScrollController();
 
+  late bool revealResults = widget.initialCategory.isNotEmpty;
+
+  void applyFilter(VoidCallback update) {
+    setState(() {
+      update();
+      older = false;
+      revealResults = true;
+    });
+  }
+
   void submitSearch() {
     FocusScope.of(context).unfocus();
-    setState(() {
-      search = searchController.text.trim();
-      older = false;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted || !pageScroll.hasClients) return;
-      // The lazy list may not have built the results heading yet.
-      if (resultsKey.currentContext == null) {
-        await pageScroll.animateTo(
-          pageScroll.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-      if (!mounted) return;
+    applyFilter(() => search = searchController.text.trim());
+  }
+
+  void revealResultsAfterLayout() {
+    if (!revealResults) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !revealResults) return;
       final target = resultsKey.currentContext;
-      if (target != null && target.mounted) {
-        await Scrollable.ensureVisible(
-          target,
-          duration: const Duration(milliseconds: 200),
-          alignment: 0.1,
-        );
-      }
+      if (target == null) return;
+      revealResults = false;
+      Scrollable.ensureVisible(
+        target,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        alignment: 0.05,
+      );
     });
   }
 
@@ -196,16 +199,17 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
     _ => context.l.xAll,
   };
 
-  void selectDay(DateTime date) => setState(() {
+  void selectDay(DateTime date, {bool reveal = true}) => setState(() {
     day = calendarDay(date);
     month = DateTime(date.year, date.month);
     allDates = false;
     explicitDay = true;
     range = null;
     older = false;
+    revealResults = reveal;
   });
 
-  void resetFilters() => setState(() {
+  void resetFilters() => applyFilter(() {
     searchController.clear();
     search = '';
     category = '';
@@ -218,7 +222,10 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
   void moveMonth(int delta) {
     final next = DateTime(month.year, month.month + delta);
     final last = DateTime(next.year, next.month + 1, 0).day;
-    selectDay(DateTime(next.year, next.month, day.day > last ? last : day.day));
+    selectDay(
+      DateTime(next.year, next.month, day.day > last ? last : day.day),
+      reveal: false,
+    );
   }
 
   IconData categoryIcon(String value) => switch (value) {
@@ -239,9 +246,10 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
       initialDateRange: range,
     );
     if (mounted && chosen != null) {
-      setState(() {
+      applyFilter(() {
         range = chosen;
-        older = false;
+        allDates = false;
+        explicitDay = true;
       });
     }
   }
@@ -276,6 +284,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
       body: AsyncBody(
         value: ref.watch(calendarRecordsProvider),
         builder: (records) {
+          revealResultsAfterLayout();
           final matching =
               records
                   .where(
@@ -321,368 +330,381 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                 controller: pageScroll,
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF183D35), Color(0xFF326457)],
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.spa_outlined,
-                          color: Color(0xFFE9B779),
-                          size: 32,
+                  // Build the controls and anchor together, even offscreen.
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF183D35), Color(0xFF326457)],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
                         ),
-                        const SizedBox(height: 14),
-                        Text(
-                          v1Text(
-                            context,
-                            'YOUR FARM, DAY BY DAY',
-                            'ನಿಮ್ಮ ತೋಟ, ದಿನದಿಂದ ದಿನಕ್ಕೆ',
-                          ),
-                          style: text.labelSmall?.copyWith(
-                            color: const Color(0xFFCDE3D5),
-                            letterSpacing: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          v1Text(
-                            context,
-                            'Every day tells a story.',
-                            'ಪ್ರತಿ ದಿನಕ್ಕೂ ಒಂದು ಕಥೆ.',
-                          ),
-                          style: text.headlineSmall?.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          v1Text(
-                            context,
-                            'Find your work, harvests and little milestones.',
-                            'ಕೆಲಸ, ಕೊಯ್ಲು ಮತ್ತು ಮುಖ್ಯ ಕ್ಷಣಗಳನ್ನು ಹುಡುಕಿ.',
-                          ),
-                          style: text.bodyMedium?.copyWith(
-                            color: const Color(0xFFE0ECE5),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: searchController,
-                    textInputAction: TextInputAction.search,
-                    onSubmitted: (_) => submitSearch(),
-                    decoration: InputDecoration(
-                      labelText: context.l.xSearch,
-                      hintText: v1Text(
-                        context,
-                        'Try “last fertiliser” or a crop name',
-                        '“ಕೊನೆಯ ಗೊಬ್ಬರ” ಅಥವಾ ಬೆಳೆಯ ಹೆಸರು',
-                      ),
-                      suffixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (searchController.text.isNotEmpty)
-                            IconButton(
-                              tooltip: v1Text(
-                                context,
-                                'Clear search',
-                                'ಹುಡುಕಾಟ ಅಳಿಸಿ',
-                              ),
-                              icon: const Icon(Icons.close),
-                              onPressed: () => setState(() {
-                                searchController.clear();
-                                search = '';
-                                older = false;
-                              }),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.spa_outlined,
+                              color: Color(0xFFE9B779),
+                              size: 32,
                             ),
-                          IconButton(
-                            tooltip: context.l.xSearch,
-                            onPressed: submitSearch,
-                            icon: const Icon(Icons.search_rounded),
-                          ),
-                        ],
-                      ),
-                    ),
-                    onChanged: (v) => setState(() {
-                      search = v;
-                      older = false;
-                    }),
-                  ),
-                  const SizedBox(height: 12),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (final c in ['', 'activity', 'labour', 'harvest', 'income'])
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              avatar: Icon(
-                                c.isEmpty
-                                    ? Icons.apps_rounded
-                                    : categoryIcon(c),
-                                size: 18,
-                              ),
-                              label: Text(label(c)),
-                              selected: category == c,
-                              onSelected: (_) => setState(() {
-                                category = c;
-                                older = false;
-                              }),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      side: BorderSide(color: colors.outlineVariant),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              IconButton(
-                                tooltip: v1Text(
-                                  context,
-                                  'Previous month',
-                                  'ಹಿಂದಿನ ತಿಂಗಳು',
-                                ),
-                                icon: const Icon(Icons.chevron_left),
-                                onPressed: () => moveMonth(-1),
-                              ),
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      '${context.fmt.month(month.month)} ${month.year}',
-                                      style: text.titleLarge,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Text(
-                                      '$monthCount ${v1Text(context, 'records this month', 'ಈ ತಿಂಗಳ ದಾಖಲೆಗಳು')}',
-                                      style: text.bodySmall?.copyWith(
-                                        color: colors.onSurfaceVariant,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: v1Text(
-                                  context,
-                                  'Next month',
-                                  'ಮುಂದಿನ ತಿಂಗಳು',
-                                ),
-                                icon: const Icon(Icons.chevron_right),
-                                onPressed: () => moveMonth(1),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              for (final d in v1Text(
+                            const SizedBox(height: 14),
+                            Text(
+                              v1Text(
                                 context,
-                                'M,T,W,T,F,S,S',
-                                'ಸೋ,ಮಂ,ಬು,ಗು,ಶು,ಶ,ಭಾ',
-                              ).split(','))
-                                Expanded(
-                                  child: Center(
-                                    child: Text(
-                                      d,
-                                      style: text.labelSmall?.copyWith(
-                                        color: colors.onSurfaceVariant,
-                                      ),
-                                    ),
+                                'YOUR FARM, DAY BY DAY',
+                                'ನಿಮ್ಮ ತೋಟ, ದಿನದಿಂದ ದಿನಕ್ಕೆ',
+                              ),
+                              style: text.labelSmall?.copyWith(
+                                color: const Color(0xFFCDE3D5),
+                                letterSpacing: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              v1Text(
+                                context,
+                                'Every day tells a story.',
+                                'ಪ್ರತಿ ದಿನಕ್ಕೂ ಒಂದು ಕಥೆ.',
+                              ),
+                              style: text.headlineSmall?.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              v1Text(
+                                context,
+                                'Find your work, harvests and little milestones.',
+                                'ಕೆಲಸ, ಕೊಯ್ಲು ಮತ್ತು ಮುಖ್ಯ ಕ್ಷಣಗಳನ್ನು ಹುಡುಕಿ.',
+                              ),
+                              style: text.bodyMedium?.copyWith(
+                                color: const Color(0xFFE0ECE5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: searchController,
+                        textInputAction: TextInputAction.search,
+                        onSubmitted: (_) => submitSearch(),
+                        decoration: InputDecoration(
+                          labelText: context.l.xSearch,
+                          hintText: v1Text(
+                            context,
+                            'Try “last fertiliser” or a crop name',
+                            '“ಕೊನೆಯ ಗೊಬ್ಬರ” ಅಥವಾ ಬೆಳೆಯ ಹೆಸರು',
+                          ),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (searchController.text.isNotEmpty)
+                                IconButton(
+                                  tooltip: v1Text(
+                                    context,
+                                    'Clear search',
+                                    'ಹುಡುಕಾಟ ಅಳಿಸಿ',
                                   ),
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () {
+                                    searchController.clear();
+                                    submitSearch();
+                                  },
                                 ),
+                              IconButton(
+                                tooltip: context.l.xSearch,
+                                onPressed: submitSearch,
+                                icon: const Icon(Icons.search_rounded),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: ((offset + days + 6) ~/ 7) * 7,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 7,
-                                  mainAxisExtent: 52,
+                        ),
+                        onChanged: (v) => setState(() {
+                          search = v;
+                          older = false;
+                        }),
+                      ),
+                      const SizedBox(height: 12),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            for (final c in [
+                              '',
+                              'activity',
+                              'labour',
+                              'harvest',
+                              'income',
+                            ])
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: ChoiceChip(
+                                  avatar: Icon(
+                                    c.isEmpty
+                                        ? Icons.apps_rounded
+                                        : categoryIcon(c),
+                                    size: 18,
+                                  ),
+                                  label: Text(label(c)),
+                                  selected: category == c,
+                                  onSelected: (_) =>
+                                      applyFilter(() => category = c),
                                 ),
-                            itemBuilder: (context, i) {
-                              if (i < offset || i >= offset + days) {
-                                return const SizedBox();
-                              }
-                              final date = DateTime(
-                                month.year,
-                                month.month,
-                                i - offset + 1,
-                              );
-                              final count = counts[date] ?? 0;
-                              final selected = sameDay(date, day);
-                              final isToday = sameDay(date, today);
-                              return Semantics(
-                                label:
-                                    '${context.fmt.date(date)}, $count ${v1Text(context, 'records', 'ದಾಖಲೆಗಳು')}',
-                                selected: selected,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(2),
-                                  child: TextButton(
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      foregroundColor: selected
-                                          ? colors.onPrimary
-                                          : colors.onSurface,
-                                      backgroundColor: selected
-                                          ? colors.primary
-                                          : isToday
-                                          ? colors.primaryContainer
-                                          : null,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          side: BorderSide(color: colors.outlineVariant),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  IconButton(
+                                    tooltip: v1Text(
+                                      context,
+                                      'Previous month',
+                                      'ಹಿಂದಿನ ತಿಂಗಳು',
                                     ),
-                                    onPressed: () {
-                                      selectDay(date);
-                                      add();
-                                    },
+                                    icon: const Icon(Icons.chevron_left),
+                                    onPressed: () => moveMonth(-1),
+                                  ),
+                                  Expanded(
                                     child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          '${date.day}',
-                                          style: TextStyle(
-                                            fontWeight: selected || isToday
-                                                ? FontWeight.w700
-                                                : FontWeight.w500,
-                                          ),
+                                          '${context.fmt.month(month.month)} ${month.year}',
+                                          style: text.titleLarge,
+                                          textAlign: TextAlign.center,
                                         ),
-                                        const SizedBox(height: 3),
-                                        Container(
-                                          width: count > 1 ? 12 : 4,
-                                          height: 4,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                            color: count == 0
-                                                ? Colors.transparent
-                                                : selected
-                                                ? colors.onPrimary
-                                                : colors.primary,
+                                        Text(
+                                          '$monthCount ${v1Text(context, 'records this month', 'ಈ ತಿಂಗಳ ದಾಖಲೆಗಳು')}',
+                                          style: text.bodySmall?.copyWith(
+                                            color: colors.onSurfaceVariant,
                                           ),
+                                          textAlign: TextAlign.center,
                                         ),
                                       ],
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.circle,
-                                size: 6,
-                                color: colors.primary,
-                              ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  v1Text(
-                                    context,
-                                    'Days with matching records',
-                                    'ಹೊಂದುವ ದಾಖಲೆಗಳಿರುವ ದಿನಗಳು',
+                                  IconButton(
+                                    tooltip: v1Text(
+                                      context,
+                                      'Next month',
+                                      'ಮುಂದಿನ ತಿಂಗಳು',
+                                    ),
+                                    icon: const Icon(Icons.chevron_right),
+                                    onPressed: () => moveMonth(1),
                                   ),
-                                  style: text.bodySmall,
-                                ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  for (final d in v1Text(
+                                    context,
+                                    'M,T,W,T,F,S,S',
+                                    'ಸೋ,ಮಂ,ಬು,ಗು,ಶು,ಶ,ಭಾ',
+                                  ).split(','))
+                                    Expanded(
+                                      child: Center(
+                                        child: Text(
+                                          d,
+                                          style: text.labelSmall?.copyWith(
+                                            color: colors.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: ((offset + days + 6) ~/ 7) * 7,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 7,
+                                      mainAxisExtent: 52,
+                                    ),
+                                itemBuilder: (context, i) {
+                                  if (i < offset || i >= offset + days) {
+                                    return const SizedBox();
+                                  }
+                                  final date = DateTime(
+                                    month.year,
+                                    month.month,
+                                    i - offset + 1,
+                                  );
+                                  final count = counts[date] ?? 0;
+                                  final selected = sameDay(date, day);
+                                  final isToday = sameDay(date, today);
+                                  return Semantics(
+                                    label:
+                                        '${context.fmt.date(date)}, $count ${v1Text(context, 'records', 'ದಾಖಲೆಗಳು')}',
+                                    selected: selected,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(2),
+                                      child: TextButton(
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          foregroundColor: selected
+                                              ? colors.onPrimary
+                                              : colors.onSurface,
+                                          backgroundColor: selected
+                                              ? colors.primary
+                                              : isToday
+                                              ? colors.primaryContainer
+                                              : null,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          selectDay(date);
+                                          add();
+                                        },
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              '${date.day}',
+                                              style: TextStyle(
+                                                fontWeight: selected || isToday
+                                                    ? FontWeight.w700
+                                                    : FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Container(
+                                              width: count > 1 ? 12 : 4,
+                                              height: 4,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                color: count == 0
+                                                    ? Colors.transparent
+                                                    : selected
+                                                    ? colors.onPrimary
+                                                    : colors.primary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.circle,
+                                    size: 6,
+                                    color: colors.primary,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      v1Text(
+                                        context,
+                                        'Days with matching records',
+                                        'ಹೊಂದುವ ದಾಖಲೆಗಳಿರುವ ದಿನಗಳು',
+                                      ),
+                                      style: text.bodySmall,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          FilterChip(
+                            label: Text(
+                              v1Text(context, 'All dates', 'ಎಲ್ಲ ದಿನಾಂಕಗಳು'),
+                            ),
+                            selected:
+                                allDates ||
+                                (query.text.isNotEmpty && !explicitDay),
+                            onSelected: (v) => applyFilter(() {
+                              allDates = v;
+                              explicitDay = !v;
+                              range = null;
+                            }),
+                          ),
+                          InputChip(
+                            avatar: const Icon(
+                              Icons.date_range_outlined,
+                              size: 18,
+                            ),
+                            label: Text(
+                              range == null
+                                  ? v1Text(
+                                      context,
+                                      'Date range',
+                                      'ದಿನಾಂಕ ವ್ಯಾಪ್ತಿ',
+                                    )
+                                  : '${context.fmt.date(range!.start)} – ${context.fmt.date(range!.end)}',
+                            ),
+                            onPressed: chooseRange,
+                            onDeleted: range == null
+                                ? null
+                                : () => applyFilter(() => range = null),
+                          ),
+                          if (hasFilters)
+                            TextButton(
+                              onPressed: resetFilters,
+                              child: Text(
+                                v1Text(
+                                  context,
+                                  'Reset filters',
+                                  'ಫಿಲ್ಟರ್ ಮರುಹೊಂದಿಸಿ',
+                                ),
+                              ),
+                            ),
                         ],
                       ),
-                    ),
-                  ),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      FilterChip(
-                        label: Text(
-                          v1Text(context, 'All dates', 'ಎಲ್ಲ ದಿನಾಂಕಗಳು'),
-                        ),
-                        selected:
-                            allDates || (query.text.isNotEmpty && !explicitDay),
-                        onSelected: (v) => setState(() {
-                          allDates = v;
-                          explicitDay = !v;
-                          older = false;
-                        }),
-                      ),
-                      InputChip(
-                        avatar: const Icon(Icons.date_range_outlined, size: 18),
-                        label: Text(
-                          range == null
-                              ? v1Text(context, 'Date range', 'ದಿನಾಂಕ ವ್ಯಾಪ್ತಿ')
-                              : '${context.fmt.date(range!.start)} – ${context.fmt.date(range!.end)}',
-                        ),
-                        onPressed: chooseRange,
-                        onDeleted: range == null
-                            ? null
-                            : () => setState(() {
-                                range = null;
-                                older = false;
-                              }),
-                      ),
-                      if (hasFilters)
-                        TextButton(
-                          onPressed: resetFilters,
-                          child: Text(
-                            v1Text(
-                              context,
-                              'Reset filters',
-                              'ಫಿಲ್ಟರ್ ಮರುಹೊಂದಿಸಿ',
+                      const SizedBox(height: 20),
+                      Row(
+                        key: resultsKey,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              hasFilters || explicitDay
+                                  ? v1Text(
+                                      context,
+                                      'Matching records',
+                                      'ಹೊಂದುವ ದಾಖಲೆಗಳು',
+                                    )
+                                  : context.fmt.date(day),
+                              style: text.titleLarge,
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    key: resultsKey,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          (query.text.isNotEmpty && !explicitDay) ||
-                                  allDates ||
-                                  range != null
-                              ? v1Text(
-                                  context,
-                                  'Matching records',
-                                  'ಹೊಂದುವ ದಾಖಲೆಗಳು',
-                                )
-                              : context.fmt.date(day),
-                          style: text.titleLarge,
-                        ),
+                          Chip(label: Text('${filtered.length}')),
+                        ],
                       ),
-                      Chip(label: Text('${filtered.length}')),
                     ],
                   ),
                   Text(

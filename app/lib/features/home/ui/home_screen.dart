@@ -126,46 +126,76 @@ class HomeScreen extends ConsumerWidget {
               },
             ),
             SectionTitle(l.nFarmTools),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final item in <(String, IconData, String)>[
-                  (l.farmActivity, Icons.grass, '/date-note'),
-                  (
-                    v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
-                    Icons.payments_outlined,
-                    '/date-note?label=sale',
-                  ),
-                  (
-                    l.navHarvest,
-                    Icons.eco_outlined,
-                    '/date-note?label=harvest',
-                  ),
-                  (l.xCalendar, Icons.calendar_month, '/calendar'),
-                  (l.labourManagement, Icons.groups_outlined, '/labour'),
-                ])
-                  ActionChip(
-                    avatar: Icon(item.$2, size: 18),
-                    label: Text(item.$1),
-                    onPressed: () => context.push(item.$3),
-                  ),
-              ],
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  for (final (title, icon, path) in [
+                    (
+                      v1Text(context, 'Add Farm Activity', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ'),
+                      Icons.add_circle_outline,
+                      '/date-note',
+                    ),
+                    (
+                      v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
+                      Icons.storefront_outlined,
+                      '/date-note?label=sale',
+                    ),
+                    (l.labourManagement, Icons.groups_outlined, '/labour'),
+                  ])
+                    ListTile(
+                      leading: Icon(icon),
+                      title: Text(title),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push(path),
+                    ),
+                ],
+              ),
             ),
             SectionTitle(l.money),
-            KvRow(l.toPayWorkers, fmt.money(due)),
-            KvRow(
-              v1Text(context, 'Crop sale income', 'ಬೆಳೆ ಮಾರಾಟದ ಆದಾಯ'),
-              fmt.money(income),
-            ),
-            TextButton(
-              onPressed: () => context.push('/calendar?category=income'),
-              child: Text(v1Text(context, 'View sales', 'ಮಾರಾಟಗಳನ್ನು ನೋಡಿ')),
-            ),
-            OutlinedButton.icon(
-              onPressed: () => context.push('/labour?tab=reports'),
-              icon: Icon(Icons.bar_chart),
-              label: Text(l.labourReports),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.account_balance_wallet_outlined),
+                    title: Text(fmt.money(due), style: display(22)),
+                    subtitle: Text(l.toPayWorkers),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/labour?tab=dues'),
+                  ),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  ListTile(
+                    leading: const Icon(Icons.receipt_long_outlined),
+                    title: Text(fmt.money(income), style: display(22)),
+                    subtitle: Text(
+                      v1Text(context, 'Crop sale income', 'ಬೆಳೆ ಮಾರಾಟದ ಆದಾಯ'),
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/calendar?category=income'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                    child: Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton(
+                          onPressed: () =>
+                              context.push('/calendar?category=income'),
+                          child: Text(
+                            v1Text(context, 'View sales', 'ಮಾರಾಟಗಳನ್ನು ನೋಡಿ'),
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () => context.push('/labour?tab=reports'),
+                          icon: const Icon(Icons.bar_chart),
+                          label: Text(l.labourReports),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

@@ -15,6 +15,7 @@ void main() {
   Future<void> pumpCalendar(
     WidgetTester tester, {
     String language = 'en',
+    String initialCategory = '',
   }) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
@@ -63,7 +64,7 @@ void main() {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: const FarmCalendarScreen(),
+          home: FarmCalendarScreen(initialCategory: initialCategory),
         ),
       ),
     );
@@ -79,6 +80,14 @@ void main() {
     await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
     await tester.pumpAndSettle();
   }
+
+  testWidgets('income shortcut reveals the empty results section', (
+    tester,
+  ) async {
+    await pumpCalendar(tester, initialCategory: 'income');
+    expect(find.text('Matching records').hitTestable(), findsOneWidget);
+    expect(find.text('No recorded entry.').hitTestable(), findsOneWidget);
+  });
 
   for (final keyboard in [true, false]) {
     testWidgets('search submission reveals results: keyboard=$keyboard', (
@@ -140,6 +149,7 @@ void main() {
       await Scrollable.ensureVisible(tester.element(activity), alignment: 0.5);
       await tester.tap(activity);
       await tester.pumpAndSettle();
+      expect(find.text('Matching records').hitTestable(), findsOneWidget);
       await reveal(tester, find.text('Manure south'));
       expect(find.text('Manure bill'), findsNothing);
       expect(find.text('Manure south'), findsOneWidget);
