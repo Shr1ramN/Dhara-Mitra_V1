@@ -1,4 +1,6 @@
-# Sign-in setup (phase one)
+# Historical sign-in setup
+
+> The current Android release uses local mode. This guide describes the account-enabled development configuration and screens from the earlier expanded interface.
 
 The Android app supports Google OAuth, email/password registration and sign-in,
 email confirmation, password recovery, and local use without an account. It uses

@@ -1,5 +1,7 @@
 # Dhara Mitra (ಧರಾ ಮಿತ್ರ) — Plan v0.2
 
+> This is the historical expanded product plan. The [current implementation](IMPLEMENTATION_STATUS.md) describes the shipped Android app.
+
 *Dhara Mitra* means "friend of the earth".
 
 A farm diary app for a South Karnataka mixed garden: **arecanut (chali)** with **coconut**, **pepper** trailed on the areca palms, and **banana** in the gaps.
