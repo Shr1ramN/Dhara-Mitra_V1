@@ -1,18 +1,14 @@
 # Security and data handling
 
-Dhara Mitra stores farm records locally. Cloud backup and private production signing are planned.
-## Report a vulnerability
+## Report a vulnerability privately
 
-Use GitHub's **Security → Report a vulnerability** option if private vulnerability reporting is enabled for this repository. Otherwise, arrange a private reporting channel with the maintainer through the contact methods on their GitHub profile before sending sensitive details. Do not post credentials, real farm records or an exploitable private-data disclosure in a public issue.
+Use [GitHub private vulnerability reporting](https://github.com/Shr1ramN/Dhara-Mitra_V1/security/advisories/new). Include the affected version or commit, Android version, a reproduction using sample data and the impact. Keep credentials and personal farm records out of reports and issues.
 
-Include the affected commit/build, a minimal synthetic reproduction, impact and relevant platform versions. No response-time or supported-release guarantee is currently published.
+## Local records and releases
 
-## Current protections and limits
+- The published APK uses local mode. Farm records and attachments stay in app storage until you export or share them.
+- The optional app lock uses Android authentication. Dhara Mitra leaves SQLite databases, ZIP backups and exported reports unencrypted. Store and share those files with care.
+- Anyone with the public development signing key can sign an APK. GitHub releases use this key for compatibility with previous test builds. Use the repository's [Releases](https://github.com/Shr1ramN/Dhara-Mitra_V1/releases) and compare the APK's SHA-256 with the release checksum.
+- Keep credentials and private signing material out of Git and APKs. Revoke and rotate exposed credentials at their provider.
 
-- Records and attachments are stored in the app's local storage. Optional device authentication gates access in the UI; it is not SQLite encryption.
-- Local ZIP backups contain farm records and attachments and are not encrypted by this app. Treat exported databases, ZIPs and reports as private files.
-- The secure-window flag is used while the app lock is enabled; verify behavior on the target Android device.
-- Weather refresh sends the configured farm location to Open-Meteo when used. Cloud farm-data backup and automatic market feeds are not currently active.
-- The committed `dev-signing.p12` certificate is public and test-only. It provides no production publisher trust. Private production signing remains future work.
-
-Keep API/server keys and private signing material out of source, APKs, logs and issue attachments. If a private credential is exposed, revoke/rotate it at its provider; deleting it from the latest commit alone does not remove it from Git history.
+GitHub secret scanning and push protection cover supported credential patterns. CI scans resolved Dart dependencies for known OSV advisories.

@@ -18,8 +18,8 @@ Run `flutter doctor -v`, resolve Android toolchain errors and accept SDK licence
 ## First run
 
 ```sh
-git clone --branch develop https://github.com/Shr1ramN/Dhara-Mitra.git
-cd Dhara-Mitra/app
+git clone --branch develop https://github.com/Shr1ramN/Dhara-Mitra_V1.git
+cd Dhara-Mitra_V1/app
 flutter pub get
 flutter devices
 flutter run -d <device-id>
@@ -64,7 +64,7 @@ dart run build_runner build
 flutter gen-l10n
 ```
 
-The database is defined in `lib/core/db/tables.dart`, `extended_tables.dart` and `database.dart`. Schema version 4 adds daily-work allocations shared by diary, areca and other-produce labour; version 3 added worker contacts/roles, bag quantities and collection records. Version 4 reconciles valid historical daily-wage duplicates into attendance, preserves original work transaction records as soft-deleted entries, and retains actual payments and manual attendance. Existing v1/v2 records migrate in place. Each farm profile has its own SQLite database; the legacy default profile keeps the original database filename. The profile catalogue is outside the databases so a single-farm restore cannot remove other profiles. Attachments and notification IDs are profile-scoped. Every later installed schema change needs a forward migration and tests preserving existing records. Never use a database wipe as an upgrade strategy.
+The database is defined in `lib/core/db/tables.dart`, `extended_tables.dart` and `database.dart`. The current schema version and forward migrations live in database.dart. Each farm profile has its own database, and the catalogue is stored separately. Every later installed schema change needs a forward migration and tests preserving existing records. Never use a database wipe as an upgrade strategy.
 
 Edit both `lib/l10n/app_en.arb` and `app_kn.arb` when adding text. Commit the regenerated localization files. Store monetary amounts as integer paise, preserve quantity units, and respect the configured season start month.
 

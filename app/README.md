@@ -18,7 +18,7 @@ flutter test
 flutter build apk --debug
 ```
 
-Core record keeping requires no cloud account. CI runs analysis and tests before building an APK. Phone testing is still needed for device features such as file sharing, app locking and installation updates.
+Core record keeping requires no cloud account. CI lints workflows and audits resolved Dart dependencies, then runs analysis and tests before building an APK. Phone testing is still needed for device features such as file sharing, app locking and installation updates.
 
 ## Generated sources and migrations
 
@@ -37,7 +37,7 @@ Database definitions are in `lib/core/db/tables.dart` and `extended_tables.dart`
 - Release build: `flutter build apk --release` produces `build/app/outputs/flutter-apk/app-release.apk`.
 - Both build modes use the existing public test key, `android/app/dev-signing.p12`, and app ID `in.dharamitra.app` for development update compatibility.
 - CI names the installable asset **DharaMitra.apk** and sets the version code to `20000 + github.run_number`.
-- PRs to develop/master require analysis, tests and an Android build. Develop merges publish prereleases; master merges publish regular releases marked Latest.
+- PRs to develop/master require analysis, tests and an Android build. Pushes with app changes publish prereleases from develop and regular releases from master. See the [release guide](../docs/RELEASING.md).
 
 Keep the app ID and signing certificate unchanged when testing updates on phones with existing records. Export a backup before updating.
 

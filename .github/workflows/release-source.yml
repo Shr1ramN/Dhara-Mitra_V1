@@ -1,0 +1,62 @@
+name: Verify release source
+
+on:
+  pull_request_target:
+    branches: [master]
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+
+permissions:
+  pull-requests: read
+  statuses: write
+
+concurrency:
+  group: release-source-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify promotion from develop
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      # This workflow runs from master. Never check out or run code from the PR.
+      - name: Set status on the PR test merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..12}; do
+            pr=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER")
+            head_sha=$(jq -r '.head.sha' <<< "$pr")
+            merge_sha=$(jq -r '.merge_commit_sha // empty' <<< "$pr")
+            if [[ "$head_sha" != "$EVENT_HEAD_SHA" ]] ||
+              [[ $(jq -r '.base.ref + ":" + .state' <<< "$pr") != "master:open" ]]; then
+              exit 0
+            fi
+            if [[ -n "$merge_sha" ]] && [[ $(jq -r '.mergeable' <<< "$pr") == true ]]; then
+              break
+            fi
+            if (( attempt < 12 )); then sleep 5; fi
+          done
+          if [[ -z "$merge_sha" ]] || [[ $(jq -r '.mergeable' <<< "$pr") != true ]]; then
+            echo "::error::GitHub did not provide a mergeable test commit."
+            exit 1
+          fi
+
+          state=failure
+          description="The release branch accepts PRs only from this repository's develop branch."
+          source=$(jq -r '(.head.repo.full_name // "") + ":" + .head.ref' <<< "$pr")
+          if [[ "$source" == "$REPOSITORY:develop" ]]; then
+            state=success
+            description="Promotion from this repository's develop branch."
+          fi
+          gh api --method POST "repos/$REPOSITORY/statuses/$merge_sha" \
+            -f context='Develop release source' -f state="$state" \
+            -f description="$description" \
+            -f target_url="$GITHUB_SERVER_URL/$REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --silent
+          [[ "$state" == success ]]

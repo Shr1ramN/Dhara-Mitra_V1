@@ -3,3 +3,6 @@ contact_links:
   - name: Existing issues
     url: https://github.com/Shr1ramN/Dhara-Mitra_V1/issues
     about: Check existing reports before creating a duplicate.
+  - name: Report a vulnerability privately
+    url: https://github.com/Shr1ramN/Dhara-Mitra_V1/security/advisories/new
+    about: Use this form for security vulnerabilities and avoid posting sensitive details in an issue.
