@@ -148,7 +148,7 @@ jobs:
             title="Dhara Mitra ${version} (build ${BUILD_NUMBER}.${BUILD_ATTEMPT})"
             flags=(--latest)
           fi
-          printf 'Dhara Mitra Android build from `%s`.\n\nDownload **DharaMitra.apk** directly below (no ZIP). Uses the public development signing key.\n' "$SOURCE_SHA" > apk-release/notes.md
+          printf "Dhara Mitra Android build from \`%s\`.\n\nDownload **DharaMitra.apk** directly below (no ZIP). Uses the public development signing key.\n" "$SOURCE_SHA" > apk-release/notes.md
           gh release create "$tag" apk-release/DharaMitra.apk apk-release/SHA256SUMS \
             --target "$SOURCE_SHA" --title "$title" \
             "${flags[@]}" --notes-file apk-release/notes.md

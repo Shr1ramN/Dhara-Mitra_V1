@@ -40,7 +40,7 @@ jobs:
             if [[ -n "$merge_sha" ]] && [[ $(jq -r '.mergeable' <<< "$pr") == true ]]; then
               break
             fi
-            sleep 5
+            if (( attempt < 12 )); then sleep 5; fi
           done
           if [[ -z "$merge_sha" ]] || [[ $(jq -r '.mergeable' <<< "$pr") != true ]]; then
             echo "::error::GitHub did not provide a mergeable test commit."
