@@ -1,33 +1,23 @@
-# Contributing
+# Contributing to Dhara Mitra
 
-Start with the [README](README.md) and [app development notes](app/README.md).
-## Issues
+Start with the [README](README.md), [development guide](docs/DEVELOPMENT.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
 
-- Check existing issues before opening one. Include a plan feature ID such as F3.4 when relevant.
-- For bugs, describe the steps, expected result, actual result, language, device/Android version and app build or commit.
-- Use synthetic examples. Remove worker names/phone numbers, loan details, coordinates, photos and credentials from screenshots and logs.
-- New features should explain the farm workflow and offline behavior. Ideas marked unaccepted in the plan need owner agreement before implementation.
+## Report a bug or suggest an improvement
 
-## Pull requests
+Search [existing issues](https://github.com/Shr1ramN/Dhara-Mitra_V1/issues) first. Use the [issue forms](https://github.com/Shr1ramN/Dhara-Mitra_V1/issues/new/choose) and include the app version, Android version, language, steps to reproduce and expected behavior. For an idea, describe the farm workflow and how it should work offline.
 
-1. Branch from the intended base (`develop` for current development). Use a descriptive branch; use `dev/` for development branches.
-2. Keep changes focused and link the relevant issue. Preserve unrelated work.
-3. Add a regression test for financial logic, migrations or data-integrity fixes; use appropriate widget checks for form behavior.
-4. Update both English and Kannada strings and regenerate committed code when required.
-5. Run `flutter analyze`, `flutter test` and an appropriate Android build from `app/`.
-6. Explain the concrete behavior changed, validation performed, migration implications and remaining limitations.
+Use sample records. Remove names, phone numbers, balances, coordinates, photos and credentials from screenshots and logs. Report vulnerabilities privately using the [security policy](SECURITY.md).
 
-The repository owner must approve changes to develop and master. Analysis, tests and the Android build must pass before merging. Do not disable analyzer findings or tests to make a check green. Do not mark physical-device behavior tested unless it was exercised.
+## Open a pull request
 
-## Data conventions
+1. Fork the repo, start from `develop` and use a focused branch such as `dev/fix-calendar-search`.
+2. Update English and Kannada together when UI text changes. Commit regenerated sources when required.
+3. From `app/`, run `flutter pub get`, `flutter analyze`, `flutter test` and `flutter build apk --debug`. Add focused regression coverage for changes to money, migrations or linked records.
+4. Open the PR against `Shr1ramN/Dhara-Mitra_V1:develop`. Link the issue and describe the change and checks you ran. For visible changes, include screenshots with sample data and list any remaining phone checks.
+5. Respond to review and resolve conversations before merging. CI lints workflows, scans the Dart lockfile, analyzes and tests Flutter, and builds an Android APK.
 
-- Money is integer paise; do not introduce floating-point monetary storage.
-- Preserve units and configurable season boundaries.
-- Use transactions for linked stock, wage and sale mutations.
-- Daily diary wages reuse attendance; piecework is additional. Harvest consistency is tracked in #3.
-- Version installed schemas forward with migration tests; never wipe the database as an upgrade fix.
-- Keep operations usable offline and preserve cached data on network failure.
+Maintainers promote `develop` to `master` through a PR from this repository's own `develop`. See the [release guide](docs/RELEASING.md).
 
-## Secrets and licensing
+## Preserve farm records
 
-Do not commit private keys, credentials, real database exports or personal records. The existing development signing key is explicitly test-only. Retain the MIT license and bundled font license notices. Read [SECURITY.md](SECURITY.md) before reporting a vulnerability.
+Store money as integer paise and preserve quantity units. Update linked wages, sales and balances in a transaction. Use forward migrations and test them against existing data. Keep core workflows usable offline. Keep personal records and private keys out of Git, and retain project and bundled asset license notices.

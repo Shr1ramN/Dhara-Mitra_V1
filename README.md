@@ -1,75 +1,53 @@
 # Dhara Mitra · ಧರಾ ಮಿತ್ರ
 
-**Your farm records, organised by date. In Kannada and English.**
+**An offline Android farm diary in Kannada and English.**
 
-[![Android checks](https://github.com/Shr1ramN/Dhara-Mitra_V1/actions/workflows/android.yml/badge.svg?branch=develop)](https://github.com/Shr1ramN/Dhara-Mitra_V1/actions/workflows/android.yml)
+[![Android checks](https://github.com/Shr1ramN/Dhara-Mitra_V1/actions/workflows/android.yml/badge.svg?branch=master)](https://github.com/Shr1ramN/Dhara-Mitra_V1/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Dhara Mitra is an Android farm diary for keeping everyday work, labour, harvests and payments together. Records stay on your phone, so you can record work and look back through your farm's history offline.
-
-[Download a test APK](https://github.com/Shr1ramN/Dhara-Mitra_V1/releases) · [Source code](https://github.com/Shr1ramN/Dhara-Mitra_V1) · [Report an issue](https://github.com/Shr1ramN/Dhara-Mitra_V1/issues)
-
-## V3: everyday work made simpler
-
-| Screen | What you can do |
-| --- | --- |
-| **Home** | See attendance, worker dues, recent farm activity and harvests. Open Labour Management, Farm Activity, Harvest or Calendar. |
-| **Calendar** | Tap a date to immediately choose Labour Management, Farm Activity, Harvest or Sold to Buyer. Search saved history by date, words and category. |
-| **Labour Management** | Add workers, mark full/half/absent attendance with automatic saving, settle wages, manage worker loans and review weekly/monthly/yearly reports. |
-| **More** | Edit farm details and your own crops, switch farms, choose English/Kannada and Light/Dark/System default, export data, back up/restore and manage the app lock. |
-
-Daily-wage workers have a saved rate; other workers have a wage entered for each attended day. Attendance records one description of the day's work. Worker profiles retain previous and new loans, repayments, settlements and balances in integer paise.
-
-Farm Activity combines irrigation, fertiliser, spray and custom labelled notes. Use + chips to add named types/crops, and long-press work suggestions to remove them without deleting records. Harvest accepts your crop and a quantity in bags or kilograms. Sales support multiple crops for one buyer, item quantities/units, total income and optional notes. Edited forms warn before discarding unsaved changes.
-
-Farm setup needs no plots or tree counts: **What do you grow?** is freely editable.
-
-**Export to Excel** creates an editable `.xlsx` snapshot with readable labour/activity/harvest sheets, stable IDs, exact paise alongside rupee amounts, and raw historical tables. Editing the workbook does not change the app. Backup/restore and database export remain available separately.
-
-V3 hides market prices, weather/rain reminders, sales/buyers, farm loans, land parcels, insurance and schemes. Existing records are retained in storage, backups and raw Excel sheets. Worker loans remain in Labour Management.
-
-The interface and bundled fonts support Kannada and English. Records work offline and stay on your phone. Install updates over the existing app to retain its records.
+Dhara Mitra keeps farm activities, harvests, crop sales and labour records together by date. It saves records on your phone and works without an account or internet connection.
 
 ## Install on Android
 
-1. Open [Releases](https://github.com/Shr1ramN/Dhara-Mitra_V1/releases) and select the latest **Dhara Mitra V3** release.
-2. Download **DharaMitra.apk** from its assets directly to your phone.
-3. Open the APK and allow installation from your browser or file manager if Android requests it.
+1. Open the [latest GitHub release](https://github.com/Shr1ramN/Dhara-Mitra_V1/releases/latest).
+2. Download **DharaMitra.apk** from Assets and open it on your phone. Android may ask you to allow installation from your browser or file manager.
+3. Before updating, use **More → Backup and restore** to save a copy outside the app. Install over the existing app to keep your records.
 
-These are test builds signed with the project's existing public development key. Each preview includes its source commit and `SHA256SUMS`. Updating an existing installation requires the same app ID and signing certificate, with a higher version code. Export a backup first; uninstalling or clearing app storage removes local records.
+GitHub APKs use a **public development signing key** for compatibility with previous test builds. Releases include the source commit and a SHA-256 checksum. See the [security policy](SECURITY.md) for details.
 
-## Develop locally
+## What you can do
 
-Use **Flutter 3.47.8 / Dart 3.13.7**, **JDK 17**, and the Android SDK. From a checkout of this repository:
+| Area | Features |
+| --- | --- |
+| Home | See attendance, worker dues, recent work and harvest counts. Farm Tools opens Add Farm Activity, Sold to Buyer or Labour Management. Money links to sales and labour reports. |
+| Calendar | Tap a date to add work, attendance, harvest or sales. Apply filters or submit a search to jump to Matching records. View sales opens that section with crop sales selected. |
+| Farm records | Record irrigation, fertiliser, spray and custom work. Enter harvests in bags or kilograms. Save sales with multiple crops, item quantities and total income. |
+| Labour Management | Record full days, half days and absences, settle wages, track worker loans and review weekly, monthly or yearly reports. |
+| More | Manage separate farms and crops, choose language and theme, use the app lock, back up and restore, and export Excel or SQLite snapshots. |
+
+Excel snapshots include readable sheets and raw historical tables. Earlier modules such as market prices, weather, stock and farm finance remain in the source and storage schema for compatibility. See the [implementation overview](docs/IMPLEMENTATION_STATUS.md).
+
+## Build locally
+
+Use **Flutter 3.47.8 / Dart 3.13.7**, **JDK 17** and the Android SDK.
 
 ```sh
 git clone --branch develop https://github.com/Shr1ramN/Dhara-Mitra_V1.git
 cd Dhara-Mitra_V1/app
+flutter doctor -v
 flutter pub get
 flutter devices
 flutter run -d <device-id>
 ```
 
-Run checks from `app/`:
+From `app/`, run `flutter analyze`, `flutter test` and `flutter build apk --debug`. The debug APK is at `app/build/app/outputs/flutter-apk/app-debug.apk` from the repository root. See the [development guide](docs/DEVELOPMENT.md) for setup.
 
-```sh
-flutter analyze
-flutter test
-flutter build apk --debug
-```
+## Contribute
 
-The debug APK is at `app/build/app/outputs/flutter-apk/app-debug.apk` from the repository root. See the [app development notes](app/README.md) for generated files and signing details.
+Read [Contributing](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md). Use the [issue forms](https://github.com/Shr1ramN/Dhara-Mitra_V1/issues/new/choose) for bugs and ideas, and [private vulnerability reporting](https://github.com/Shr1ramN/Dhara-Mitra_V1/security/advisories/new) for security issues.
 
-## Build delivery
-
-Pull requests to `develop` or `master` require owner review, passing analysis/tests and a successful Android APK build. Download the PR APK from its Actions run to test the proposed change.
-
-After an approved merge, `develop` publishes **DharaMitra.apk** as a Develop preview prerelease. `master` publishes a regular GitHub release marked Latest. Both include checksums and the source commit. The current APK retains the existing public development signing key; private production signing is still pending.
-
-## Feedback and contributions
-
-[Report a bug](https://github.com/Shr1ramN/Dhara-Mitra_V1/issues/new/choose) or suggest a farm workflow using the issue templates. See [Contributing](CONTRIBUTING.md) and [Security](SECURITY.md). Use sample records and remove personal farm data from screenshots.
+Open contributor PRs against `develop`. The default branch, `master`, publishes regular releases and accepts promotion PRs from this repository's `develop` branch. GitHub Actions checks workflow syntax, resolved Dart dependencies, Flutter analysis, tests and the Android APK build. See the [testing checklist](docs/TESTING.md) and [release guide](docs/RELEASING.md).
 
 ## License
 
-Code is available under the [MIT License](LICENSE). Bundled fonts retain their [Open Font License notices](app/assets/fonts/).
+The source is available under the [MIT License](LICENSE). Bundled fonts retain their [Open Font License notices](app/assets/fonts/).

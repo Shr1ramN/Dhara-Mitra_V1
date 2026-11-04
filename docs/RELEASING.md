@@ -1,11 +1,16 @@
-# Android delivery
+# Android releases
 
-Pull requests to develop and master require repository-owner review, passing Analyze and test and Android build checks, resolved review conversations, and an up-to-date branch. Force pushes and branch deletion are blocked.
+`master` is the default branch and the source for regular releases. Contributor PRs target `develop`. Open release PRs from `Shr1ramN/Dhara-Mitra_V1:develop` to `master`.
 
-The owner is @Shr1ramN (see .github/CODEOWNERS). GitHub does not allow authors to approve their own pull requests; owner approval requires a PR authored by another collaborator or bot identity.
+Both branches use the existing review and Android check rules. The release branch also requires **Develop release source**. Its workflow runs from `master` and verifies the PR's source branch and repository. Use a merge commit for promotions to preserve shared history. After releasing, fast-forward `develop` to the promotion merge when possible.
 
-After merging to develop, CI publishes a prerelease. After merging to master, CI publishes a regular release marked Latest. Both deliver DharaMitra.apk, SHA256SUMS and the source commit. PR builds are Actions artifacts and do not publish releases.
+## Build and verify
 
-The app ID is in.dharamitra.app. CI version codes are 20000 + run number. The existing public development signing certificate remains in use for update compatibility. Regular GitHub release status does not change the signing identity; private production signing is pending and requires a data-preserving migration plan.
+1. Check the app version in `app/pubspec.yaml` and the relevant [phone acceptance checks](TESTING.md).
+2. Confirm the PR checks pass and resolve review conversations before merging.
+3. Watch the [Android workflow](https://github.com/Shr1ramN/Dhara-Mitra_V1/actions/workflows/android.yml). Pushes with changes under `app/` publish a prerelease from `develop` or a regular release from `master`. Docs and workflow changes still run checks.
+4. Check that the release has **DharaMitra.apk**, **SHA256SUMS** and the source commit. Compare the downloaded APK's SHA-256 to the checksum and describe the user-visible changes in the release notes.
 
-Before installing, export a backup. Verify existing records remain accessible after updating. Do not uninstall or clear storage as an update workaround.
+The app ID is `in.dharamitra.app`. CI sets Android version codes to `20000 + github.run_number`. The public development signing certificate keeps updates compatible with existing test installs. See [Security](../SECURITY.md).
+
+Before testing an update on a phone, export a backup. Install over the previous build and verify representative records, balances and attachments.
