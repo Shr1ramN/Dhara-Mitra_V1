@@ -2,7 +2,7 @@
 
 `master` is the default branch and the source for regular releases. Contributor PRs target `develop`. Open release PRs from `Shr1ramN/Dhara-Mitra_V1:develop` to `master`.
 
-Both branches use the existing review and Android check rules. The release branch also requires **Develop release source**. Its workflow runs from `master` and verifies the PR's source branch and repository. Use a merge commit for promotions to preserve shared history. After releasing, fast-forward `develop` to the promotion merge when possible.
+Both branches use the existing review and Android check rules. The release branch also requires **Verify promotion from develop**. Its workflow runs from `master` and verifies the PR's source branch and repository. Use a merge commit for promotions to preserve shared history. After releasing, fast-forward `develop` to the promotion merge when possible.
 
 ## Build and verify
 
