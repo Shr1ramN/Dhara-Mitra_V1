@@ -1898,4 +1898,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nFarmTools => 'Farm tools';
+
+  @override
+  String get labourReports => 'Labour Reports';
+
+  @override
+  String get settleWages => 'Settle wages';
+
+  @override
+  String get workerSaved => 'Worker saved';
+
+  @override
+  String get workerLoan => 'Worker loan';
+
+  @override
+  String get previousWorkerLoan => 'Previous loan';
+
+  @override
+  String get newWorkerLoan => 'New loan / for future work';
+
+  @override
+  String get workerLoanRepayment => 'Loan repayment';
+
+  @override
+  String get workerLoanOutstanding => 'Loan outstanding';
+
+  @override
+  String get farmDateNote => 'Date note';
+
+  @override
+  String get myCrops => 'My crops';
+
+  @override
+  String get appearance => 'Appearance';
+
+  @override
+  String get themeSelector => 'Theme';
+
+  @override
+  String get systemTheme => 'System default';
+
+  @override
+  String get lightTheme => 'Light';
+
+  @override
+  String get darkTheme => 'Dark';
+
+  @override
+  String get farmActivity => 'Farm Activity';
+
+  @override
+  String get labourManagement => 'Labour Management';
+
+  @override
+  String get whatDoYouGrow => 'What do you grow?';
+
+  @override
+  String get addCrop => 'Add a crop';
+
+  @override
+  String get cropHistorySafe =>
+      'You can edit this list anytime. Past harvest and activity records stay unchanged.';
+
+  @override
+  String get exportExcel => 'Export to Excel';
+
+  @override
+  String get excelSnapshotHelp =>
+      'An editable copy for analysis. Changes in Excel do not change the app.';
 }

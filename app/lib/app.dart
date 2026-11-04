@@ -1,3 +1,8 @@
+import 'core/draft_guard.dart';
+import 'core/appearance.dart';
+import 'core/v1.dart';
+import 'features/calendar/date_note.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,11 +18,11 @@ import 'features/calendar/farm_calendar.dart';
 import 'core/app_navigation.dart';
 import 'core/providers.dart';
 import 'core/theme.dart';
-import 'features/farm/ui/farm_screen.dart';
+import 'features/farm/ui/simple_farm_form.dart';
 import 'features/farm/ui/plot_form_screen.dart';
 import 'features/home/ui/home_screen.dart';
 import 'features/labour/ui/labour_screen.dart';
-import 'features/labour/ui/worker_form_screen.dart';
+import 'features/labour/ui/simple_worker_form.dart';
 import 'features/labour/ui/worker_screen.dart';
 import 'features/lots/ui/harvest_form_screen.dart';
 import 'features/lots/ui/lot_screen.dart';
@@ -75,6 +80,19 @@ GoRouter buildRouter({
         GoRoute(path: '/security', builder: (_, _) => const SecurityScreen()),
         GoRoute(path: '/diary', builder: (_, _) => const DiaryScreen()),
         GoRoute(path: '/fertilizer', builder: (_, _) => const DiaryForm()),
+        GoRoute(path: '/my-crops', builder: (_, _) => const MyCropsScreen()),
+        GoRoute(
+          path: '/date-note',
+          builder: (c, s) => DateNoteEditor(
+            key: ValueKey(s.uri.toString()),
+            date: DateTime.now(),
+            suggested: s.uri.queryParameters['label'] == 'harvest'
+                ? v1Text(c, 'Harvest', 'ಕೊಯ್ಲು')
+                : s.uri.queryParameters['label'] == 'sale'
+                ? 'sale'
+                : '',
+          ),
+        ),
         GoRoute(path: '/stock', builder: (_, _) => const StockScreen()),
         GoRoute(path: '/expenses', builder: (_, _) => const ExpensesScreen()),
         GoRoute(path: '/land', builder: (_, _) => const LandScreen()),
@@ -86,11 +104,11 @@ GoRouter buildRouter({
         GoRoute(path: '/reports', builder: (_, _) => const ReportsScreen()),
         GoRoute(
           path: '/setup',
-          builder: (_, _) => const FarmScreen(isSetup: true),
+          builder: (_, _) => const SimpleFarmForm(isSetup: true),
         ),
         GoRoute(
           path: '/farm',
-          builder: (_, _) => const FarmScreen(isSetup: false),
+          builder: (_, _) => const SimpleFarmForm(isSetup: false),
         ),
         GoRoute(
           path: '/plot',
@@ -100,7 +118,7 @@ GoRouter buildRouter({
         GoRoute(
           path: '/worker-form',
           builder: (_, s) =>
-              WorkerFormScreen(workerId: s.uri.queryParameters['id']),
+              SimpleWorkerForm(workerId: s.uri.queryParameters['id']),
         ),
         GoRoute(
           path: '/worker/:id',
@@ -132,7 +150,10 @@ GoRouter buildRouter({
               routes: [
                 GoRoute(
                   path: '/calendar',
-                  builder: (_, _) => const FarmCalendarScreen(),
+                  builder: (_, s) => FarmCalendarScreen(
+                    key: ValueKey(s.uri.toString()),
+                    initialCategory: s.uri.queryParameters['category'] ?? '',
+                  ),
                 ),
               ],
             ),
@@ -160,8 +181,11 @@ class _Shell extends StatelessWidget {
       body: shell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
-        onDestinationSelected: (i) =>
-            shell.goBranch(i, initialLocation: i == shell.currentIndex),
+        onDestinationSelected: (i) async {
+          if (await confirmLeaving(context) && context.mounted) {
+            shell.goBranch(i, initialLocation: i == shell.currentIndex);
+          }
+        },
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.home_outlined),
@@ -239,6 +263,8 @@ class _DharaMitraAppState extends ConsumerState<DharaMitraApp> {
     onGenerateTitle: (context) => context.l.appName,
     debugShowCheckedModeBanner: false,
     theme: buildTheme(),
+    darkTheme: buildTheme(brightness: Brightness.dark),
+    themeMode: ref.watch(themeModeProvider),
     locale: ref.watch(localeProvider),
     supportedLocales: AppLocalizations.supportedLocales,
     localizationsDelegates: const [

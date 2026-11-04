@@ -84,13 +84,15 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('Choose farm on map'),
+      find.text('What do you grow?'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Latitude'), findsNothing);
     expect(find.text('Longitude'), findsNothing);
-    expect(find.text('Choose farm on map'), findsOneWidget);
+    expect(find.text('Areca palms'), findsNothing);
+    expect(find.text('Coconut trees'), findsNothing);
+    expect(find.text('What do you grow?'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await db.close();
     await tester.pump();

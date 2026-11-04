@@ -71,6 +71,7 @@ class Plots extends Table with SyncColumns {
 }
 
 class Workers extends Table with SyncColumns {
+  TextColumn get wageType => text().withDefault(const Constant('daily'))();
   TextColumn get telephone => text().withDefault(const Constant(''))();
   TextColumn get customRoles =>
       text().map(const StringListConverter()).withDefault(const Constant(''))();
@@ -89,6 +90,26 @@ class Workers extends Table with SyncColumns {
   TextColumn get pieceUnit => textEnum<RateUnit>().nullable()();
   BoolColumn get active => boolean().withDefault(const Constant(true))();
   TextColumn get notes => text().withDefault(const Constant(''))();
+}
+
+/// Loans are independent of the wage ledger. Legacy advances remain credits.
+class WorkerLoanEntries extends Table with SyncColumns {
+  TextColumn get workerId => text().references(Workers, #id)();
+  DateTimeColumn get date => dateTime()();
+  TextColumn get kind => text()();
+  IntColumn get amount => integer()();
+  TextColumn get note => text().withDefault(const Constant(''))();
+  TextColumn get settlementId => text().nullable()();
+}
+
+class WorkerSettlements extends Table with SyncColumns {
+  TextColumn get workerId => text().references(Workers, #id)();
+  DateTimeColumn get date => dateTime()();
+  DateTimeColumn get periodStart => dateTime()();
+  DateTimeColumn get periodEnd => dateTime()();
+  IntColumn get cashPaid => integer()();
+  IntColumn get loanDeduction => integer().withDefault(const Constant(0))();
+  TextColumn get note => text().withDefault(const Constant(''))();
 }
 
 class AttendanceEntries extends Table with SyncColumns {

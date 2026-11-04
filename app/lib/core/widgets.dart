@@ -17,11 +17,11 @@ class AsyncBody<T> extends StatelessWidget {
     AsyncData(:final value) => builder(value),
     AsyncError(:final error) => Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text('$error', style: const TextStyle(color: AppColors.down)),
+        padding: EdgeInsets.all(24),
+        child: Text('$error', style: TextStyle(color: context.appColors.down)),
       ),
     ),
-    _ => const Center(child: CircularProgressIndicator()),
+    _ => Center(child: CircularProgressIndicator()),
   };
 }
 
@@ -33,7 +33,7 @@ class SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(4, 20, 4, 10),
+    padding: EdgeInsets.fromLTRB(4, 20, 4, 10),
     child: Row(
       children: [
         Expanded(
@@ -41,13 +41,13 @@ class SectionTitle extends StatelessWidget {
             Localizations.localeOf(context).languageCode == 'en'
                 ? text.toUpperCase()
                 : text,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'SpaceGrotesk',
               fontFamilyFallback: ['NotoSansKannada'],
               fontWeight: FontWeight.w600,
               fontSize: 12.5,
               letterSpacing: 0.7,
-              color: AppColors.textMuted,
+              color: context.appColors.textMuted,
             ),
           ),
         ),
@@ -83,7 +83,7 @@ class PaddedCard extends StatelessWidget {
     clipBehavior: Clip.antiAlias,
     child: InkWell(
       onTap: onTap,
-      child: Padding(padding: const EdgeInsets.all(14), child: child),
+      child: Padding(padding: EdgeInsets.all(14), child: child),
     ),
   );
 }
@@ -107,16 +107,18 @@ class Kpi extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PaddedCard(
     onTap: onTap,
-    color: highlight ? const Color(0xFFFFFAF6) : null,
-    borderColor: highlight ? AppColors.accent.withValues(alpha: 0.4) : null,
+    color: highlight ? context.appColors.accentSoft : null,
+    borderColor: highlight
+        ? context.appColors.accent.withValues(alpha: 0.4)
+        : null,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+          style: TextStyle(fontSize: 12, color: context.appColors.textMuted),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
@@ -126,7 +128,9 @@ class Kpi extends StatelessWidget {
               20,
               color:
                   valueColor ??
-                  (highlight ? AppColors.accentDark : AppColors.text),
+                  (highlight
+                      ? context.appColors.accentDark
+                      : context.appColors.text),
             ),
           ),
         ),
@@ -146,7 +150,7 @@ class KpiRow extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       for (var i = 0; i < children.length; i++) ...[
-        if (i > 0) const SizedBox(width: 10),
+        if (i > 0) SizedBox(width: 10),
         Expanded(child: children[i]),
       ],
     ],
@@ -162,17 +166,17 @@ class KvRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 7),
+    padding: EdgeInsets.symmetric(vertical: 7),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(color: AppColors.textMuted),
+            style: TextStyle(color: context.appColors.textMuted),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Flexible(
           child: Text(
             value,
@@ -201,7 +205,7 @@ class Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+    padding: EdgeInsets.symmetric(horizontal: 9, vertical: 4),
     decoration: BoxDecoration(
       color: background,
       borderRadius: BorderRadius.circular(999),
@@ -211,7 +215,7 @@ class Pill extends StatelessWidget {
       children: [
         if (icon != null) ...[
           Icon(icon, size: 12, color: foreground),
-          const SizedBox(width: 4),
+          SizedBox(width: 4),
         ],
         Text(
           text,
@@ -235,28 +239,28 @@ class StagePill extends StatelessWidget {
   Widget build(BuildContext context) {
     final (bg, fg, icon) = switch (stage) {
       LotStage.harvest => (
-        AppColors.okBg,
-        AppColors.okText,
+        context.appColors.okBg,
+        context.appColors.okText,
         Icons.eco_outlined,
       ),
       LotStage.drying => (
-        AppColors.warnBg,
-        AppColors.warnText,
+        context.appColors.warnBg,
+        context.appColors.warnText,
         Icons.wb_sunny_outlined,
       ),
       LotStage.peeling || LotStage.grading => (
-        AppColors.accentSoft,
-        AppColors.accentDark,
+        context.appColors.accentSoft,
+        context.appColors.accentDark,
         Icons.content_cut,
       ),
       LotStage.storage => (
-        AppColors.infoBg,
-        AppColors.infoText,
+        context.appColors.infoBg,
+        context.appColors.infoText,
         Icons.inventory_2_outlined,
       ),
       LotStage.sold => (
-        const Color(0xFFF0EEEC),
-        AppColors.textMuted,
+        Color(0xFFF0EEEC),
+        context.appColors.textMuted,
         Icons.check,
       ),
     };
@@ -286,27 +290,22 @@ class CropDot extends StatelessWidget {
 }
 
 class RoundIcon extends StatelessWidget {
-  const RoundIcon(
-    this.icon, {
-    super.key,
-    this.color = AppColors.text,
-    this.background = AppColors.background,
-  });
+  const RoundIcon(this.icon, {super.key, this.color, this.background});
 
   final IconData icon;
-  final Color color;
-  final Color background;
+  final Color? color;
+  final Color? background;
 
   @override
   Widget build(BuildContext context) => Container(
     width: 38,
     height: 38,
     decoration: BoxDecoration(
-      color: background,
+      color: background ?? context.appColors.background,
       borderRadius: BorderRadius.circular(11),
-      border: Border.all(color: AppColors.border),
+      border: Border.all(color: context.appColors.border),
     ),
-    child: Icon(icon, size: 19, color: color),
+    child: Icon(icon, size: 19, color: color ?? context.appColors.text),
   );
 }
 
@@ -324,21 +323,21 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+    padding: EdgeInsets.symmetric(vertical: 36, horizontal: 24),
     child: Column(
       children: [
         RoundIcon(
           icon,
-          color: AppColors.accent,
-          background: AppColors.accentSoft,
+          color: context.appColors.accent,
+          background: context.appColors.accentSoft,
         ),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         Text(
           text,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.textMuted, height: 1.45),
+          style: TextStyle(color: context.appColors.textMuted, height: 1.45),
         ),
-        if (action != null) ...[const SizedBox(height: 16), action!],
+        if (action != null) ...[SizedBox(height: 16), action!],
       ],
     ),
   );
@@ -355,8 +354,8 @@ class ProgressLine extends StatelessWidget {
     child: LinearProgressIndicator(
       value: value,
       minHeight: 8,
-      backgroundColor: AppColors.background,
-      color: AppColors.accent,
+      backgroundColor: context.appColors.background,
+      color: context.appColors.accent,
     ),
   );
 }
@@ -403,17 +402,17 @@ Future<T?> showFormSheet<T>(
   context: context,
   isScrollControlled: true,
   showDragHandle: true,
-  backgroundColor: AppColors.background,
+  backgroundColor: context.appColors.background,
   builder: (context) => Padding(
     padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
     child: SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 0, 18, 22),
+      padding: EdgeInsets.fromLTRB(18, 0, 18, 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(title, style: display(20)),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           builder(context),
         ],
       ),

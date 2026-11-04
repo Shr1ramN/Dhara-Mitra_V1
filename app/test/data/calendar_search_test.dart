@@ -8,6 +8,32 @@ CalendarRecord record(
 }) => CalendarRecord('id', DateTime(2026, 10, 29), category, title, notes, '/');
 
 void main() {
+  test('Harvest filter includes simple notes in both languages', () {
+    for (final title in ['Harvest', 'ಕೊಯ್ಲು']) {
+      expect(
+        calendarCategoryMatches(record(title, category: 'note'), 'harvest'),
+        isTrue,
+      );
+      expect(
+        calendarCategoryMatches(record(title, category: 'note'), 'note'),
+        isTrue,
+      );
+    }
+    expect(
+      calendarCategoryMatches(
+        record('Irrigation', category: 'note'),
+        'harvest',
+      ),
+      isFalse,
+    );
+    expect(
+      calendarCategoryMatches(
+        record('Saved lot', category: 'harvest'),
+        'harvest',
+      ),
+      isTrue,
+    );
+  });
   test('search keeps all terms alongside synonyms', () {
     final query = RecordQuery('sales Ravi');
     expect(query.matches(record('Ravi', category: 'sale')), isTrue);

@@ -9,28 +9,30 @@ Dhara Mitra is an Android farm diary for keeping everyday work, labour, harvests
 
 [Download a test APK](https://github.com/Shr1ramN/Dhara-Mitra_V1/releases) · [Source code](https://github.com/Shr1ramN/Dhara-Mitra_V1) · [Report an issue](https://github.com/Shr1ramN/Dhara-Mitra_V1/issues)
 
-## Three places for your daily work
+## V3: everyday work made simpler
 
 | Screen | What you can do |
 | --- | --- |
-| **Home** | See recent records, drying and stored harvests, worker dues, buyer balances and this month's costs. Open everyday farm tools and switch farms. |
-| **Calendar** | Select a day to review or add work, attendance, payments, expenses, harvests, sales and date notes. Search existing records by words, category or date range. |
-| **More** | Manage farms and plots, open farm records and reports, switch between English and ಕನ್ನಡ, export data, and manage backup and the optional app lock. |
+| **Home** | See attendance, worker dues, recent farm activity and harvests. Open Labour Management, Farm Activity, Harvest or Calendar. |
+| **Calendar** | Tap a date to immediately choose Labour Management, Farm Activity, Harvest or Sold to Buyer. Search saved history by date, words and category. |
+| **Labour Management** | Add workers, mark full/half/absent attendance with automatic saving, settle wages, manage worker loans and review weekly/monthly/yearly reports. |
+| **More** | Edit farm details and your own crops, switch farms, choose English/Kannada and Light/Dark/System default, export data, back up/restore and manage the app lock. |
 
-## Keep the farm's story together
+Daily-wage workers have a saved rate; other workers have a wage entered for each attended day. Attendance records one description of the day's work. Worker profiles retain previous and new loans, repayments, settlements and balances in integer paise.
 
-- **Work and labour:** record farm activities, attendance, wages and worker payments.
-- **Harvests:** follow arecanut from collection through drying, peeling, grading and storage; record coconut harvests too.
-- **Sales and expenses:** record buyers, sales, receipts, outstanding amounts and farm spending.
-- **Calendar history:** find recorded work such as manure application or spraying, then open the original entry. Keyword search works locally on your saved records.
-- **Reports:** review farm totals and export reports as PDF or Excel.
-- **Separate farms:** switch between farms with independent records and balances.
+Farm Activity combines irrigation, fertiliser, spray and custom labelled notes. Use + chips to add named types/crops, and long-press work suggestions to remove them without deleting records. Harvest accepts your crop and a quantity in bags or kilograms. Sales support multiple crops for one buyer, item quantities/units, total income and optional notes. Edited forms warn before discarding unsaved changes.
 
-The interface and bundled fonts support Kannada and English. Core record keeping works offline. Data is stored locally; save backups outside the app regularly and before installing an update. A database export is also available under **More**.
+Farm setup needs no plots or tree counts: **What do you grow?** is freely editable.
+
+**Export to Excel** creates an editable `.xlsx` snapshot with readable labour/activity/harvest sheets, stable IDs, exact paise alongside rupee amounts, and raw historical tables. Editing the workbook does not change the app. Backup/restore and database export remain available separately.
+
+V3 hides market prices, weather/rain reminders, sales/buyers, farm loans, land parcels, insurance and schemes. Existing records are retained in storage, backups and raw Excel sheets. Worker loans remain in Labour Management.
+
+The interface and bundled fonts support Kannada and English. Records work offline and stay on your phone. Install updates over the existing app to retain its records.
 
 ## Install on Android
 
-1. Open [Releases](https://github.com/Shr1ramN/Dhara-Mitra_V1/releases) and select a **Develop preview**.
+1. Open [Releases](https://github.com/Shr1ramN/Dhara-Mitra_V1/releases) and select the latest **Dhara Mitra V3** release.
 2. Download **DharaMitra.apk** from its assets directly to your phone.
 3. Open the APK and allow installation from your browser or file manager if Android requests it.
 

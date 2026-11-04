@@ -1,3 +1,5 @@
+import 'draft_guard.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -54,6 +56,8 @@ class FarmBackButtonDispatcher extends RootBackButtonDispatcher {
   @override
   Future<bool> didPopRoute() async {
     if (_handlingBack) return true;
+    final context = router.routerDelegate.navigatorKey.currentContext;
+    if (context != null && !await confirmLeaving(context)) return true;
     _handlingBack = true;
     try {
       if (await super.didPopRoute()) {
@@ -107,6 +111,9 @@ class FarmNavigationFrame extends ConsumerWidget {
                     key: const ValueKey('app-home'),
                     tooltip: context.l.navHome,
                     onPressed: () async {
+                      if (!await confirmLeaving(context) || !context.mounted) {
+                        return;
+                      }
                       if (landing == '/setup' &&
                           await ref.read(returnToFarmProvider)()) {
                         return;
@@ -145,6 +152,34 @@ class FarmNavigationFrame extends ConsumerWidget {
             child: child,
           ),
         ),
+        if (hasFarm &&
+            ![
+              '/',
+              '/calendar',
+              '/more',
+            ].contains(GoRouterState.of(context).uri.path))
+          NavigationBar(
+            selectedIndex: 0,
+            onDestinationSelected: (i) async {
+              if (await confirmLeaving(context) && context.mounted) {
+                router.go(['/', '/calendar', '/more'][i]);
+              }
+            },
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.home_outlined),
+                label: context.l.navHome,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.calendar_month_outlined),
+                label: context.l.xCalendar,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.more_horiz),
+                label: context.l.navMore,
+              ),
+            ],
+          ),
       ],
     );
   }

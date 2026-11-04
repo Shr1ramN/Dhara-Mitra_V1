@@ -37,7 +37,7 @@ const _fallback = ['NotoSansKannada'];
 TextStyle display(
   double size, {
   FontWeight weight = FontWeight.w700,
-  Color color = AppColors.text,
+  Color? color,
 }) => TextStyle(
   fontFamily: _displayFont,
   fontFamilyFallback: _fallback,
@@ -48,7 +48,8 @@ TextStyle display(
   height: 1.25,
 );
 
-ThemeData buildTheme() {
+ThemeData buildTheme({Brightness brightness = Brightness.light}) {
+  if (brightness == Brightness.dark) return buildDarkTheme();
   final scheme = ColorScheme.fromSeed(
     seedColor: AppColors.accent,
     primary: AppColors.accent,
@@ -74,8 +75,8 @@ ThemeData buildTheme() {
 
   return base.copyWith(
     textTheme: text.copyWith(
-      headlineSmall: display(24),
-      titleLarge: display(20),
+      headlineSmall: display(24, color: AppColors.text),
+      titleLarge: display(20, color: AppColors.text),
       titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),
     ),
     appBarTheme: AppBarTheme(
@@ -84,7 +85,7 @@ ThemeData buildTheme() {
       elevation: 0,
       scrolledUnderElevation: 0,
       foregroundColor: AppColors.text,
-      titleTextStyle: display(20),
+      titleTextStyle: display(20, color: AppColors.text),
     ),
     cardTheme: CardThemeData(
       color: AppColors.surface,
@@ -199,5 +200,136 @@ ThemeData buildTheme() {
       backgroundColor: AppColors.text,
     ),
     listTileTheme: const ListTileThemeData(iconColor: AppColors.text),
+  );
+}
+
+extension AppPaletteContext on BuildContext {
+  AppPalette get appColors => AppPalette(Theme.of(this).brightness);
+}
+
+class AppPalette {
+  const AppPalette(this.brightness);
+  final Brightness brightness;
+  bool get dark => brightness == Brightness.dark;
+  Color get surface => dark ? const Color(0xFF202722) : AppColors.surface;
+  Color get background => dark ? const Color(0xFF141A16) : AppColors.background;
+  Color get border => dark ? const Color(0xFF465149) : AppColors.border;
+  Color get text => dark ? const Color(0xFFF0F3EE) : AppColors.text;
+  Color get textMuted => dark ? const Color(0xFFBDC9BE) : AppColors.textMuted;
+  Color get accent => dark ? const Color(0xFFFFAB73) : AppColors.accent;
+  Color get accentDark => dark ? const Color(0xFFFFBD93) : AppColors.accentDark;
+  Color get accentSoft => dark ? const Color(0xFF493424) : AppColors.accentSoft;
+  Color get okBg => dark ? const Color(0xFF233D2B) : AppColors.okBg;
+  Color get okText => dark ? const Color(0xFFA8D9B4) : AppColors.okText;
+  Color get warnBg => dark ? const Color(0xFF44391F) : AppColors.warnBg;
+  Color get warnText => dark ? const Color(0xFFF0CF88) : AppColors.warnText;
+  Color get infoBg => dark ? const Color(0xFF22374B) : AppColors.infoBg;
+  Color get infoText => dark ? const Color(0xFFA9CDEB) : AppColors.infoText;
+  Color get down => dark ? const Color(0xFFFFB4AB) : AppColors.down;
+  Color get up => okText;
+}
+
+ThemeData buildDarkTheme() {
+  const palette = AppPalette(Brightness.dark);
+  final scheme = ColorScheme.fromSeed(
+    seedColor: palette.accent,
+    brightness: Brightness.dark,
+    primary: palette.accent,
+    onPrimary: const Color(0xFF362011),
+    surface: palette.surface,
+    onSurface: palette.text,
+    error: palette.down,
+  );
+  final base = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorScheme: scheme,
+    fontFamily: _bodyFont,
+    fontFamilyFallback: _fallback,
+    scaffoldBackgroundColor: palette.background,
+  );
+  final radius = BorderRadius.circular(14);
+  return base.copyWith(
+    textTheme: base.textTheme.copyWith(
+      headlineSmall: display(24, color: palette.text),
+      titleLarge: display(20, color: palette.text),
+      titleMedium: base.textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: palette.background,
+      foregroundColor: palette.text,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      titleTextStyle: display(20, color: palette.text),
+    ),
+    cardTheme: CardThemeData(
+      color: palette.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: BorderSide(color: palette.border),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationThemeData(
+      filled: true,
+      fillColor: palette.surface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      border: OutlineInputBorder(borderRadius: radius),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide(color: palette.border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide(color: palette.accent, width: 1.6),
+      ),
+      labelStyle: TextStyle(color: palette.textMuted),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(64, 52),
+        shape: RoundedRectangleBorder(borderRadius: radius),
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontFamilyFallback: _fallback,
+        ),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: palette.text,
+        minimumSize: const Size(64, 48),
+        side: BorderSide(color: palette.border),
+        shape: RoundedRectangleBorder(borderRadius: radius),
+      ),
+    ),
+    chipTheme: base.chipTheme.copyWith(
+      backgroundColor: palette.surface,
+      selectedColor: palette.accentSoft,
+      side: BorderSide(color: palette.border),
+      labelStyle: TextStyle(color: palette.text, fontFamilyFallback: _fallback),
+      checkmarkColor: palette.accent,
+    ),
+    dividerTheme: DividerThemeData(color: palette.border),
+    tabBarTheme: TabBarThemeData(
+      labelColor: palette.accent,
+      unselectedLabelColor: palette.textMuted,
+      indicatorColor: palette.accent,
+      dividerColor: palette.border,
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: palette.surface,
+      indicatorColor: palette.accentSoft,
+      surfaceTintColor: Colors.transparent,
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: palette.surface,
+      contentTextStyle: TextStyle(color: palette.text),
+    ),
   );
 }

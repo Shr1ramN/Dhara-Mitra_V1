@@ -155,14 +155,19 @@ void main() {
     for (final item in <(String, String)>[
       ('Recent work', '/calendar'),
       ('Worker dues', '/labour'),
-      ('Harvests', '/lots'),
-      ('Buyer balances', '/sales'),
+      ('Harvests', '/calendar'),
+      ('Attendance', '/labour'),
     ]) {
       final tile = find.text(item.$1);
       await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      expect(tile.hitTestable(), findsOneWidget);
       await tester.tap(tile);
       await tester.pumpAndSettle();
-      expect(router.routerDelegate.currentConfiguration.uri.path, item.$2);
+      expect(
+        GoRouterState.of(tester.element(find.byType(Scaffold).last)).uri.path,
+        item.$2,
+      );
       router.go('/');
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);

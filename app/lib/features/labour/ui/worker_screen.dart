@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/indian_phone.dart';
 
 import '../../../core/enums.dart';
+import '../../../core/db/database.dart';
 import '../../../core/l10n.dart';
 import '../../../core/money.dart';
 import '../../../core/providers.dart';
@@ -15,7 +16,8 @@ import '../../../core/widgets.dart';
 import '../data/labour_repository.dart';
 import 'labour_screen.dart';
 import 'payment_sheet.dart';
-import 'worker_rates_screen.dart';
+import 'payroll_screens.dart';
+import '../../../core/v1.dart';
 
 /// One worker's account: earned, given and every entry with the running balance (F3.4).
 class WorkerScreen extends ConsumerWidget {
@@ -44,6 +46,11 @@ class WorkerScreen extends ConsumerWidget {
     final fmt = context.fmt;
     final summary = ref.watch(workerSummaryProvider(workerId));
     final ledger = ref.watch(ledgerProvider(workerId));
+    final payroll = ref.watch(payrollDataProvider).value;
+    final settlements = {
+      for (final entry in payroll?.settlements ?? <WorkerSettlement>[])
+        entry.id: entry,
+    };
 
     return AsyncBody(
       value: summary,
@@ -55,17 +62,7 @@ class WorkerScreen extends ConsumerWidget {
             title: Text(w.name),
             actions: [
               IconButton(
-                icon: const Icon(Icons.price_change_outlined),
-                tooltip: l.xRate,
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => WorkerRatesScreen(workerId),
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.ios_share),
+                icon: Icon(Icons.ios_share),
                 tooltip: l.xShareStatement,
                 onPressed: () => SharePlus.instance.share(
                   ShareParams(
@@ -73,7 +70,7 @@ class WorkerScreen extends ConsumerWidget {
                       l.appName,
                       w.name,
                       l.ledger,
-                      for (final line in ledger.value ?? const <LedgerLine>[])
+                      for (final line in ledger.value ?? <LedgerLine>[])
                         '${fmt.date(line.txn.date)} · ${l.txnKind(line.txn.kind)} · ${line.txn.note} · ${fmt.money(line.txn.amount)} · ${l.due}: ${fmt.money(line.dueAfter)}',
                       '${l.due}: ${fmt.money(s.balance.due)}',
                     ].join('\n'),
@@ -84,18 +81,18 @@ class WorkerScreen extends ConsumerWidget {
               IconButton(
                 tooltip: l.editWorker,
                 onPressed: () => context.push('/worker-form?id=${w.id}'),
-                icon: const Icon(Icons.edit_outlined),
+                icon: Icon(Icons.edit_outlined),
               ),
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+            padding: EdgeInsets.fromLTRB(16, 4, 16, 32),
             children: [
               PaddedCard(
                 child: Row(
                   children: [
                     WorkerAvatar(w.name, size: 48),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,21 +103,18 @@ class WorkerScreen extends ConsumerWidget {
                                 rolesText(l, w.roles),
                                 ...w.customRoles,
                               ].where((r) => r.isNotEmpty).join(', '),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
                           Text(
                             [
                               if (w.dayRate > 0)
                                 fmt.rate(w.dayRate, RateUnit.day),
-                              if (w.pieceRate != null && w.pieceUnit != null)
-                                fmt.rate(w.pieceRate!, w.pieceUnit!),
+
                               if (w.phone.isNotEmpty) w.phone,
                             ].join(' · '),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textMuted,
+                              color: context.appColors.textMuted,
                             ),
                           ),
                         ],
@@ -135,7 +129,7 @@ class WorkerScreen extends ConsumerWidget {
                   for (final contact in [(w.phone, false), (w.telephone, true)])
                     if (contact.$1.isNotEmpty)
                       OutlinedButton.icon(
-                        icon: const Icon(Icons.call_outlined),
+                        icon: Icon(Icons.call_outlined),
                         label: Text('${l.fCall} · ${contact.$1}'),
                         onPressed: () async {
                           final number = indianPhone(
@@ -158,19 +152,20 @@ class WorkerScreen extends ConsumerWidget {
                       ),
                 ],
               ),
-              KpiRow(
-                children: [
-                  Kpi(label: l.earned, value: formatRupees(s.balance.earned)),
-                  Kpi(
-                    label: l.paidAdvance,
-                    value: formatRupees(s.balance.given),
-                  ),
-                  Kpi(
-                    label: s.balance.due < 0 ? l.advance : l.due,
-                    value: formatRupees(s.balance.due.abs()),
-                    highlight: s.balance.due > 0,
-                  ),
-                ],
+              PaddedCard(
+                child: Column(
+                  children: [
+                    KvRow(l.earned, fmt.money(s.balance.earned)),
+                    KvRow(
+                      v1Text(context, 'Wages settled', 'ಪಾವತಿಸಿದ ಕೂಲಿ'),
+                      fmt.money(s.balance.given),
+                    ),
+                    KvRow(
+                      s.balance.due < 0 ? l.advance : l.due,
+                      fmt.money(s.balance.due.abs()),
+                    ),
+                  ],
+                ),
               ),
               Row(
                 children: [
@@ -181,10 +176,10 @@ class WorkerScreen extends ConsumerWidget {
                         worker: w,
                         kind: TxnKind.advance,
                       ),
-                      child: Text(l.advance),
+                      child: Text(context.l.workerLoan),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Expanded(
                     child: FilledButton(
                       onPressed: () => showPaymentSheet(
@@ -193,10 +188,70 @@ class WorkerScreen extends ConsumerWidget {
                         kind: TxnKind.payment,
                         suggested: s.balance.due > 0 ? s.balance.due : null,
                       ),
-                      child: Text(l.pay),
+                      child: Text(context.l.settleWages),
                     ),
                   ),
                 ],
+              ),
+              AsyncBody(
+                value: ref.watch(payrollDataProvider),
+                builder: (data) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    KvRow(
+                      context.l.workerLoanOutstanding,
+                      fmt.money(data.loan(w.id, DateTime.now())),
+                    ),
+                    OutlinedButton(
+                      onPressed: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              WorkerLoanForm(worker: w, repayment: true),
+                        ),
+                      ),
+                      child: Text(
+                        v1Text(
+                          context,
+                          'Record loan repayment',
+                          'ಸಾಲ ಮರುಪಾವತಿ ದಾಖಲಿಸಿ',
+                        ),
+                      ),
+                    ),
+                    OutlinedButton.icon(
+                      icon: Icon(Icons.bar_chart),
+                      onPressed: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LabourReports(workerId: w.id),
+                        ),
+                      ),
+                      label: Text(context.l.labourReports),
+                    ),
+                    if (data.loans.any((entry) => entry.workerId == w.id)) ...[
+                      SectionTitle(context.l.workerLoan),
+                      for (final entry
+                          in data.loans
+                              .where((entry) => entry.workerId == w.id)
+                              .toList()
+                            ..sort((a, b) => b.date.compareTo(a.date)))
+                        ListTile(
+                          title: Text(loanKind(context, entry.kind)),
+                          subtitle: Text(
+                            '${fmt.date(entry.date)} · ${fmt.money(entry.amount)}${entry.note.isEmpty ? '' : ' · ${entry.note}'}',
+                          ),
+                        ),
+                    ],
+                    if (s.balance.advanced != 0)
+                      Text(
+                        v1Text(
+                          context,
+                          'Previous advances remain wage credits; they are not new loans.',
+                          'ಹಿಂದಿನ ಮುಂಗಡಗಳು ಕೂಲಿ ಜಮಾ ಆಗಿಯೇ ಉಳಿಯುತ್ತವೆ; ಅವು ಹೊಸ ಸಾಲಗಳಲ್ಲ.',
+                        ),
+                      ),
+                  ],
+                ),
               ),
               SectionTitle(l.ledger),
               AsyncBody(
@@ -218,17 +273,17 @@ class WorkerScreen extends ConsumerWidget {
                                       ? Icons.handyman_outlined
                                       : Icons.payments_outlined,
                                   color: line.txn.kind == TxnKind.work
-                                      ? AppColors.text
-                                      : AppColors.okText,
+                                      ? context.appColors.text
+                                      : context.appColors.okText,
                                   background: line.txn.kind == TxnKind.work
-                                      ? AppColors.background
-                                      : AppColors.okBg,
+                                      ? context.appColors.background
+                                      : context.appColors.okBg,
                                 ),
                                 title: Text(
                                   line.txn.note.isNotEmpty
                                       ? line.txn.note
                                       : l.txnKind(line.txn.kind),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
@@ -241,17 +296,26 @@ class WorkerScreen extends ConsumerWidget {
                                     if (line.txn.mode != null &&
                                         line.txn.kind != TxnKind.work)
                                       l.payMode(line.txn.mode!),
-                                    l.balanceAfter(formatRupees(line.dueAfter)),
+                                    if (settlements[line.txn.refId]
+                                            ?.loanDeduction
+                                        case final int amount when amount > 0)
+                                      '${v1Text(context, 'Loan deduction', 'ಸಾಲದ ಕಡಿತ')}: ${fmt.money(amount)}',
+                                    l.balanceAfter(
+                                      formatRupees(
+                                        line.dueAfter,
+                                        showPaise: true,
+                                      ),
+                                    ),
                                   ].join(' · '),
-                                  style: const TextStyle(fontSize: 12),
+                                  style: TextStyle(fontSize: 12),
                                 ),
                                 trailing: Text(
-                                  '${line.txn.kind == TxnKind.work ? '+' : '−'} ${formatRupees(line.txn.amount)}',
+                                  '${line.txn.kind == TxnKind.work ? '+' : '−'} ${formatRupees(settlements[line.txn.refId]?.cashPaid ?? line.txn.amount, showPaise: true)}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     color: line.txn.kind == TxnKind.work
-                                        ? AppColors.text
-                                        : AppColors.okText,
+                                        ? context.appColors.text
+                                        : context.appColors.okText,
                                   ),
                                 ),
                               ),
