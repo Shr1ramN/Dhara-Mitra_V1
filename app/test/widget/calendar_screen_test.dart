@@ -15,6 +15,7 @@ void main() {
   Future<void> pumpCalendar(
     WidgetTester tester, {
     String language = 'en',
+    String initialCategory = '',
   }) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
@@ -63,7 +64,7 @@ void main() {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: const FarmCalendarScreen(),
+          home: FarmCalendarScreen(initialCategory: initialCategory),
         ),
       ),
     );
@@ -79,6 +80,14 @@ void main() {
     await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
     await tester.pumpAndSettle();
   }
+
+  testWidgets('income shortcut reveals the empty results section', (
+    tester,
+  ) async {
+    await pumpCalendar(tester, initialCategory: 'income');
+    expect(find.text('Matching records').hitTestable(), findsOneWidget);
+    expect(find.text('No recorded entry.').hitTestable(), findsOneWidget);
+  });
 
   for (final keyboard in [true, false]) {
     testWidgets('search submission reveals results: keyboard=$keyboard', (
@@ -117,8 +126,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('28'));
     await tester.pumpAndSettle();
-    expect(find.text('Labour Management'), findsOneWidget);
-    await tester.tapAt(const Offset(10, 30));
+    final sheet = find.byType(BottomSheet);
+    expect(
+      find.descendant(of: sheet, matching: find.text('Labour Management')),
+      findsOneWidget,
+    );
+    Navigator.of(tester.element(sheet)).pop();
     await tester.pumpAndSettle();
     await reveal(tester, find.text('Manure south'));
     expect(find.text('Manure north'), findsNothing);
@@ -140,6 +153,7 @@ void main() {
       await Scrollable.ensureVisible(tester.element(activity), alignment: 0.5);
       await tester.tap(activity);
       await tester.pumpAndSettle();
+      expect(find.text('Matching records').hitTestable(), findsOneWidget);
       await reveal(tester, find.text('Manure south'));
       expect(find.text('Manure bill'), findsNothing);
       expect(find.text('Manure south'), findsOneWidget);
@@ -152,6 +166,7 @@ void main() {
         tester.element(find.byType(TextField)),
         alignment: 0.5,
       );
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Clear search'));
       await tester.pumpAndSettle();
       expect(tester.widget<ChoiceChip>(activity).selected, isTrue);
@@ -175,7 +190,7 @@ void main() {
       expect(find.text('Manure north'), findsNothing);
       expect(tester.takeException(), isNull);
       await pumpCalendar(tester, language: 'kn');
-      await tester.drag(find.byType(ListView), const Offset(0, -500));
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -500));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     },
