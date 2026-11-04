@@ -126,8 +126,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('28'));
     await tester.pumpAndSettle();
-    expect(find.text('Labour Management'), findsOneWidget);
-    await tester.tapAt(const Offset(10, 30));
+    final sheet = find.byType(BottomSheet);
+    expect(
+      find.descendant(of: sheet, matching: find.text('Labour Management')),
+      findsOneWidget,
+    );
+    Navigator.of(tester.element(sheet)).pop();
     await tester.pumpAndSettle();
     await reveal(tester, find.text('Manure south'));
     expect(find.text('Manure north'), findsNothing);
@@ -162,6 +166,7 @@ void main() {
         tester.element(find.byType(TextField)),
         alignment: 0.5,
       );
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Clear search'));
       await tester.pumpAndSettle();
       expect(tester.widget<ChoiceChip>(activity).selected, isTrue);
@@ -185,7 +190,7 @@ void main() {
       expect(find.text('Manure north'), findsNothing);
       expect(tester.takeException(), isNull);
       await pumpCalendar(tester, language: 'kn');
-      await tester.drag(find.byType(ListView), const Offset(0, -500));
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -500));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     },
