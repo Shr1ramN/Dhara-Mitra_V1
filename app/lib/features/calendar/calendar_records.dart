@@ -3,6 +3,7 @@ import 'date_note.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../core/v1.dart';
+import '../../core/l10n.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -124,6 +125,9 @@ bool calendarCategoryMatches(CalendarRecord record, String category) =>
     (category == 'income' &&
         record.category == 'note' &&
         record.title == 'sale') ||
+    (category == 'expense' &&
+        record.category == 'note' &&
+        record.title == 'purchase') ||
     (category == 'labour' &&
         ['attendance', 'payment', 'loan'].contains(record.category)) ||
     (category == 'activity' &&
@@ -197,6 +201,12 @@ final calendarRecordsProvider = StreamProvider(
 
 String recordTitle(BuildContext context, CalendarRecord record) {
   if (record.category == 'note') {
+    if (record.title == 'sale') {
+      final buyer =
+          noteValues(record.rawNotes)['buyer']?.toString().trim() ?? '';
+      if (buyer.isNotEmpty) return context.l.soldToName(buyer);
+    }
+    if (record.title == 'purchase') return context.l.farmPurchases;
     return noteValues(record.rawNotes)['labelSource'] == 'custom'
         ? record.title
         : translatedLabel(context, record.title);

@@ -14,6 +14,8 @@ import '../../../core/v1.dart';
 import '../../../core/widgets.dart';
 import '../../common/forms.dart';
 import '../data/payroll_repository.dart';
+import '../domain/report_period.dart';
+import '../../reports/report_export.dart';
 import 'saved_tick.dart';
 
 class PayrollData {
@@ -33,10 +35,14 @@ class PayrollData {
                 : -e.amount),
       );
   int due(String id, DateTime end) => txns
-      .where((e) => e.workerId == id && !e.date.isAfter(end))
+      .where(
+        (e) => e.workerId == id && !dateOnly(e.date).isAfter(dateOnly(end)),
+      )
       .fold(0, (s, e) => s + (e.kind == TxnKind.work ? e.amount : -e.amount));
   int loan(String id, DateTime end) => loans
-      .where((e) => e.workerId == id && !e.date.isAfter(end))
+      .where(
+        (e) => e.workerId == id && !dateOnly(e.date).isAfter(dateOnly(end)),
+      )
       .fold(
         0,
         (s, e) =>
@@ -449,17 +455,8 @@ class _ReportsState extends ConsumerState<LabourReports> {
 
   DateTimeRange get range {
     if (period == 'custom' && custom != null) return custom!;
-    final start = switch (period) {
-      'month' => DateTime(anchor.year, anchor.month),
-      'year' => DateTime(anchor.year),
-      _ => anchor.subtract(Duration(days: anchor.weekday - 1)),
-    };
-    final end = switch (period) {
-      'month' => DateTime(anchor.year, anchor.month + 1, 0),
-      'year' => DateTime(anchor.year, 12, 31),
-      _ => start.add(const Duration(days: 6)),
-    };
-    return DateTimeRange(start: start, end: end);
+    final bounds = labourReportPeriod(anchor, period);
+    return DateTimeRange(start: bounds.start, end: bounds.end);
   }
 
   @override
@@ -475,7 +472,7 @@ class _ReportsState extends ConsumerState<LabourReports> {
         builder: (data) {
           final r = range;
           bool selected(String id) => worker == null || worker == id;
-          bool inside(DateTime d) => !d.isBefore(r.start) && !d.isAfter(r.end);
+          bool inside(DateTime d) => inReportPeriod(d, r.start, r.end);
           final txns =
               data.txns
                   .where((e) => selected(e.workerId) && inside(e.date))
@@ -531,9 +528,11 @@ class _ReportsState extends ConsumerState<LabourReports> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  for (final key in ['week', 'month', 'year', 'custom'])
+                  for (final key in ['day', 'week', 'month', 'year', 'custom'])
                     ChoiceChip(
+                      labelStyle: Theme.of(context).textTheme.labelLarge,
                       label: Text(switch (key) {
+                        'day' => v1Text(context, 'Day', 'ದಿನ'),
                         'week' => v1Text(context, 'Week', 'ವಾರ'),
                         'month' => v1Text(context, 'Month', 'ತಿಂಗಳು'),
                         'year' => v1Text(context, 'Year', 'ವರ್ಷ'),
@@ -545,8 +544,8 @@ class _ReportsState extends ConsumerState<LabourReports> {
                           final result = await showDateRangePicker(
                             context: context,
                             firstDate: DateTime(2015),
-                            lastDate: DateTime.now(),
-                            initialDateRange: custom,
+                            lastDate: DateTime(2100),
+                            initialDateRange: custom ?? range,
                           );
                           if (result == null || !mounted) return;
                           setState(() {
@@ -561,15 +560,56 @@ class _ReportsState extends ConsumerState<LabourReports> {
                 ],
               ),
               fieldGap,
-              DateField(
-                label: l.date,
-                value: anchor,
-                onChanged: (d) => setState(() => anchor = dateOnly(d)),
-              ),
+              if (period != 'custom') ...[
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: v1Text(
+                        context,
+                        'Previous period',
+                        'ಹಿಂದಿನ ಅವಧಿ',
+                      ),
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: anchor.year <= 2015
+                          ? null
+                          : () => setState(
+                              () => anchor = moveReportDate(anchor, period, -1),
+                            ),
+                    ),
+                    Expanded(
+                      child: DateField(
+                        label: v1Text(
+                          context,
+                          'Choose date',
+                          'ದಿನಾಂಕ ಆಯ್ಕೆಮಾಡಿ',
+                        ),
+                        value: anchor,
+                        onChanged: (d) => setState(() => anchor = dateOnly(d)),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: v1Text(context, 'Next period', 'ಮುಂದಿನ ಅವಧಿ'),
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: anchor.year >= 2099
+                          ? null
+                          : () => setState(
+                              () => anchor = moveReportDate(anchor, period, 1),
+                            ),
+                    ),
+                  ],
+                ),
+                Text(
+                  v1Text(
+                    context,
+                    'The selected date determines the period. Weeks run Monday to Sunday; years run January to December.',
+                    'ಆಯ್ದ ದಿನಾಂಕದ ಆಧಾರದಲ್ಲಿ ಅವಧಿ ತೋರಿಸಲಾಗುತ್ತದೆ. ವಾರ ಸೋಮವಾರದಿಂದ ಭಾನುವಾರ; ವರ್ಷ ಜನವರಿಯಿಂದ ಡಿಸೆಂಬರ್.',
+                  ),
+                ),
+              ],
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
-                  '${context.fmt.date(r.start)} – ${context.fmt.date(r.end)}',
+                  '${v1Text(context, 'Showing', 'ತೋರಿಸುತ್ತಿರುವ ಅವಧಿ')}: ${context.fmt.date(r.start)} – ${context.fmt.date(r.end)}',
                 ),
               ),
               PaddedCard(
@@ -668,6 +708,76 @@ class _ReportsState extends ConsumerState<LabourReports> {
                   'ಗಳಿಕೆಯನ್ನು ಕೆಲಸದ ದಿನಾಂಕದಂತೆ, ಪಾವತಿಯನ್ನು ಪಾವತಿ ದಿನಾಂಕದಂತೆ ತೋರಿಸಲಾಗಿದೆ.',
                 ),
               ),
+              for (final pdf in [true, false])
+                OutlinedButton.icon(
+                  icon: Icon(
+                    pdf ? Icons.picture_as_pdf : Icons.table_chart_outlined,
+                  ),
+                  label: Text(pdf ? l.xExportPdf : l.xExportExcel),
+                  onPressed: () => perform(context, () async {
+                    final rows = <List<Object?>>[
+                      [
+                        l.date,
+                        '${context.fmt.date(r.start)} – ${context.fmt.date(r.end)}',
+                      ],
+                      [l.tabWorkers, worker == null ? l.xAll : name(worker!)],
+                      [l.earned, earned / 100],
+                      [
+                        v1Text(context, 'Paid to workers', 'ಕಾರ್ಮಿಕರಿಗೆ ಪಾವತಿ'),
+                        (paid - deducted) / 100,
+                      ],
+                      [
+                        v1Text(context, 'Loan deductions', 'ಸಾಲದ ಕಡಿತಗಳು'),
+                        deducted / 100,
+                      ],
+                      [
+                        v1Text(
+                          context,
+                          'Due as of period end',
+                          'ಅವಧಿ ಅಂತ್ಯದ ಬಾಕಿ',
+                        ),
+                        workers
+                                .where((w) => selected(w.worker.id))
+                                .fold<int>(
+                                  0,
+                                  (s, w) =>
+                                      s +
+                                      data
+                                          .due(w.worker.id, r.end)
+                                          .clamp(0, 1 << 62),
+                                ) /
+                            100,
+                      ],
+                      [l.date, l.xWorker, l.xType, l.notes, '₹'],
+                      for (final t in txns)
+                        [
+                          context.fmt.date(t.date),
+                          name(t.workerId),
+                          l.txnKind(t.kind),
+                          t.note,
+                          t.amount / 100,
+                        ],
+                      for (final e in loans)
+                        [
+                          context.fmt.date(e.date),
+                          name(e.workerId),
+                          loanKind(context, e.kind),
+                          e.note,
+                          e.amount / 100,
+                        ],
+                    ];
+                    final file = pdf
+                        ? await ReportExport.pdf(
+                            l.labourReports,
+                            rows,
+                            kannada:
+                                Localizations.localeOf(context).languageCode ==
+                                'kn',
+                          )
+                        : await ReportExport.excel(l.labourReports, rows);
+                    await ReportExport.share(file, l.labourReports);
+                  }),
+                ),
               SectionTitle(v1Text(context, 'By worker', 'ಕಾರ್ಮಿಕರ ಪ್ರಕಾರ')),
               for (final w in workers.where((e) => selected(e.worker.id)))
                 PaddedCard(

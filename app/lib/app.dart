@@ -90,6 +90,8 @@ GoRouter buildRouter({
                 ? v1Text(c, 'Harvest', 'ಕೊಯ್ಲು')
                 : s.uri.queryParameters['label'] == 'sale'
                 ? 'sale'
+                : s.uri.queryParameters['label'] == 'purchase'
+                ? 'purchase'
                 : '',
           ),
         ),

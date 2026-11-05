@@ -3,6 +3,8 @@ import 'package:drift/drift.dart';
 import '../../core/db/database.dart';
 import '../../core/enums.dart';
 import '../../core/season.dart';
+import '../../core/dates.dart';
+import '../calendar/date_note.dart';
 
 class ReportLine {
   const ReportLine({
@@ -95,6 +97,8 @@ class ReportRepository {
     int startMonth = 6,
     String? crop,
     String? plot,
+    DateTime? rangeStart,
+    DateTime? rangeEnd,
   }) => db.watchAll(
     db.allTables,
     () => build(
@@ -103,6 +107,8 @@ class ReportRepository {
       startMonth: startMonth,
       crop: crop,
       plot: plot,
+      rangeStart: rangeStart,
+      rangeEnd: rangeEnd,
     ),
   );
 
@@ -112,13 +118,18 @@ class ReportRepository {
     int startMonth = 6,
     String? crop,
     String? plot,
+    DateTime? rangeStart,
+    DateTime? rangeEnd,
   }) => db.transaction(() async {
-    final start = season.firstDay(startMonth: startMonth);
-    final end = season.lastDay(startMonth: startMonth);
+    final start = dateOnly(
+      rangeStart ?? season.firstDay(startMonth: startMonth),
+    );
+    final end = dateOnly(rangeEnd ?? season.lastDay(startMonth: startMonth));
     final until = today.isBefore(end)
         ? DateTime(today.year, today.month, today.day)
         : end;
-    bool within(DateTime date) => !date.isBefore(start) && !date.isAfter(until);
+    bool within(DateTime date) =>
+        !dateOnly(date).isBefore(start) && !dateOnly(date).isAfter(until);
     final lines = <ReportLine>[];
     void add(
       DateTime date,
@@ -316,6 +327,44 @@ class ReportRepository {
           false,
           crops: a.crops,
           plots: a.plotIds,
+        );
+      }
+    }
+    // Simple calendar sales and purchases are stored once as structured notes.
+    for (final note
+        in await (db.select(db.reminders)..where(
+              (r) => r.deleted.equals(false) & r.kind.equals('dateNote'),
+            ))
+            .get()) {
+      final values = noteValues(note.notes);
+      if (note.title == 'purchase' && values['costPaise'] is int) {
+        add(
+          note.dueOn,
+          values['item']?.toString() ?? note.title,
+          'expense',
+          values['costPaise'] as int,
+          false,
+        );
+      } else if (note.title == 'sale' && values['incomePaise'] is int) {
+        final items = values['items'];
+        final crops = items is List
+            ? items
+                  .whereType<Map<Object?, Object?>>()
+                  .map((i) => i['crop']?.toString() ?? '')
+                  .where((c) => c.isNotEmpty)
+                  .toSet()
+                  .toList()
+            : [
+                if ((values['crop']?.toString() ?? '').isNotEmpty)
+                  values['crop'].toString(),
+              ];
+        add(
+          note.dueOn,
+          values['buyer']?.toString() ?? note.title,
+          'sales',
+          values['incomePaise'] as int,
+          true,
+          crops: crops,
         );
       }
     }
