@@ -1,4 +1,12 @@
 {
+  "farmPurchases": "ತೋಟಕ್ಕೆ ಖರೀದಿಸಿದ ವಸ್ತುಗಳು",
+  "purchasedItem": "ಏನು ಖರೀದಿಸಲಾಗಿದೆ?",
+  "purchasedItemHint": "ಉದಾ. ಗೊಬ್ಬರ, ಸಿಂಪಡಣೆ ಔಷಧಿ, ಬೀಜಗಳು",
+  "purchaseCost": "ಖರ್ಚು (₹)",
+  "purchaseExpenseHint": "ಈ ಖರ್ಚನ್ನು ತೋಟದ ಒಟ್ಟು ಖರ್ಚಿನಲ್ಲಿ ಸೇರಿಸಲಾಗುತ್ತದೆ.",
+  "totalFarmExpenses": "ಒಟ್ಟು ಖರ್ಚು",
+  "soldToName": "{name} ಅವರಿಗೆ ಮಾರಾಟ",
+  "@soldToName": {"placeholders": {"name": {"type": "String"}}},
   "@@locale": "kn",
   "aWelcome": "ಧರಾ ಮಿತ್ರಕ್ಕೆ ಸ್ವಾಗತ",
   "aGoogle": "Google ಮೂಲಕ ಮುಂದುವರಿಸಿ",

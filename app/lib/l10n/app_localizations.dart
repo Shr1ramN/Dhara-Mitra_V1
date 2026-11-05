@@ -98,6 +98,48 @@ abstract class AppLocalizations {
     Locale('kn'),
   ];
 
+  /// No description provided for @farmPurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Things bought for farm'**
+  String get farmPurchases;
+
+  /// No description provided for @purchasedItem.
+  ///
+  /// In en, this message translates to:
+  /// **'What was bought?'**
+  String get purchasedItem;
+
+  /// No description provided for @purchasedItemHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. fertiliser, spray chemicals, seeds'**
+  String get purchasedItemHint;
+
+  /// No description provided for @purchaseCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost (₹)'**
+  String get purchaseCost;
+
+  /// No description provided for @purchaseExpenseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This cost is included in total farm expenses.'**
+  String get purchaseExpenseHint;
+
+  /// No description provided for @totalFarmExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Total expenses'**
+  String get totalFarmExpenses;
+
+  /// No description provided for @soldToName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold to {name}'**
+  String soldToName(String name);
+
   /// No description provided for @aWelcome.
   ///
   /// In en, this message translates to:

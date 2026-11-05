@@ -209,6 +209,7 @@ void main() {
         '/labour?tab=reports',
         '/worker/${worker.id}',
         '/worker-form',
+        '/date-note?label=purchase',
         '/my-crops',
         '/more',
         '/calendar',
@@ -275,6 +276,10 @@ void main() {
               );
         });
         for (final item in <(String, Widget)>[
+          (
+            'purchase',
+            DateNoteEditor(date: DateTime(2026, 11, 5), suggested: 'purchase'),
+          ),
           ('settlement', SettlementForm(worker: worker)),
           ('loan', WorkerLoanForm(worker: worker)),
           (

@@ -1,6 +1,7 @@
 import '../../core/deletable_chip.dart';
 import '../../core/add_chip.dart';
 import 'sale_editor.dart';
+import 'purchase_editor.dart';
 import '../../core/draft_guard.dart';
 import '../farm/data/farm_crops.dart';
 
@@ -37,6 +38,9 @@ String readableNote(String text) {
   final n = noteValues(text);
   return [
     n['description'],
+    n['item'],
+    if (n['costPaise'] is int)
+      formatRupees(n['costPaise'] as int, showPaise: true),
     if (n['items'] is List)
       for (final item
           in (n['items'] as List).whereType<Map<Object?, Object?>>().map(
@@ -95,6 +99,8 @@ String localizedNote(BuildContext context, String raw) {
   final n = noteValues(raw);
   return [
     n['description'],
+    n['item'],
+    if (n['costPaise'] is int) context.fmt.money(n['costPaise'] as int),
     if (n['items'] is List)
       for (final item
           in (n['items'] as List).whereType<Map<Object?, Object?>>().map(
@@ -138,8 +144,8 @@ class DateNoteEditor extends ConsumerStatefulWidget {
 class _DateNoteState extends ConsumerState<DateNoteEditor> {
   final form = GlobalKey<FormState>();
   late final label = TextEditingController(
-    text: widget.existing?.title == 'sale'
-        ? 'sale'
+    text: const ['sale', 'purchase'].contains(widget.existing?.title)
+        ? widget.existing!.title
         : widget.existing != null &&
               noteValues(widget.existing!.notes)['labelSource'] != 'custom'
         ? translatedLabel(context, widget.existing!.title)
@@ -310,6 +316,9 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
 
   @override
   Widget build(BuildContext context) {
+    if (label.text == 'purchase') {
+      return PurchaseEditor(date: widget.date, existing: widget.existing);
+    }
     if (sale) {
       return SaleEditor(
         date: widget.date,

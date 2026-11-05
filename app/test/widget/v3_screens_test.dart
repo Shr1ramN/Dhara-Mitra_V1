@@ -257,9 +257,14 @@ void main() {
         final sheet = find.byType(BottomSheet), l = tester.element(sheet).l;
         expect(
           find.descendant(of: sheet, matching: find.byType(ListTile)),
-          findsNWidgets(4),
+          findsNWidgets(5),
         );
-        for (final name in [l.labourManagement, l.farmActivity, l.navHarvest]) {
+        for (final name in [
+          l.labourManagement,
+          l.farmActivity,
+          l.navHarvest,
+          l.farmPurchases,
+        ]) {
           expect(
             find.descendant(of: sheet, matching: find.text(name)),
             findsOneWidget,

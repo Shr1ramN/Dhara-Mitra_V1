@@ -144,6 +144,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                 (l.labourManagement, '/labour'),
                 (l.farmActivity, 'note'),
                 (l.navHarvest, 'note:harvest'),
+                (l.farmPurchases, 'note:purchase'),
                 (
                   v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
                   'note:sale',
@@ -166,6 +167,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
         final kind = route.substring(5);
         final suggestion = switch (kind) {
           'sale' => 'sale',
+          'purchase' => 'purchase',
           'harvest' => v1Text(context, 'Harvest', 'ಕೊಯ್ಲು'),
           'irrigation' => v1Text(context, 'Irrigation', 'ನೀರಾವರಿ'),
           'spray' => v1Text(context, 'Spray', 'ಸಿಂಪಡಣೆ'),
@@ -424,6 +426,7 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                     'labour',
                     'harvest',
                     'income',
+                    'expense',
                   ])
                     Padding(
                       padding: const EdgeInsets.only(right: 8),

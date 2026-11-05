@@ -10,6 +10,30 @@ class AppLocalizationsKn extends AppLocalizations {
   AppLocalizationsKn([String locale = 'kn']) : super(locale);
 
   @override
+  String get farmPurchases => 'ತೋಟಕ್ಕೆ ಖರೀದಿಸಿದ ವಸ್ತುಗಳು';
+
+  @override
+  String get purchasedItem => 'ಏನು ಖರೀದಿಸಲಾಗಿದೆ?';
+
+  @override
+  String get purchasedItemHint => 'ಉದಾ. ಗೊಬ್ಬರ, ಸಿಂಪಡಣೆ ಔಷಧಿ, ಬೀಜಗಳು';
+
+  @override
+  String get purchaseCost => 'ಖರ್ಚು (₹)';
+
+  @override
+  String get purchaseExpenseHint =>
+      'ಈ ಖರ್ಚನ್ನು ತೋಟದ ಒಟ್ಟು ಖರ್ಚಿನಲ್ಲಿ ಸೇರಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get totalFarmExpenses => 'ಒಟ್ಟು ಖರ್ಚು';
+
+  @override
+  String soldToName(String name) {
+    return '$name ಅವರಿಗೆ ಮಾರಾಟ';
+  }
+
+  @override
   String get aWelcome => 'ಧರಾ ಮಿತ್ರಕ್ಕೆ ಸ್ವಾಗತ';
 
   @override
