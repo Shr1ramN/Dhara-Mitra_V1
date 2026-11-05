@@ -1,4 +1,12 @@
 {
+  "farmPurchases": "Things bought for farm",
+  "purchasedItem": "What was bought?",
+  "purchasedItemHint": "e.g. fertiliser, spray chemicals, seeds",
+  "purchaseCost": "Cost (₹)",
+  "purchaseExpenseHint": "This cost is included in total farm expenses.",
+  "totalFarmExpenses": "Total expenses",
+  "soldToName": "Sold to {name}",
+  "@soldToName": {"placeholders": {"name": {"type": "String"}}},
   "@@locale": "en",
   "aWelcome": "Welcome to Dhara Mitra",
   "aGoogle": "Continue with Google",

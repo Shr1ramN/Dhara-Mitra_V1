@@ -10,6 +10,30 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get farmPurchases => 'Things bought for farm';
+
+  @override
+  String get purchasedItem => 'What was bought?';
+
+  @override
+  String get purchasedItemHint => 'e.g. fertiliser, spray chemicals, seeds';
+
+  @override
+  String get purchaseCost => 'Cost (₹)';
+
+  @override
+  String get purchaseExpenseHint =>
+      'This cost is included in total farm expenses.';
+
+  @override
+  String get totalFarmExpenses => 'Total expenses';
+
+  @override
+  String soldToName(String name) {
+    return 'Sold to $name';
+  }
+
+  @override
   String get aWelcome => 'Welcome to Dhara Mitra';
 
   @override

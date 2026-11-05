@@ -9,7 +9,18 @@ import '../../../core/theme.dart';
 import '../../../core/v1.dart';
 import '../../../core/widgets.dart';
 import '../../calendar/calendar_records.dart';
-import '../../calendar/date_note.dart';
+import '../../../core/season.dart';
+import '../../reports/report_repository.dart';
+
+final homeMoneyProvider = StreamProvider<FarmReport>((ref) {
+  final today = ref.watch(todayProvider);
+  return ReportRepository(ref.watch(databaseProvider)).watch(
+    season: Season(today.year),
+    today: today,
+    rangeStart: DateTime(1900),
+    rangeEnd: today,
+  );
+});
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -25,13 +36,7 @@ class HomeScreen extends ConsumerWidget {
         .where((e) => e.status != AttendanceStatus.absent)
         .length;
     final records = ref.watch(calendarRecordsProvider).value ?? [];
-    final income = records
-        .where((r) => r.category == 'note' && r.title == 'sale')
-        .fold<int>(
-          0,
-          (sum, r) =>
-              sum + ((noteValues(r.rawNotes)['incomePaise'] as int?) ?? 0),
-        );
+    final money = ref.watch(homeMoneyProvider);
     final start = DateTime(
       today.year,
       today.month,
@@ -142,6 +147,11 @@ class HomeScreen extends ConsumerWidget {
                       '/date-note?label=sale',
                     ),
                     (l.labourManagement, Icons.groups_outlined, '/labour'),
+                    (
+                      l.farmPurchases,
+                      Icons.shopping_bag_outlined,
+                      '/date-note?label=purchase',
+                    ),
                   ])
                     ListTile(
                       leading: Icon(icon),
@@ -153,48 +163,70 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             SectionTitle(l.money),
-            Card(
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.account_balance_wallet_outlined),
-                    title: Text(fmt.money(due), style: display(22)),
-                    subtitle: Text(l.toPayWorkers),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push('/labour?tab=dues'),
-                  ),
-                  const Divider(height: 1, indent: 16, endIndent: 16),
-                  ListTile(
-                    leading: const Icon(Icons.receipt_long_outlined),
-                    title: Text(fmt.money(income), style: display(22)),
-                    subtitle: Text(
-                      v1Text(context, 'Crop sale income', 'ಬೆಳೆ ಮಾರಾಟದ ಆದಾಯ'),
+            AsyncBody(
+              value: money,
+              builder: (totals) => Card(
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.receipt_long_outlined),
+                      title: Text(fmt.money(totals.income), style: display(22)),
+                      subtitle: Text(l.xIncome),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/calendar?category=income'),
                     ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push('/calendar?category=income'),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                    child: Wrap(
-                      spacing: 8,
-                      children: [
-                        TextButton(
-                          onPressed: () =>
-                              context.push('/calendar?category=income'),
-                          child: Text(
-                            v1Text(context, 'View sales', 'ಮಾರಾಟಗಳನ್ನು ನೋಡಿ'),
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    ListTile(
+                      leading: const Icon(Icons.shopping_bag_outlined),
+                      title: Text(fmt.money(totals.costs), style: display(22)),
+                      subtitle: Text(l.totalFarmExpenses),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/reports'),
+                    ),
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.account_balance_wallet_outlined,
+                      ),
+                      title: Text(fmt.money(due), style: display(22)),
+                      subtitle: Text(l.toPayWorkers),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/labour?tab=dues'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        v1Text(
+                          context,
+                          'All records through today. Expenses include earned wages; worker dues show the unpaid part.',
+                          'ಇಂದಿನವರೆಗಿನ ಎಲ್ಲಾ ದಾಖಲೆಗಳು. ಗಳಿಸಿದ ಕೂಲಿ ಒಟ್ಟು ಖರ್ಚಿನಲ್ಲಿ ಸೇರಿದೆ; ಕಾರ್ಮಿಕರ ಬಾಕಿ ಪಾವತಿಸದ ಮೊತ್ತವನ್ನು ತೋರಿಸುತ್ತದೆ.',
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                      child: Wrap(
+                        spacing: 8,
+                        children: [
+                          TextButton(
+                            onPressed: () =>
+                                context.push('/calendar?category=income'),
+                            child: Text(
+                              v1Text(context, 'View sales', 'ಮಾರಾಟಗಳನ್ನು ನೋಡಿ'),
+                            ),
                           ),
-                        ),
-                        TextButton.icon(
-                          onPressed: () => context.push('/labour?tab=reports'),
-                          icon: const Icon(Icons.bar_chart),
-                          label: Text(l.labourReports),
-                        ),
-                      ],
+                          TextButton.icon(
+                            onPressed: () =>
+                                context.push('/labour?tab=reports'),
+                            icon: const Icon(Icons.bar_chart),
+                            label: Text(l.labourReports),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
