@@ -103,8 +103,9 @@ class _PurchaseState extends ConsumerState<PurchaseEditor> {
                   ? null
                   : () async {
                       if (!await confirm(context, title: l.deleteEntry) ||
-                          !context.mounted)
+                          !context.mounted) {
                         return;
+                      }
                       setState(() => busy = true);
                       await perform(context, () async {
                         final db = ref.read(databaseProvider);
