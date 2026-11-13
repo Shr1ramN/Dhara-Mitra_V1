@@ -223,6 +223,7 @@ class _SettlementState extends ConsumerState<SettlementForm> {
   late DateTime paidOn = end;
   PayMode mode = PayMode.cash;
   bool busy = false;
+  bool autoDeduct = false;
   @override
   void dispose() {
     for (final c in [cash, deduction, note]) {
@@ -231,7 +232,7 @@ class _SettlementState extends ConsumerState<SettlementForm> {
     super.dispose();
   }
 
-  Future<void> save() async {
+  Future<void> save(int automaticAmount) async {
     if (busy || !form.currentState!.validate()) return;
     setState(() => busy = true);
     try {
@@ -241,7 +242,10 @@ class _SettlementState extends ConsumerState<SettlementForm> {
         start: start,
         end: end,
         cashPaid: parseRupees(cash.text) ?? 0,
-        deduction: parseRupees(deduction.text) ?? 0,
+        deduction: autoDeduct
+            ? automaticAmount
+            : parseRupees(deduction.text) ?? 0,
+        automaticDeduction: autoDeduct,
         mode: mode,
         note: note.text.trim(),
       );
@@ -267,6 +271,17 @@ class _SettlementState extends ConsumerState<SettlementForm> {
         value: p,
         builder: (data) {
           final id = widget.worker.id;
+          final available = data.available(id, end);
+          final loanBalance = data.loan(id, paidOn);
+          final paid = parseRupees(cash.text) ?? 0;
+          final automaticAmount = PayrollRepository.suggestedDeduction(
+            available,
+            paid,
+            PayrollRepository.repayableFromEntries(
+              data.loans.where((entry) => entry.workerId == id),
+              paidOn,
+            ),
+          );
           bool inPeriod(DateTime date) =>
               !date.isBefore(start) && !date.isAfter(end);
           final entries = data.attendance.where(
@@ -287,6 +302,7 @@ class _SettlementState extends ConsumerState<SettlementForm> {
               end.toIso8601String(),
               paidOn.toIso8601String(),
               mode.name,
+              autoDeduct.toString(),
             ],
             child: Form(
               key: form,
@@ -357,13 +373,11 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                             'Available to settle now',
                             'ಈಗ ಪಾವತಿಸಬಹುದಾದ ಮೊತ್ತ',
                           ),
-                          context.fmt.money(
-                            data.available(id, end).clamp(0, 1 << 62),
-                          ),
+                          context.fmt.money(available.clamp(0, 1 << 62)),
                         ),
                         KvRow(
                           context.l.workerLoanOutstanding,
-                          context.fmt.money(data.loan(id, paidOn)),
+                          context.fmt.money(loanBalance),
                         ),
                       ],
                     ),
@@ -376,6 +390,7 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                   fieldGap,
                   MoneyField(
                     controller: cash,
+                    onChanged: (_) => setState(() {}),
                     label: v1Text(
                       context,
                       'Paid to worker (₹)',
@@ -387,24 +402,59 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                         : null,
                   ),
                   fieldGap,
-                  MoneyField(
-                    controller: deduction,
-                    label: v1Text(
-                      context,
-                      'Loan deduction (₹)',
-                      'ಸಾಲದ ಕಡಿತ (₹)',
+                  if (loanBalance > 0 || autoDeduct)
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        v1Text(
+                          context,
+                          'Use remaining wages to repay loan',
+                          'ಉಳಿದ ಕೂಲಿಯಿಂದ ಸಾಲ ತೀರಿಸಿ',
+                        ),
+                      ),
+                      value: autoDeduct,
+                      onChanged: busy
+                          ? null
+                          : (value) => setState(() => autoDeduct = value),
                     ),
-                    validator: (v) =>
-                        v.trim().isNotEmpty && parseRupees(v) == null
-                        ? l.invalidNumber
-                        : null,
-                  ),
+                  if (autoDeduct) ...[
+                    KvRow(
+                      v1Text(context, 'Loan deduction', 'ಸಾಲದ ಕಡಿತ'),
+                      context.fmt.money(automaticAmount),
+                    ),
+                    KvRow(
+                      v1Text(
+                        context,
+                        'Loan balance after payment',
+                        'ಪಾವತಿಯ ನಂತರದ ಬಾಕಿ ಸಾಲ',
+                      ),
+                      context.fmt.money(loanBalance - automaticAmount),
+                    ),
+                    KvRow(
+                      v1Text(context, 'Wages still due', 'ಬಾಕಿ ಕೂಲಿ'),
+                      context.fmt.money(
+                        (available - paid - automaticAmount).clamp(0, 1 << 62),
+                      ),
+                    ),
+                  ] else
+                    MoneyField(
+                      controller: deduction,
+                      label: v1Text(
+                        context,
+                        'Loan deduction (₹)',
+                        'ಸಾಲದ ಕಡಿತ (₹)',
+                      ),
+                      validator: (v) =>
+                          v.trim().isNotEmpty && parseRupees(v) == null
+                          ? l.invalidNumber
+                          : null,
+                    ),
                   fieldGap,
                   Text(
                     v1Text(
                       context,
-                      'Partial payment is allowed. The remainder stays due. Loan deductions require your entry.',
-                      'ಭಾಗಶಃ ಪಾವತಿ ಮಾಡಬಹುದು. ಉಳಿದ ಮೊತ್ತ ಬಾಕಿ ಇರುತ್ತದೆ. ಸಾಲದ ಕಡಿತವನ್ನು ನೀವೇ ನಮೂದಿಸಬೇಕು.',
+                      'Any wages left after payment and deductions stay due.',
+                      'ಪಾವತಿ ಮತ್ತು ಕಡಿತದ ನಂತರ ಉಳಿದ ಕೂಲಿ ಬಾಕಿ ಇರುತ್ತದೆ.',
                     ),
                   ),
                   ChoiceChips(
@@ -419,7 +469,7 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                   ),
                   const SizedBox(height: 20),
                   FilledButton(
-                    onPressed: busy ? null : save,
+                    onPressed: busy ? null : () => save(automaticAmount),
                     child: Text(
                       v1Text(context, 'Record settlement', 'ಪಾವತಿ ದಾಖಲಿಸಿ'),
                     ),
