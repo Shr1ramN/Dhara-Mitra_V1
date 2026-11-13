@@ -47,6 +47,13 @@ class PayrollRepository {
               (t) => t.workerId.equals(workerId) & t.deleted.equals(false),
             ))
             .get();
+    return repayableFromEntries(rows, date);
+  }
+
+  static int repayableFromEntries(
+    Iterable<WorkerLoanEntry> rows,
+    DateTime date,
+  ) {
     final days = <DateTime, int>{};
     for (final row in rows) {
       days.update(
@@ -123,6 +130,7 @@ class PayrollRepository {
     required DateTime end,
     required int cashPaid,
     int deduction = 0,
+    bool automaticDeduction = false,
     PayMode mode = PayMode.cash,
     String note = '',
   }) => db.transaction(() async {
@@ -162,8 +170,16 @@ class PayrollRepository {
           cashPaid + deduction <= due(txns),
       'balance',
     );
+    final repayableAmount = await repayable(workerId, date);
+    if (automaticDeduction) {
+      require(
+        deduction ==
+            suggestedDeduction(availableThroughEnd, cashPaid, repayableAmount),
+        'balance',
+      );
+    }
     require(
-      deduction <= await repayable(workerId, date) &&
+      deduction <= repayableAmount &&
           deduction <= await loanBalance(workerId, through: date) &&
           deduction <= await loanBalance(workerId),
       'balance',
@@ -213,4 +229,7 @@ class PayrollRepository {
     }
     return id;
   });
+
+  static int suggestedDeduction(int wagesDue, int cashPaid, int repayable) =>
+      (wagesDue - cashPaid).clamp(0, repayable > 0 ? repayable : 0);
 }
