@@ -283,6 +283,60 @@ void main() {
     expect((await db.select(db.workerSettlements).getSingle()).deleted, isTrue);
     await expectLater(payroll.cancelSettlement(settlementId), throwsException);
   });
+  test('automatic deduction settles the unpaid part of the week', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final labour = LabourRepository(db);
+    final payroll = PayrollRepository(db);
+    final id = await labour.saveWorker(
+      WorkersCompanion.insert(name: 'Worker', dayRate: const Value(60000)),
+    );
+    final end = DateTime(2026, 10, 25);
+    final start = DateTime(2026, 10, 19);
+    for (var i = 0; i < 7; i++) {
+      await labour.saveAttendance(start.add(Duration(days: i)), {
+        id: AttendanceMark(
+          i == 6 ? AttendanceStatus.half : AttendanceStatus.present,
+        ),
+      });
+    }
+    await payroll.loan(
+      workerId: id,
+      date: DateTime(2026, 10, 22),
+      kind: 'new',
+      amount: 500000,
+    );
+    Future<String> settle(int deduction) => payroll.settle(
+      workerId: id,
+      date: end,
+      start: start,
+      end: end,
+      cashPaid: 300000,
+      deduction: deduction,
+      automaticDeduction: true,
+    );
+    final suggestion = PayrollRepository.suggestedDeduction(
+      390000,
+      300000,
+      await payroll.repayable(id, end),
+    );
+    expect(suggestion, 90000);
+    expect(PayrollRepository.suggestedDeduction(390000, 300000, 50000), 50000);
+    await expectLater(settle(80000), throwsException);
+    final settlementId = await settle(suggestion);
+    final settlement = await db.select(db.workerSettlements).getSingle();
+    expect(settlement.cashPaid, 300000);
+    expect(settlement.loanDeduction, 90000);
+    expect(await payroll.loanBalance(id), 410000);
+    expect((await labour.watchWorkerSummaries().first).single.balance.due, 0);
+    await payroll.cancelSettlement(settlementId);
+    expect(await payroll.loanBalance(id), 500000);
+    expect(
+      (await labour.watchWorkerSummaries().first).single.balance.due,
+      390000,
+    );
+  });
+
   test(
     'reopening an old week cannot pay it twice using later earnings',
     () async {
