@@ -153,7 +153,7 @@ void main() {
     await pump(tester);
     for (final label in [
       'Mark attendance',
-      'Add Farm Activity',
+      'Add farm work',
       'Record harvest',
     ]) {
       expect(find.text(label).hitTestable(), findsOneWidget);
@@ -294,6 +294,34 @@ void main() {
         await finish(tester);
       },
     );
+    testWidgets('Home actions fit with doubled text in $language', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        for (final (family, weight) in [
+          ('Inter', 'Regular'),
+          ('SpaceGrotesk', 'SemiBold'),
+          ('NotoSansKannada', 'Regular'),
+        ]) {
+          final loader = FontLoader(family)
+            ..addFont(rootBundle.load('assets/fonts/$family-$weight.ttf'));
+          await loader.load();
+        }
+      });
+      await pump(tester, language: language);
+      tester.view.physicalSize = const Size(960, 2340);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpAndSettle();
+      final labels = language == 'en'
+          ? ['Mark attendance', 'Add farm work', 'Record harvest']
+          : ['ಹಾಜರಾತಿ ಗುರುತಿಸಿ', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ', 'ಕೊಯ್ಲು ದಾಖಲಿಸಿ'];
+      for (final label in labels) {
+        expect(find.text(label).hitTestable(), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+      await finish(tester);
+    });
     testWidgets(
       'farm shortcuts and money have separate headings in $language',
       (tester) async {

@@ -242,7 +242,19 @@ class _AttendanceState extends ConsumerState<AttendanceTab> {
                         children: [
                           for (final st in AttendanceStatus.values)
                             ChoiceChip(
-                              label: Text(l.attendance(st)),
+                              label: Text(switch (st) {
+                                AttendanceStatus.present => v1Text(
+                                  context,
+                                  'Full day',
+                                  'ಪೂರ್ಣ ದಿನ',
+                                ),
+                                AttendanceStatus.half => v1Text(
+                                  context,
+                                  'Half day',
+                                  'ಅರ್ಧ ದಿನ',
+                                ),
+                                AttendanceStatus.absent => l.attendance(st),
+                              }),
                               labelPadding: const EdgeInsets.symmetric(
                                 horizontal: 7,
                                 vertical: 5,

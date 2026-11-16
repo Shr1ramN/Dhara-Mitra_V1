@@ -63,7 +63,7 @@ class HomeScreen extends ConsumerWidget {
               style: TextStyle(color: context.appColors.textMuted),
             ),
             SizedBox(height: 2),
-            Text('${l.namaskara} 🙏', style: display(26)),
+            Text(l.namaskara, style: display(26)),
             SectionTitle(v1Text(context, 'Record today', 'ಇಂದಿನ ದಾಖಲೆ')),
             Card(
               clipBehavior: Clip.antiAlias,
@@ -76,7 +76,7 @@ class HomeScreen extends ConsumerWidget {
                       '/labour?tab=attendance',
                     ),
                     (
-                      v1Text(context, 'Add Farm Activity', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ'),
+                      v1Text(context, 'Add farm work', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ'),
                       Icons.add_circle_outline,
                       '/date-note',
                     ),

@@ -119,6 +119,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     );
     final plots = ref.watch(plotsProvider).value ?? [];
     final names = ref.watch(workerNamesProvider);
+    final crops = cropOptions(context);
+    final plotName = plots.where((plot) => plot.id == _plot).firstOrNull?.name;
+    final filterSummary = [
+      Season(year).label,
+      if (crops[_crop] case final crop?) crop,
+      if (plotName != null) plotName,
+    ].join(' · ');
     return Scaffold(
       appBar: AppBar(title: Text(l.xReports)),
       body: ListView(
@@ -142,7 +149,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             ),
           ExpansionTile(
             title: Text(v1Text(context, 'Report filters', 'ವರದಿ ಆಯ್ಕೆಗಳು')),
-            subtitle: Text(Season(year).label),
+            subtitle: Text(filterSummary),
             childrenPadding: const EdgeInsets.symmetric(vertical: 8),
             children: [
               DropdownButtonFormField<int>(
@@ -162,7 +169,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 decoration: InputDecoration(labelText: l.xCrop),
                 items: [
                   DropdownMenuItem(value: null, child: Text(l.xAll)),
-                  for (final e in cropOptions(context).entries)
+                  for (final e in crops.entries)
                     DropdownMenuItem(value: e.key, child: Text(e.value)),
                 ],
                 onChanged: (v) => setState(() => _crop = v),

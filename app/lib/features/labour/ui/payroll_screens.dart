@@ -330,61 +330,57 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                   ),
                   fieldGap,
                   PaddedCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        KvRow(
-                          l.present,
-                          '${entries.where((e) => e.status == AttendanceStatus.present).length}',
-                        ),
-                        KvRow(
-                          l.attendance(AttendanceStatus.half),
-                          '${entries.where((e) => e.status == AttendanceStatus.half).length}',
-                        ),
-                        KvRow(
-                          v1Text(
-                            context,
-                            'Wages earned in period',
-                            'ಈ ಅವಧಿಯ ಗಳಿಕೆ',
-                          ),
-                          context.fmt.money(earned),
-                        ),
-                        KvRow(
-                          v1Text(
-                            context,
-                            'Opening unpaid balance',
-                            'ಆರಂಭಿಕ ಬಾಕಿ',
-                          ),
-                          context.fmt.money(
-                            data.due(
-                              id,
-                              start.subtract(const Duration(days: 1)),
-                            ),
-                          ),
-                        ),
-                        KvRow(
-                          v1Text(
-                            context,
-                            'Unpaid through period end',
-                            'ಅವಧಿ ಅಂತ್ಯದ ಬಾಕಿ',
-                          ),
-                          context.fmt.money(data.due(id, end)),
-                        ),
-                        KvRow(
-                          v1Text(
-                            context,
-                            'Available to settle now',
-                            'ಈಗ ಪಾವತಿಸಬಹುದಾದ ಮೊತ್ತ',
-                          ),
-                          context.fmt.money(available.clamp(0, 1 << 62)),
-                        ),
-                        KvRow(
-                          context.l.workerLoanOutstanding,
-                          context.fmt.money(loanBalance),
-                        ),
-                      ],
+                    child: KvRow(
+                      v1Text(context, 'Available to pay', 'ಪಾವತಿಸಬಹುದಾದ ಮೊತ್ತ'),
+                      context.fmt.money(available.clamp(0, 1 << 62)),
                     ),
                   ),
+                  ExpansionTile(
+                    title: Text(
+                      v1Text(context, 'Wage breakdown', 'ಕೂಲಿಯ ವಿವರ'),
+                    ),
+                    children: [
+                      KvRow(
+                        l.present,
+                        '${entries.where((e) => e.status == AttendanceStatus.present).length}',
+                      ),
+                      KvRow(
+                        l.attendance(AttendanceStatus.half),
+                        '${entries.where((e) => e.status == AttendanceStatus.half).length}',
+                      ),
+                      KvRow(
+                        v1Text(
+                          context,
+                          'Wages earned in period',
+                          'ಈ ಅವಧಿಯ ಗಳಿಕೆ',
+                        ),
+                        context.fmt.money(earned),
+                      ),
+                      KvRow(
+                        v1Text(
+                          context,
+                          'Opening unpaid balance',
+                          'ಆರಂಭಿಕ ಬಾಕಿ',
+                        ),
+                        context.fmt.money(
+                          data.due(id, start.subtract(const Duration(days: 1))),
+                        ),
+                      ),
+                      KvRow(
+                        v1Text(
+                          context,
+                          'Unpaid through period end',
+                          'ಅವಧಿ ಅಂತ್ಯದ ಬಾಕಿ',
+                        ),
+                        context.fmt.money(data.due(id, end)),
+                      ),
+                      KvRow(
+                        context.l.workerLoanOutstanding,
+                        context.fmt.money(loanBalance),
+                      ),
+                    ],
+                  ),
+                  fieldGap,
                   DateField(
                     label: v1Text(context, 'Payment date', 'ಪಾವತಿ ದಿನಾಂಕ'),
                     value: paidOn,
