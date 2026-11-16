@@ -218,6 +218,11 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: '$lang $route');
         if (route == '/') {
+          await tester.scrollUntilVisible(
+            find.text(lang == 'kn' ? 'ಇತ್ತೀಚಿನ ಕೆಲಸ' : 'Recent work'),
+            250,
+            scrollable: find.byType(Scrollable).first,
+          );
           final recent = find
               .ancestor(
                 of: find.text(lang == 'kn' ? 'ಇತ್ತೀಚಿನ ಕೆಲಸ' : 'Recent work'),

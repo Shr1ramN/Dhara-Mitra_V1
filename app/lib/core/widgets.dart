@@ -38,16 +38,13 @@ class SectionTitle extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            Localizations.localeOf(context).languageCode == 'en'
-                ? text.toUpperCase()
-                : text,
+            text,
             style: TextStyle(
               fontFamily: 'SpaceGrotesk',
               fontFamilyFallback: ['NotoSansKannada'],
               fontWeight: FontWeight.w600,
-              fontSize: 12.5,
-              letterSpacing: 0.7,
-              color: context.appColors.textMuted,
+              fontSize: 16,
+              color: context.appColors.text,
             ),
           ),
         ),

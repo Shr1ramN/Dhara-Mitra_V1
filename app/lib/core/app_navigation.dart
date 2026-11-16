@@ -107,39 +107,64 @@ class FarmNavigationFrame extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
               child: Row(
                 children: [
-                  IconButton.filledTonal(
-                    key: const ValueKey('app-home'),
-                    tooltip: context.l.navHome,
-                    onPressed: () async {
-                      if (!await confirmLeaving(context) || !context.mounted) {
-                        return;
-                      }
-                      if (landing == '/setup' &&
-                          await ref.read(returnToFarmProvider)()) {
-                        return;
-                      }
-                      router.go(landing);
-                    },
-                    icon: Image.asset(
-                      'assets/branding/logo.png',
-                      width: 28,
-                      height: 28,
+                  if (farm != null) ...[
+                    TextButton.icon(
+                      key: const ValueKey('app-home'),
+                      onPressed: () async {
+                        if (await confirmLeaving(context) && context.mounted) {
+                          router.go(landing);
+                        }
+                      },
+                      icon: const Icon(Icons.home_outlined),
+                      label: Text(context.l.navHome),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      farm == null
-                          ? context.l.appName
-                          : [
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Tooltip(
+                        message: context.l.fFarms,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            if (await confirmLeaving(context) &&
+                                context.mounted) {
+                              await router.push<void>('/farms');
+                            }
+                          },
+                          icon: const Icon(Icons.swap_horiz),
+                          label: Text(
+                            [
                               farm.name,
                               if (farm.village.isNotEmpty) farm.village,
                             ].join(' · '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelLarge,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ] else ...[
+                    IconButton(
+                      key: const ValueKey('app-home'),
+                      tooltip: context.l.navHome,
+                      onPressed: () async {
+                        if (!await confirmLeaving(context) ||
+                            !context.mounted) {
+                          return;
+                        }
+                        if (landing == '/setup' &&
+                            await ref.read(returnToFarmProvider)()) {
+                          return;
+                        }
+                        router.go(landing);
+                      },
+                      icon: Image.asset(
+                        'assets/branding/logo.png',
+                        width: 28,
+                        height: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(context.l.appName)),
+                  ],
                 ],
               ),
             ),

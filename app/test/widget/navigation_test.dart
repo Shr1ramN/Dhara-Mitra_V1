@@ -147,6 +147,27 @@ void main() {
     },
   );
 
+  testWidgets('daily actions are visible without scrolling on a narrow phone', (
+    tester,
+  ) async {
+    await pump(tester);
+    for (final label in [
+      'Mark attendance',
+      'Add farm work',
+      'Record harvest',
+    ]) {
+      expect(find.text(label).hitTestable(), findsOneWidget);
+    }
+    await tester.tap(find.text('Record harvest'));
+    await tester.pumpAndSettle();
+    expect(
+      GoRouterState.of(tester.element(find.byType(Scaffold).last)).uri
+          .toString(),
+      '/date-note?label=harvest',
+    );
+    await finish(tester);
+  });
+
   testWidgets('home summary tiles fit a phone and open their farm tools', (
     tester,
   ) async {
@@ -159,7 +180,11 @@ void main() {
       ('Attendance', '/labour'),
     ]) {
       final tile = find.text(item.$1);
-      await tester.ensureVisible(tile);
+      await tester.scrollUntilVisible(
+        tile,
+        150,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       expect(tile.hitTestable(), findsOneWidget);
       await tester.tap(tile);
@@ -248,7 +273,7 @@ void main() {
   );
   for (final language in ['en', 'kn']) {
     testWidgets(
-      'phone Back and leaf Home work without the extra Back button in $language',
+      'phone Back and the Home button work without the extra Back button in $language',
       (tester) async {
         await pump(tester, language: language);
         router.go('/labour');
@@ -269,11 +294,39 @@ void main() {
         await finish(tester);
       },
     );
+    testWidgets('Home actions fit with doubled text in $language', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        for (final (family, weight) in [
+          ('Inter', 'Regular'),
+          ('SpaceGrotesk', 'SemiBold'),
+          ('NotoSansKannada', 'Regular'),
+        ]) {
+          final loader = FontLoader(family)
+            ..addFont(rootBundle.load('assets/fonts/$family-$weight.ttf'));
+          await loader.load();
+        }
+      });
+      await pump(tester, language: language);
+      tester.view.physicalSize = const Size(960, 2340);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpAndSettle();
+      final labels = language == 'en'
+          ? ['Mark attendance', 'Add farm work', 'Record harvest']
+          : ['ಹಾಜರಾತಿ ಗುರುತಿಸಿ', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ', 'ಕೊಯ್ಲು ದಾಖಲಿಸಿ'];
+      for (final label in labels) {
+        expect(find.text(label).hitTestable(), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+      await finish(tester);
+    });
     testWidgets(
       'farm shortcuts and money have separate headings in $language',
       (tester) async {
         await pump(tester, language: language);
-        final tools = language == 'en' ? 'FARM TOOLS' : 'ತೋಟದ ಕೆಲಸಗಳು';
+        final tools = language == 'en' ? 'Farm tools' : 'ತೋಟದ ಕೆಲಸಗಳು';
         await tester.scrollUntilVisible(
           find.text(tools),
           150,
@@ -281,7 +334,7 @@ void main() {
         );
         expect(find.text(tools), findsOneWidget);
         await tester.scrollUntilVisible(
-          find.text(language == 'en' ? 'MONEY' : 'ಹಣಕಾಸು'),
+          find.text(language == 'en' ? 'Money' : 'ಹಣಕಾಸು'),
           100,
           scrollable: find.byType(Scrollable).first,
         );

@@ -282,6 +282,9 @@ class _SettlementState extends ConsumerState<SettlementForm> {
               paidOn,
             ),
           );
+          final deducted = autoDeduct
+              ? automaticAmount
+              : parseRupees(deduction.text) ?? 0;
           bool inPeriod(DateTime date) =>
               !date.isBefore(start) && !date.isAfter(end);
           final entries = data.attendance.where(
@@ -327,61 +330,57 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                   ),
                   fieldGap,
                   PaddedCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        KvRow(
-                          l.present,
-                          '${entries.where((e) => e.status == AttendanceStatus.present).length}',
-                        ),
-                        KvRow(
-                          l.attendance(AttendanceStatus.half),
-                          '${entries.where((e) => e.status == AttendanceStatus.half).length}',
-                        ),
-                        KvRow(
-                          v1Text(
-                            context,
-                            'Wages earned in period',
-                            'ಈ ಅವಧಿಯ ಗಳಿಕೆ',
-                          ),
-                          context.fmt.money(earned),
-                        ),
-                        KvRow(
-                          v1Text(
-                            context,
-                            'Opening unpaid balance',
-                            'ಆರಂಭಿಕ ಬಾಕಿ',
-                          ),
-                          context.fmt.money(
-                            data.due(
-                              id,
-                              start.subtract(const Duration(days: 1)),
-                            ),
-                          ),
-                        ),
-                        KvRow(
-                          v1Text(
-                            context,
-                            'Unpaid through period end',
-                            'ಅವಧಿ ಅಂತ್ಯದ ಬಾಕಿ',
-                          ),
-                          context.fmt.money(data.due(id, end)),
-                        ),
-                        KvRow(
-                          v1Text(
-                            context,
-                            'Available to settle now',
-                            'ಈಗ ಪಾವತಿಸಬಹುದಾದ ಮೊತ್ತ',
-                          ),
-                          context.fmt.money(available.clamp(0, 1 << 62)),
-                        ),
-                        KvRow(
-                          context.l.workerLoanOutstanding,
-                          context.fmt.money(loanBalance),
-                        ),
-                      ],
+                    child: KvRow(
+                      v1Text(context, 'Available to pay', 'ಪಾವತಿಸಬಹುದಾದ ಮೊತ್ತ'),
+                      context.fmt.money(available.clamp(0, 1 << 62)),
                     ),
                   ),
+                  ExpansionTile(
+                    title: Text(
+                      v1Text(context, 'Wage breakdown', 'ಕೂಲಿಯ ವಿವರ'),
+                    ),
+                    children: [
+                      KvRow(
+                        l.present,
+                        '${entries.where((e) => e.status == AttendanceStatus.present).length}',
+                      ),
+                      KvRow(
+                        l.attendance(AttendanceStatus.half),
+                        '${entries.where((e) => e.status == AttendanceStatus.half).length}',
+                      ),
+                      KvRow(
+                        v1Text(
+                          context,
+                          'Wages earned in period',
+                          'ಈ ಅವಧಿಯ ಗಳಿಕೆ',
+                        ),
+                        context.fmt.money(earned),
+                      ),
+                      KvRow(
+                        v1Text(
+                          context,
+                          'Opening unpaid balance',
+                          'ಆರಂಭಿಕ ಬಾಕಿ',
+                        ),
+                        context.fmt.money(
+                          data.due(id, start.subtract(const Duration(days: 1))),
+                        ),
+                      ),
+                      KvRow(
+                        v1Text(
+                          context,
+                          'Unpaid through period end',
+                          'ಅವಧಿ ಅಂತ್ಯದ ಬಾಕಿ',
+                        ),
+                        context.fmt.money(data.due(id, end)),
+                      ),
+                      KvRow(
+                        context.l.workerLoanOutstanding,
+                        context.fmt.money(loanBalance),
+                      ),
+                    ],
+                  ),
+                  fieldGap,
                   DateField(
                     label: v1Text(context, 'Payment date', 'ಪಾವತಿ ದಿನಾಂಕ'),
                     value: paidOn,
@@ -417,28 +416,11 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                           ? null
                           : (value) => setState(() => autoDeduct = value),
                     ),
-                  if (autoDeduct) ...[
-                    KvRow(
-                      v1Text(context, 'Loan deduction', 'ಸಾಲದ ಕಡಿತ'),
-                      context.fmt.money(automaticAmount),
-                    ),
-                    KvRow(
-                      v1Text(
-                        context,
-                        'Loan balance after payment',
-                        'ಪಾವತಿಯ ನಂತರದ ಬಾಕಿ ಸಾಲ',
-                      ),
-                      context.fmt.money(loanBalance - automaticAmount),
-                    ),
-                    KvRow(
-                      v1Text(context, 'Wages still due', 'ಬಾಕಿ ಕೂಲಿ'),
-                      context.fmt.money(
-                        (available - paid - automaticAmount).clamp(0, 1 << 62),
-                      ),
-                    ),
-                  ] else
+                  if (!autoDeduct &&
+                      (loanBalance > 0 || deduction.text.isNotEmpty))
                     MoneyField(
                       controller: deduction,
+                      onChanged: (_) => setState(() {}),
                       label: v1Text(
                         context,
                         'Loan deduction (₹)',
@@ -449,14 +431,6 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                           ? l.invalidNumber
                           : null,
                     ),
-                  fieldGap,
-                  Text(
-                    v1Text(
-                      context,
-                      'Any wages left after payment and deductions stay due.',
-                      'ಪಾವತಿ ಮತ್ತು ಕಡಿತದ ನಂತರ ಉಳಿದ ಕೂಲಿ ಬಾಕಿ ಇರುತ್ತದೆ.',
-                    ),
-                  ),
                   ChoiceChips(
                     values: PayMode.values,
                     selected: mode,
@@ -466,6 +440,36 @@ class _SettlementState extends ConsumerState<SettlementForm> {
                   TextField(
                     controller: note,
                     decoration: InputDecoration(labelText: l.note),
+                  ),
+                  fieldGap,
+                  PaddedCard(
+                    child: Column(
+                      children: [
+                        KvRow(
+                          v1Text(
+                            context,
+                            'Paid to worker',
+                            'ಕಾರ್ಮಿಕರಿಗೆ ಪಾವತಿ',
+                          ),
+                          context.fmt.money(paid),
+                        ),
+                        if (loanBalance > 0 || deducted > 0)
+                          KvRow(
+                            v1Text(
+                              context,
+                              'Deducted from loan',
+                              'ಸಾಲಕ್ಕೆ ಕಡಿತ',
+                            ),
+                            context.fmt.money(deducted),
+                          ),
+                        KvRow(
+                          v1Text(context, 'Wages still due', 'ಬಾಕಿ ಕೂಲಿ'),
+                          context.fmt.money(
+                            (available - paid - deducted).clamp(0, 1 << 62),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
                   FilledButton(
