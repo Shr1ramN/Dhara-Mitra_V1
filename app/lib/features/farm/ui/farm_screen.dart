@@ -1,4 +1,5 @@
 import '../../../core/v1.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -106,11 +107,12 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
               onPressed: () => context.push('/backup'),
               icon: const Icon(Icons.backup_outlined),
             ),
-            if (!v1) IconButton(
-              tooltip: l.aAccount,
-              onPressed: () => context.push('/account'),
-              icon: const Icon(Icons.account_circle_outlined),
-            ),
+            if (!v1)
+              IconButton(
+                tooltip: l.aAccount,
+                onPressed: () => context.push('/account'),
+                icon: const Icon(Icons.account_circle_outlined),
+              ),
           ],
         ],
       ),
@@ -122,19 +124,6 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
                 children: [
                   if (widget.isSetup) ...[
-                    Text(
-                      l.setupIntro,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        height: 1.45,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton.icon(
-                      onPressed: () => context.push('/farms'),
-                      icon: const Icon(Icons.swap_horiz),
-                      label: Text(l.fFarms),
-                    ),
                     FieldLabel(l.language),
                     SegmentedButton<String>(
                       segments: [
@@ -167,48 +156,65 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
                     ),
                   ),
                   fieldGap,
-                  DropdownButtonFormField<int>(
-                    initialValue: _seasonStart,
-                    decoration: InputDecoration(labelText: l.seasonStarts),
-                    items: [
-                      for (var m = 1; m <= 12; m++)
-                        DropdownMenuItem(value: m, child: Text(fmt.month(m))),
-                    ],
-                    onChanged: (m) => setState(() => _seasonStart = m ?? 6),
-                  ),
-                  fieldGap,
-                  Text(
-                    context.l.xLocation,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  Text(l.fLocationOptional),
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.map_outlined),
-                    label: Text(
-                      _latitude.text.isEmpty
-                          ? l.fChooseLocation
-                          : l.fLocationSaved,
-                    ),
-                    onPressed: () async {
-                      final lat = double.tryParse(_latitude.text);
-                      final lng = double.tryParse(_longitude.text);
-                      final point = await Navigator.push<LatLng>(
+                  ExpansionTile(
+                    initiallyExpanded: !widget.isSetup,
+                    title: Text(
+                      v1Text(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => FarmMap(
-                            initial: lat == null || lng == null
-                                ? null
-                                : LatLng(lat, lng),
-                          ),
+                        'Season and location',
+                        'ಹಂಗಾಮು ಮತ್ತು ಸ್ಥಳ',
+                      ),
+                    ),
+                    childrenPadding: const EdgeInsets.symmetric(vertical: 8),
+                    expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      DropdownButtonFormField<int>(
+                        initialValue: _seasonStart,
+                        decoration: InputDecoration(labelText: l.seasonStarts),
+                        items: [
+                          for (var m = 1; m <= 12; m++)
+                            DropdownMenuItem(
+                              value: m,
+                              child: Text(fmt.month(m)),
+                            ),
+                        ],
+                        onChanged: (m) => setState(() => _seasonStart = m ?? 6),
+                      ),
+                      fieldGap,
+                      Text(
+                        context.l.xLocation,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      Text(l.fLocationOptional),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.map_outlined),
+                        label: Text(
+                          _latitude.text.isEmpty
+                              ? l.fChooseLocation
+                              : l.fLocationSaved,
                         ),
-                      );
-                      if (point != null && mounted) {
-                        setState(() {
-                          _latitude.text = point.latitude.toString();
-                          _longitude.text = point.longitude.toString();
-                        });
-                      }
-                    },
+                        onPressed: () async {
+                          final lat = double.tryParse(_latitude.text);
+                          final lng = double.tryParse(_longitude.text);
+                          final point = await Navigator.push<LatLng>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => FarmMap(
+                                initial: lat == null || lng == null
+                                    ? null
+                                    : LatLng(lat, lng),
+                              ),
+                            ),
+                          );
+                          if (point != null && mounted) {
+                            setState(() {
+                              _latitude.text = point.latitude.toString();
+                              _longitude.text = point.longitude.toString();
+                            });
+                          }
+                        },
+                      ),
+                    ],
                   ),
                   SectionTitle(
                     l.plotsTitle,

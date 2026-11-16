@@ -347,28 +347,21 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text(
-                context.fmt.weekdayDate(date),
-                style: Theme.of(context).textTheme.titleMedium,
+              OutlinedButton.icon(
+                icon: const Icon(Icons.calendar_today_outlined),
+                label: Text(context.fmt.weekdayDate(date)),
+                onPressed: () async {
+                  final selected = await showDatePicker(
+                    context: context,
+                    initialDate: date,
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(2200),
+                  );
+                  if (mounted && selected != null) {
+                    setState(() => date = selected);
+                  }
+                },
               ),
-              if (sale)
-                TextButton.icon(
-                  icon: const Icon(Icons.calendar_today_outlined),
-                  label: Text(
-                    v1Text(context, 'Change sale date', 'ಮಾರಾಟದ ದಿನಾಂಕ ಬದಲಿಸಿ'),
-                  ),
-                  onPressed: () async {
-                    final selected = await showDatePicker(
-                      context: context,
-                      initialDate: date,
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime(2200),
-                    );
-                    if (mounted && selected != null) {
-                      setState(() => date = selected);
-                    }
-                  },
-                ),
               const SizedBox(height: 16),
               if (!harvest && !sale)
                 FormField<String>(
@@ -473,22 +466,25 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
                     onAdd: addWorkType,
                   ),
                 ),
-              TextFormField(
-                controller: description,
-                minLines: 3,
-                maxLines: 6,
-                decoration: InputDecoration(
-                  labelText: v1Text(
-                    context,
-                    'What was done?',
-                    'ಏನು ಮಾಡಲಾಯಿತು?',
+              if (!harvest && !sale) ...[
+                TextFormField(
+                  controller: description,
+                  minLines: 2,
+                  maxLines: 6,
+                  decoration: InputDecoration(
+                    labelText: v1Text(
+                      context,
+                      'What was done?',
+                      'ಏನು ಮಾಡಲಾಯಿತು?',
+                    ),
                   ),
+                  validator: (v) =>
+                      !harvest && !sale && (v ?? '').trim().isEmpty
+                      ? l.requiredField
+                      : null,
                 ),
-                validator: (v) => !harvest && !sale && (v ?? '').trim().isEmpty
-                    ? l.requiredField
-                    : null,
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
+              ],
               FormField<String>(
                 validator: (_) => harvest && crop.text.trim().isEmpty
                     ? l.requiredField
@@ -576,6 +572,14 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
                       RadioListTile(value: 'kg', title: Text(l.kgUnit)),
                     ],
                   ),
+                ),
+              ],
+              if (harvest) ...[
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: description,
+                  maxLines: 3,
+                  decoration: InputDecoration(labelText: l.notes),
                 ),
               ],
               if (sale) ...[

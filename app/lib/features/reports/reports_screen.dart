@@ -5,6 +5,7 @@ import '../../core/l10n.dart';
 import '../../core/providers.dart';
 import '../../core/quantity.dart';
 import '../../core/season.dart';
+import '../../core/v1.dart';
 import '../../core/widgets.dart';
 import '../common/forms.dart';
 import '../common/labels.dart';
@@ -61,7 +62,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final rows = <List<Object?>>[
       [
         l.xSeason,
-        '${_year ?? Season.of(ref.read(todayProvider), startMonth: ref.read(farmProvider).value?.seasonStartMonth ?? 6).startYear}',
+        Season(
+          _year ??
+              Season.of(
+                ref.read(todayProvider),
+                startMonth: ref.read(farmProvider).value?.seasonStartMonth ?? 6,
+              ).startYear,
+        ).label,
       ],
       [l.xIncome, report.income / 100],
       [l.xCosts, report.costs / 100],
@@ -117,36 +124,62 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          DropdownButtonFormField<int>(
-            initialValue: year,
-            decoration: InputDecoration(labelText: l.xSeason),
-            items: [
-              for (var y = current; y >= current - 15; y--)
-                DropdownMenuItem(value: y, child: Text(Season(y).label)),
+          if (report.value case final totals?)
+            PaddedCard(
+              child: Column(
+                children: [
+                  KvRow(l.xIncome, context.fmt.money(totals.income)),
+                  KvRow(l.xCosts, context.fmt.money(totals.costs)),
+                  const Divider(),
+                  KvRow(l.xProfit, context.fmt.money(totals.profit)),
+                  if (totals.acres > 0)
+                    KvRow(
+                      l.xPerAcre,
+                      context.fmt.money((totals.profit / totals.acres).round()),
+                    ),
+                ],
+              ),
+            ),
+          ExpansionTile(
+            title: Text(v1Text(context, 'Report filters', 'ವರದಿ ಆಯ್ಕೆಗಳು')),
+            subtitle: Text(Season(year).label),
+            childrenPadding: const EdgeInsets.symmetric(vertical: 8),
+            children: [
+              DropdownButtonFormField<int>(
+                initialValue: year,
+                isExpanded: true,
+                decoration: InputDecoration(labelText: l.xSeason),
+                items: [
+                  for (var y = current; y >= current - 15; y--)
+                    DropdownMenuItem(value: y, child: Text(Season(y).label)),
+                ],
+                onChanged: (y) => setState(() => _year = y),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _crop,
+                isExpanded: true,
+                decoration: InputDecoration(labelText: l.xCrop),
+                items: [
+                  DropdownMenuItem(value: null, child: Text(l.xAll)),
+                  for (final e in cropOptions(context).entries)
+                    DropdownMenuItem(value: e.key, child: Text(e.value)),
+                ],
+                onChanged: (v) => setState(() => _crop = v),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _plot,
+                isExpanded: true,
+                decoration: InputDecoration(labelText: l.xPlot),
+                items: [
+                  DropdownMenuItem(value: null, child: Text(l.xAll)),
+                  for (final p in plots)
+                    DropdownMenuItem(value: p.id, child: Text(p.name)),
+                ],
+                onChanged: (v) => setState(() => _plot = v),
+              ),
             ],
-            onChanged: (y) => setState(() => _year = y),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: _crop,
-            decoration: InputDecoration(labelText: l.xCrop),
-            items: [
-              DropdownMenuItem(value: null, child: Text(l.xAll)),
-              for (final e in cropOptions(context).entries)
-                DropdownMenuItem(value: e.key, child: Text(e.value)),
-            ],
-            onChanged: (v) => setState(() => _crop = v),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: _plot,
-            decoration: InputDecoration(labelText: l.xPlot),
-            items: [
-              DropdownMenuItem(value: null, child: Text(l.xAll)),
-              for (final p in plots)
-                DropdownMenuItem(value: p.id, child: Text(p.name)),
-            ],
-            onChanged: (v) => setState(() => _plot = v),
           ),
           const SizedBox(height: 16),
           Text(l.xReportBasis, style: Theme.of(context).textTheme.bodySmall),
@@ -156,21 +189,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             builder: (r) => Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                PaddedCard(
-                  child: Column(
-                    children: [
-                      KvRow(l.xIncome, context.fmt.money(r.income)),
-                      KvRow(l.xCosts, context.fmt.money(r.costs)),
-                      const Divider(),
-                      KvRow(l.xProfit, context.fmt.money(r.profit)),
-                      if (r.acres > 0)
-                        KvRow(
-                          l.xPerAcre,
-                          context.fmt.money((r.profit / r.acres).round()),
-                        ),
-                    ],
-                  ),
-                ),
                 for (final e in r.categories.entries)
                   KvRow(
                     reportCategory(context, e.key),

@@ -19,13 +19,13 @@ GitHub APKs use a **public development signing key** for compatibility with prev
 
 | Area | Features |
 | --- | --- |
-| Home | See attendance, worker dues, recent work and harvest counts. Farm Tools opens Add Farm Activity, Sold to Buyer or Labour Management. Money links to sales and labour reports. |
+| Home | Mark attendance, add farm work and record harvests. Review recent records, sales and worker dues. |
 | Calendar | Tap a date to add work, attendance, harvest or sales. Apply filters or submit a search to jump to Matching records. View sales opens that section with crop sales selected. |
 | Farm records | Record irrigation, fertiliser, spray and custom work. Enter harvests in bags or kilograms. Save sales with multiple crops, item quantities and total income. |
 | Labour Management | Record full days, half days and absences, settle wages, track worker loans and review weekly, monthly or yearly reports. |
 | More | Manage separate farms and crops, choose language and theme, use the app lock, back up and restore, and export Excel or SQLite snapshots. |
 
-Excel snapshots include readable sheets and raw historical tables. Earlier modules such as market prices, weather, stock and farm finance remain in the source and storage schema for compatibility. See the [implementation overview](docs/IMPLEMENTATION_STATUS.md).
+Excel exports include readable sheets for recorded farm work, harvests, sales, purchases and labour. Use Backup and restore for a full copy of your data. Earlier modules such as market prices, weather, stock and farm finance remain in the source and storage schema for compatibility. See the [implementation overview](docs/IMPLEMENTATION_STATUS.md).
 
 ## Build locally
 

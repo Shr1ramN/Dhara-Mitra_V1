@@ -153,23 +153,36 @@ class _AttendanceState extends ConsumerState<AttendanceTab> {
               ],
             ),
           ),
-          TextField(
-            controller: work,
-            enabled: !loading && !busy,
-            decoration: InputDecoration(
-              labelText: l.workToday,
-              hintText: l.workHint,
+          ExpansionTile(
+            title: Text(
+              v1Text(
+                context,
+                'Work notes (optional)',
+                'ಕೆಲಸದ ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)',
+              ),
             ),
-            onChanged: (_) {
-              // Persist each edit; no pending timer is lost when leaving the screen.
-              unawaited(
-                saveWork().catchError((Object e) {
-                  if (context.mounted) {
-                    showSnack(context, failureText(context, e));
-                  }
-                }),
-              );
-            },
+            initiallyExpanded: work.text.isNotEmpty,
+            maintainState: true,
+            children: [
+              TextField(
+                controller: work,
+                enabled: !loading && !busy,
+                decoration: InputDecoration(
+                  labelText: l.workToday,
+                  hintText: l.workHint,
+                ),
+                onChanged: (_) {
+                  // Persist each edit; no pending timer is lost when leaving the screen.
+                  unawaited(
+                    saveWork().catchError((Object e) {
+                      if (context.mounted) {
+                        showSnack(context, failureText(context, e));
+                      }
+                    }),
+                  );
+                },
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           Text(
@@ -230,6 +243,12 @@ class _AttendanceState extends ConsumerState<AttendanceTab> {
                           for (final st in AttendanceStatus.values)
                             ChoiceChip(
                               label: Text(l.attendance(st)),
+                              labelPadding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 5,
+                              ),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.padded,
                               selected: e?.status == st,
                               onSelected:
                                   busy ||

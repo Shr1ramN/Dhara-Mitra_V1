@@ -152,7 +152,7 @@ void main() {
     await tester.scrollUntilVisible(find.text('Record sale'), 300);
     await tester.tap(find.text('Record sale'));
     await tester.pumpAndSettle();
-    expect(find.text('What was sold'.toUpperCase()), findsOneWidget);
+    expect(find.text('What was sold'), findsOneWidget);
     await tearDownApp(tester);
   });
 

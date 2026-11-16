@@ -1661,7 +1661,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get xRestore => 'Restore backup';
 
   @override
-  String get xCreateBackup => 'Create backup';
+  String get xCreateBackup => 'Save a backup copy';
 
   @override
   String get xRestoreWarning =>
@@ -1989,5 +1989,5 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get excelSnapshotHelp =>
-      'An editable copy for analysis. Changes in Excel do not change the app.';
+      'Share farm records as a spreadsheet. For a full copy, use Backup and restore.';
 }

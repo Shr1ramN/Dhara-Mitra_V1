@@ -64,12 +64,38 @@ class HomeScreen extends ConsumerWidget {
             ),
             SizedBox(height: 2),
             Text('${l.namaskara} 🙏', style: display(26)),
-            OutlinedButton.icon(
-              onPressed: () => context.push('/farms'),
-              icon: Icon(Icons.swap_horiz),
-              label: Text(l.fFarms),
+            SectionTitle(v1Text(context, 'Record today', 'ಇಂದಿನ ದಾಖಲೆ')),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  for (final (title, icon, path) in [
+                    (
+                      v1Text(context, 'Mark attendance', 'ಹಾಜರಾತಿ ಗುರುತಿಸಿ'),
+                      Icons.how_to_reg_outlined,
+                      '/labour?tab=attendance',
+                    ),
+                    (
+                      v1Text(context, 'Add Farm Activity', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ'),
+                      Icons.add_circle_outline,
+                      '/date-note',
+                    ),
+                    (
+                      v1Text(context, 'Record harvest', 'ಕೊಯ್ಲು ದಾಖಲಿಸಿ'),
+                      Icons.eco_outlined,
+                      '/date-note?label=harvest',
+                    ),
+                  ])
+                    ListTile(
+                      leading: Icon(icon),
+                      title: Text(title),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push(path),
+                    ),
+                ],
+              ),
             ),
-            SizedBox(height: 8),
+            SectionTitle(v1Text(context, 'Farm at a glance', 'ತೋಟದ ಮಾಹಿತಿ')),
             LayoutBuilder(
               builder: (context, constraints) {
                 final large = MediaQuery.textScalerOf(context).scale(16) > 19.2;
@@ -136,11 +162,6 @@ class HomeScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   for (final (title, icon, path) in [
-                    (
-                      v1Text(context, 'Add Farm Activity', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ'),
-                      Icons.add_circle_outline,
-                      '/date-note',
-                    ),
                     (
                       v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
                       Icons.storefront_outlined,

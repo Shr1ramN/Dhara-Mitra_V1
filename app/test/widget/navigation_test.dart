@@ -147,6 +147,27 @@ void main() {
     },
   );
 
+  testWidgets('daily actions are visible without scrolling on a narrow phone', (
+    tester,
+  ) async {
+    await pump(tester);
+    for (final label in [
+      'Mark attendance',
+      'Add Farm Activity',
+      'Record harvest',
+    ]) {
+      expect(find.text(label).hitTestable(), findsOneWidget);
+    }
+    await tester.tap(find.text('Record harvest'));
+    await tester.pumpAndSettle();
+    expect(
+      GoRouterState.of(tester.element(find.byType(Scaffold).last)).uri
+          .toString(),
+      '/date-note?label=harvest',
+    );
+    await finish(tester);
+  });
+
   testWidgets('home summary tiles fit a phone and open their farm tools', (
     tester,
   ) async {
@@ -159,7 +180,11 @@ void main() {
       ('Attendance', '/labour'),
     ]) {
       final tile = find.text(item.$1);
-      await tester.ensureVisible(tile);
+      await tester.scrollUntilVisible(
+        tile,
+        150,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       expect(tile.hitTestable(), findsOneWidget);
       await tester.tap(tile);
@@ -248,7 +273,7 @@ void main() {
   );
   for (final language in ['en', 'kn']) {
     testWidgets(
-      'phone Back and leaf Home work without the extra Back button in $language',
+      'phone Back and the Home button work without the extra Back button in $language',
       (tester) async {
         await pump(tester, language: language);
         router.go('/labour');
@@ -273,7 +298,7 @@ void main() {
       'farm shortcuts and money have separate headings in $language',
       (tester) async {
         await pump(tester, language: language);
-        final tools = language == 'en' ? 'FARM TOOLS' : 'ತೋಟದ ಕೆಲಸಗಳು';
+        final tools = language == 'en' ? 'Farm tools' : 'ತೋಟದ ಕೆಲಸಗಳು';
         await tester.scrollUntilVisible(
           find.text(tools),
           150,
@@ -281,7 +306,7 @@ void main() {
         );
         expect(find.text(tools), findsOneWidget);
         await tester.scrollUntilVisible(
-          find.text(language == 'en' ? 'MONEY' : 'ಹಣಕಾಸು'),
+          find.text(language == 'en' ? 'Money' : 'ಹಣಕಾಸು'),
           100,
           scrollable: find.byType(Scrollable).first,
         );
