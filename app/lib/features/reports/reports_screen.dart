@@ -123,8 +123,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final plotName = plots.where((plot) => plot.id == _plot).firstOrNull?.name;
     final filterSummary = [
       Season(year).label,
-      if (crops[_crop] case final crop?) crop,
-      if (plotName != null) plotName,
+      ?crops[_crop],
+      ?plotName,
     ].join(' · ');
     return Scaffold(
       appBar: AppBar(title: Text(l.xReports)),
