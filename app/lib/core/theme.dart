@@ -9,8 +9,8 @@ abstract final class AppColors {
   static const border = Color(0xFFEEE7DE);
   static const text = Color(0xFF1C1A17);
   static const textMuted = Color(0xFF6B645B);
-  static const accent = Color(0xFFAD4C18);
-  static const accentDark = Color(0xFFA74517);
+  static const accent = Color(0xFFE8712A);
+  static const accentDark = Color(0xFFC85E1F);
   static const accentSoft = Color(0xFFFDEFE3);
   static const up = Color(0xFF2E8B57);
   static const down = Color(0xFFC0392B);
@@ -142,10 +142,7 @@ ThemeData buildTheme({Brightness brightness = Brightness.light}) {
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: AppColors.accentDark,
-        minimumSize: const Size(48, 48),
-      ),
+      style: TextButton.styleFrom(foregroundColor: AppColors.accentDark),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: AppColors.accent,
@@ -308,14 +305,7 @@ ThemeData buildDarkTheme() {
         minimumSize: const Size(64, 48),
         side: BorderSide(color: palette.border),
         shape: RoundedRectangleBorder(borderRadius: radius),
-        textStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontFamilyFallback: _fallback,
-        ),
       ),
-    ),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
     ),
     chipTheme: base.chipTheme.copyWith(
       backgroundColor: palette.surface,

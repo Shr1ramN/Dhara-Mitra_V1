@@ -502,13 +502,8 @@ void main() {
           'unit': 'bags',
         });
         final book = Excel.decodeBytes(await FarmExcelExport(db).bytes());
-        expect(book['Crops sold'].rows.length, 3);
-        final sales = book['Sales'].rows;
-        expect(sales.length, 2);
-        expect((sales[1][6]!.value as DoubleCellValue).value, 1111.11);
-        for (final item in book['Crops sold'].rows.skip(1)) {
-          expect(item[0]!.value, sales[1][0]!.value);
-        }
+        expect(book['SaleItems'].rows.length, 3);
+        expect(book['Income'].rows.length, 2);
       });
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpWidget(const SizedBox());

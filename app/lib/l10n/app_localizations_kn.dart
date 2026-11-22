@@ -1656,7 +1656,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get xRestore => 'ಪ್ರತಿಯಿಂದ ಮರುಸ್ಥಾಪಿಸಿ';
 
   @override
-  String get xCreateBackup => 'ಸುರಕ್ಷಿತ ಪ್ರತಿ ಉಳಿಸಿ';
+  String get xCreateBackup => 'ಸುರಕ್ಷಿತ ಪ್ರತಿ ರಚಿಸಿ';
 
   @override
   String get xRestoreWarning =>
@@ -1985,5 +1985,5 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get excelSnapshotHelp =>
-      'ತೋಟದ ದಾಖಲೆಗಳನ್ನು ಸ್ಪ್ರೆಡ್‌ಶೀಟ್ ಆಗಿ ಹಂಚಿಕೊಳ್ಳಿ. ಪೂರ್ಣ ಪ್ರತಿಗಾಗಿ ಬ್ಯಾಕಪ್ ಮತ್ತು ಮರುಸ್ಥಾಪನೆ ಬಳಸಿ.';
+      'ವಿಶ್ಲೇಷಣೆಗೆ ಬಳಸಬಹುದಾದ ಪ್ರತಿ. Excel ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್‌ನ ದಾಖಲೆಗಳನ್ನು ಬದಲಾಯಿಸುವುದಿಲ್ಲ.';
 }

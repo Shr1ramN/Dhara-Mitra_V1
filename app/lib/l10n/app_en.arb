@@ -654,7 +654,7 @@
   "xStartDrying": "Start drying",
   "xFinishDrying": "Finish drying",
   "xRestore": "Restore backup",
-  "xCreateBackup": "Save a backup copy",
+  "xCreateBackup": "Create backup",
   "xRestoreWarning": "This replaces the app records with the selected backup. A safety backup is created first. Continue?",
   "xBackupHint": "Includes the database, photos and documents. Keep a copy outside this phone.",
   "xLockEnabled": "Require phone PIN or fingerprint",
@@ -755,5 +755,5 @@
   "addCrop": "Add a crop",
   "cropHistorySafe": "You can edit this list anytime. Past harvest and activity records stay unchanged.",
   "exportExcel": "Export to Excel",
-  "excelSnapshotHelp": "Share farm records as a spreadsheet. For a full copy, use Backup and restore."
+  "excelSnapshotHelp": "An editable copy for analysis. Changes in Excel do not change the app."
 }

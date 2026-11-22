@@ -1,19 +1,16 @@
-import 'dart:io';
-
-import 'package:drift/drift.dart';
-import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../core/db/database.dart';
-import '../../core/enums.dart';
-import '../calendar/date_note.dart';
-import '../labour/data/labour_repository.dart';
+import 'dart:io';
 
-/// An editable workbook of farm records. Use Backup and restore for a full copy.
+import 'package:excel/excel.dart';
+
+import '../../core/db/database.dart';
+import '../calendar/date_note.dart';
+
+/// A portable, typed snapshot. Editing it never writes back to the database.
 class FarmExcelExport {
   FarmExcelExport(this.db);
   final AppDatabase db;
-
   Future<List<int>> bytes() async {
     final snapshot = await db.transaction(() async {
       final sheets = <String, List<List<Object?>>>{};
@@ -22,309 +19,416 @@ class FarmExcelExport {
         List<String> headers,
         Iterable<List<Object?>> rows,
       ) {
-        final data = rows.toList();
-        if (data.isNotEmpty) sheets[name] = [headers, ...data];
+        sheets[name] = [headers, ...rows];
       }
 
-      final notes =
-          await (db.select(db.reminders)
-                ..where(
-                  (r) => r.kind.equals('dateNote') & r.deleted.equals(false),
-                )
-                ..orderBy([
-                  (r) => OrderingTerm.asc(r.dueOn),
-                  (r) => OrderingTerm.asc(r.id),
-                ]))
-              .get();
-      final activities = <List<Object?>>[];
-      final harvests = <List<Object?>>[];
-      final sales = <List<Object?>>[];
-      final saleItems = <List<Object?>>[];
-      final purchases = <List<Object?>>[];
-      for (final note in notes) {
-        final data = noteValues(note.notes);
-        switch (data['labelSource'] == 'custom'
-            ? ''
-            : note.title.trim().toLowerCase()) {
-          case 'harvest':
-          case 'ಕೊಯ್ಲು':
-            harvests.add([
-              note.dueOn,
-              data['crop'],
-              data['quantity'],
-              data['unit'],
-              data['description'],
-            ]);
-          case 'sale':
-            final storedItems = data['items'];
-            final items = storedItems is List
-                ? storedItems.whereType<Map<Object?, Object?>>().toList()
-                : const <Map<Object?, Object?>>[];
-            final number = sales.length + 1;
-            final primary = items.length == 1 ? items.single : data;
-            sales.add([
-              number,
-              note.dueOn,
-              data['buyer'],
-              items.length > 1 ? 'See Crops sold' : primary['crop'],
-              items.length > 1 ? null : primary['quantity'],
-              items.length > 1 ? null : primary['unit'],
-              _rupees(data['incomePaise']),
-              data['description'],
-            ]);
-            if (items.length > 1) {
-              for (final item in items) {
-                saleItems.add([
-                  number,
-                  item['crop'],
-                  item['quantity'],
-                  item['unit'],
-                ]);
-              }
-            }
-          case 'purchase':
-            purchases.add([
-              note.dueOn,
-              data['item'],
-              _rupees(data['costPaise']),
-              data['description'],
-            ]);
-          default:
-            activities.add([
-              note.dueOn,
-              note.title,
-              data['crop'],
-              data['description'],
-            ]);
-        }
-      }
-
-      final oldActivities =
-          await (db.select(db.activities)
-                ..where((a) => a.deleted.equals(false))
-                ..orderBy([(a) => OrderingTerm.asc(a.date)]))
-              .get();
-      for (final a in oldActivities) {
-        activities.add([a.date, a.title, a.crops.join(', '), a.notes]);
-      }
-      final oldLots = await (db.select(
-        db.lots,
-      )..where((l) => l.deleted.equals(false))).get();
-      for (final lot in oldLots) {
-        harvests.add([
-          lot.harvestedOn,
-          lot.crop.name,
-          lot.quantityMode == 'bags' ? lot.freshBags : lot.freshKg,
-          lot.quantityMode,
-          lot.notes,
-        ]);
-      }
-      final oldProduce = await (db.select(
-        db.produceLots,
-      )..where((l) => l.deleted.equals(false))).get();
-      for (final lot in oldProduce) {
-        harvests.add([
-          lot.harvestedOn,
-          lot.crop,
-          lot.freshQuantity,
-          lot.freshUnit,
-          lot.notes,
-        ]);
-      }
-      final pickups = await (db.select(
-        db.arecaCollections,
-      )..where((p) => p.deleted.equals(false) & p.lotId.isNull())).get();
-      for (final p in pickups) {
-        harvests.add([p.collectedOn, 'areca', p.quantity, p.unit, p.notes]);
-      }
-      const activityHeaders = ['Date', 'Work type', 'Crop', 'Notes'];
-      const harvestHeaders = ['Date', 'Crop', 'Quantity', 'Unit', 'Notes'];
-      int byDate(List<Object?> a, List<Object?> b) =>
-          (a.first as DateTime).compareTo(b.first as DateTime);
-      sheet('Farm work', activityHeaders, activities..sort(byDate));
-      sheet('Harvests', harvestHeaders, harvests..sort(byDate));
-      sheet('Sales', [
-        'Sale no.',
-        'Date',
-        'Buyer',
-        'Crop',
-        'Quantity',
-        'Unit',
-        'Income received (₹)',
-        'Notes',
-      ], sales);
-      sheet('Crops sold', ['Sale no.', 'Crop', 'Quantity', 'Unit'], saleItems);
-      sheet('Purchases', ['Date', 'Item', 'Cost (₹)', 'Notes'], purchases);
-
-      final workers =
-          await (db.select(db.workers)..orderBy([
-                (w) => OrderingTerm.asc(w.name),
-                (w) => OrderingTerm.asc(w.id),
-              ]))
-              .get();
-      final nameCounts = <String, int>{};
-      for (final worker in workers) {
-        nameCounts.update(worker.name, (count) => count + 1, ifAbsent: () => 1);
-      }
-      final nameOccurrences = <String, int>{};
-      final names = {
-        for (final worker in workers)
-          worker.id: nameCounts[worker.name] == 1
-              ? worker.name
-              : '${worker.name} (${nameOccurrences.update(worker.name, (n) => n + 1, ifAbsent: () => 1)})',
-      };
-      final txns =
-          await (db.select(db.workerTxns)
-                ..where((t) => t.deleted.equals(false))
-                ..orderBy([
-                  (t) => OrderingTerm.asc(t.date),
-                  (t) => OrderingTerm.asc(t.id),
-                ]))
-              .get();
-      final loans =
-          await (db.select(db.workerLoanEntries)
-                ..where((t) => t.deleted.equals(false))
-                ..orderBy([
-                  (t) => OrderingTerm.asc(t.date),
-                  (t) => OrderingTerm.asc(t.id),
-                ]))
-              .get();
-      final settlements = await (db.select(
-        db.workerSettlements,
-      )..where((s) => s.deleted.equals(false))).get();
-      final attendance =
-          await (db.select(db.attendanceEntries)
-                ..where((a) => a.deleted.equals(false))
-                ..orderBy([
-                  (a) => OrderingTerm.asc(a.date),
-                  (a) => OrderingTerm.asc(a.id),
-                ]))
-              .get();
-
-      final wagesDue = <String, int>{};
-      for (final t in txns) {
-        wagesDue.update(
-          t.workerId,
-          (amount) => amount + (t.kind == TxnKind.work ? t.amount : -t.amount),
-          ifAbsent: () => t.kind == TxnKind.work ? t.amount : -t.amount,
-        );
-      }
-      final loansDue = <String, int>{};
-      for (final loan in loans) {
-        final change = loan.kind == 'previous' || loan.kind == 'new'
-            ? loan.amount
-            : -loan.amount;
-        loansDue.update(
-          loan.workerId,
-          (amount) => amount + change,
-          ifAbsent: () => change,
-        );
-      }
+      sheet(
+        'Guide',
+        ['Dhara Mitra V3', 'Details'],
+        [
+          ['Exported at', DateTime.now().toIso8601String()],
+          ['Database schema', db.schemaVersion],
+          [
+            'Multi-crop sales',
+            'Income contains one total per sale. SaleItems contains crop quantities; join sale_record_id to Income.record_id. Do not sum a sale total once per crop.',
+          ],
+          ['Farm profile ID', db.profileId],
+          [
+            'Purpose',
+            'Editable Excel snapshot for analysis. Editing this workbook does not change app data.',
+          ],
+          [
+            'Money',
+            'Primary sheets show rupees and exact integer paise. Raw sheets retain SQLite integers.',
+          ],
+          [
+            'Dates',
+            'Primary sheets use Excel dates. Raw SQLite date/time columns are Unix timestamps in seconds.',
+          ],
+          [
+            'Record IDs',
+            'Use stable worker_id and record_id columns to join sheets; names are not unique identifiers.',
+          ],
+          [
+            'Old advances',
+            'Historical advance credits retain their original effect on wages. New worker loans are separate.',
+          ],
+          [
+            'Legacy data',
+            'Raw_* sheets include every stored table, including removed features and soft-deleted history. Filter deleted=0 for current records.',
+          ],
+          [
+            'ಭಾಷೆ',
+            'ಮೂಲ ಹೆಸರುಗಳು ಮತ್ತು ಕನ್ನಡ ಪಠ್ಯ ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ. Excel ಬದಲಾವಣೆಗಳು ಆ್ಯಪ್‌ನ ದತ್ತಾಂಶವನ್ನು ಬದಲಾಯಿಸುವುದಿಲ್ಲ.',
+          ],
+        ],
+      );
+      final workers = await db.select(db.workers).get();
+      final names = {for (final w in workers) w.id: w.name};
+      final txns = (await db.select(db.workerTxns).get())
+          .where((e) => !e.deleted)
+          .toList();
+      final loans = (await db.select(db.workerLoanEntries).get())
+          .where((e) => !e.deleted)
+          .toList();
+      final settlements = (await db.select(db.workerSettlements).get())
+          .where((e) => !e.deleted)
+          .toList();
       sheet(
         'Workers',
         [
-          'Worker',
-          'Status',
-          'Full-day wage (₹)',
-          'Half-day wage (₹)',
-          'Wages due (₹)',
-          'Loan balance (₹)',
+          'worker_id',
+          'name',
+          'phone',
+          'village',
+          'wage_type',
+          'daily_wage_rupees',
+          'daily_wage_paise',
+          'half_day_wage_rupees',
+          'active',
+          'wages_due_rupees',
+          'wages_due_paise',
+          'loan_outstanding_rupees',
+          'loan_outstanding_paise',
         ],
         [
           for (final w in workers.where((w) => !w.deleted))
             [
-              names[w.id],
-              w.active ? 'Active' : 'Inactive',
-              w.wageType == 'daily' ? _rupees(w.dayRate) : null,
-              w.wageType == 'daily'
-                  ? _rupees(w.halfDayRate ?? (w.dayRate / 2).round())
-                  : null,
-              _rupees(wagesDue[w.id] ?? 0),
-              _rupees(loansDue[w.id] ?? 0),
+              w.id,
+              w.name,
+              w.phone,
+              w.village,
+              w.wageType,
+              w.dayRate / 100,
+              w.dayRate,
+              w.halfDayRate == null ? null : w.halfDayRate! / 100,
+              w.active,
+              txns
+                      .where((t) => t.workerId == w.id)
+                      .fold<int>(
+                        0,
+                        (s, t) =>
+                            s + (t.kind.name == 'work' ? t.amount : -t.amount),
+                      ) /
+                  100,
+              txns
+                  .where((t) => t.workerId == w.id)
+                  .fold<int>(
+                    0,
+                    (s, t) =>
+                        s + (t.kind.name == 'work' ? t.amount : -t.amount),
+                  ),
+              loans
+                      .where((t) => t.workerId == w.id)
+                      .fold<int>(
+                        0,
+                        (s, t) =>
+                            s +
+                            (['previous', 'new'].contains(t.kind)
+                                ? t.amount
+                                : -t.amount),
+                      ) /
+                  100,
+              loans
+                  .where((t) => t.workerId == w.id)
+                  .fold<int>(
+                    0,
+                    (s, t) =>
+                        s +
+                        (['previous', 'new'].contains(t.kind)
+                            ? t.amount
+                            : -t.amount),
+                  ),
             ],
         ],
       );
+      final attendance = (await db.select(db.attendanceEntries).get()).where(
+        (e) => !e.deleted,
+      );
       sheet(
         'Attendance',
-        ['Date', 'Worker', 'Attendance', 'Wages earned (₹)', 'Work'],
+        [
+          'record_id',
+          'worker_id',
+          'worker_name',
+          'date',
+          'status',
+          'wage_rupees',
+          'wage_paise',
+          'work',
+        ],
         [
           for (final a in attendance)
             [
-              a.date,
+              a.id,
+              a.workerId,
               names[a.workerId],
-              switch (a.status) {
-                AttendanceStatus.present => 'Full day',
-                AttendanceStatus.half => 'Half day',
-                AttendanceStatus.absent => 'Absent',
-              },
-              _rupees(a.amount),
+              a.date,
+              a.status.name,
+              a.amount / 100,
+              a.amount,
               a.work,
             ],
         ],
       );
-      final attendanceIds = {for (final a in attendance) a.id};
       final settlementById = {for (final s in settlements) s.id: s};
-      final wages = <List<Object?>>[];
-      for (final t in txns) {
-        if (t.refType == refAttendance && attendanceIds.contains(t.refId)) {
-          continue;
-        }
-        final settlement = t.refType == 'settlement'
-            ? settlementById[t.refId]
-            : null;
-        wages.add([
-          t.date,
-          names[t.workerId],
-          switch (t.kind) {
-            TxnKind.work => 'Other work',
-            TxnKind.payment => 'Payment',
-            TxnKind.advance => 'Advance',
-          },
-          t.kind == TxnKind.work ? _rupees(t.amount) : null,
-          t.kind == TxnKind.work
-              ? null
-              : _rupees(settlement?.cashPaid ?? t.amount),
-          _rupees(settlement?.loanDeduction),
-          t.mode?.name,
-          settlement?.periodStart,
-          settlement?.periodEnd,
-          settlement?.note ?? t.note,
-        ]);
-      }
-      sheet('Wages and payments', [
-        'Date',
-        'Worker',
-        'Type',
-        'Other wages (₹)',
-        'Paid to worker (₹)',
-        'Loan deduction (₹)',
-        'Payment method',
-        'Period start',
-        'Period end',
-        'Notes',
-      ], wages);
       sheet(
-        'Worker loans',
-        ['Date', 'Worker', 'Type', 'Amount (₹)', 'Notes'],
+        'Wages',
         [
-          for (final loan in loans)
+          'record_id',
+          'worker_id',
+          'worker_name',
+          'date',
+          'kind',
+          'ledger_rupees',
+          'ledger_paise',
+          'cash_paid_rupees',
+          'loan_deduction_rupees',
+          'mode',
+          'note',
+          'source_type',
+          'source_id',
+        ],
+        [
+          for (final t in txns)
             [
-              loan.date,
-              names[loan.workerId],
-              switch (loan.kind) {
-                'previous' => 'Earlier loan',
-                'new' => 'New loan',
-                'repayment' => 'Repayment',
-                'deduction' => 'Deducted from wages',
-                _ => loan.kind,
-              },
-              _rupees(loan.amount),
-              loan.note,
+              t.id,
+              t.workerId,
+              names[t.workerId],
+              t.date,
+              t.kind.name,
+              t.amount / 100,
+              t.amount,
+              t.kind.name == 'work'
+                  ? null
+                  : (settlementById[t.refId]?.cashPaid ?? t.amount) / 100,
+              (settlementById[t.refId]?.loanDeduction ?? 0) / 100,
+              t.mode?.name,
+              t.note,
+              t.refType,
+              t.refId,
             ],
         ],
       );
-
-      if (sheets.isEmpty) sheets['Farm work'] = [activityHeaders];
+      sheet(
+        'Settlements',
+        [
+          'record_id',
+          'worker_id',
+          'worker_name',
+          'payment_date',
+          'period_start',
+          'period_end',
+          'paid_rupees',
+          'paid_paise',
+          'loan_deduction_rupees',
+          'loan_deduction_paise',
+          'note',
+        ],
+        [
+          for (final s in settlements)
+            [
+              s.id,
+              s.workerId,
+              names[s.workerId],
+              s.date,
+              s.periodStart,
+              s.periodEnd,
+              s.cashPaid / 100,
+              s.cashPaid,
+              s.loanDeduction / 100,
+              s.loanDeduction,
+              s.note,
+            ],
+        ],
+      );
+      sheet(
+        'WorkerLoans',
+        [
+          'record_id',
+          'worker_id',
+          'worker_name',
+          'date',
+          'kind',
+          'amount_rupees',
+          'amount_paise',
+          'settlement_id',
+          'note',
+        ],
+        [
+          for (final l in loans)
+            [
+              l.id,
+              l.workerId,
+              names[l.workerId],
+              l.date,
+              l.kind,
+              l.amount / 100,
+              l.amount,
+              l.settlementId,
+              l.note,
+            ],
+        ],
+      );
+      final notes = (await db.select(db.reminders).get()).where(
+        (e) => !e.deleted && e.kind == 'dateNote',
+      );
+      sheet(
+        'FarmActivities',
+        ['record_id', 'date', 'label', 'description', 'crop', 'source'],
+        [
+          for (final n in notes.where(
+            (n) => ![
+              'harvest',
+              'ಕೊಯ್ಲು',
+              'sale',
+            ].contains(n.title.trim().toLowerCase()),
+          ))
+            [
+              n.id,
+              n.dueOn,
+              n.title,
+              noteValues(n.notes)['description'],
+              noteValues(n.notes)['crop'],
+              'date_note',
+            ],
+          for (final a in (await db.select(db.activities).get()).where(
+            (a) => !a.deleted,
+          ))
+            [
+              a.id,
+              a.date,
+              a.title,
+              a.notes,
+              a.crops.join(', '),
+              'legacy_activity',
+            ],
+        ],
+      );
+      sheet(
+        'Income',
+        [
+          'record_id',
+          'date',
+          'crop',
+          'buyer',
+          'quantity',
+          'unit',
+          'income_rupees',
+          'income_paise',
+          'description',
+          'harvest_record_id',
+        ],
+        [
+          for (final n in notes.where((n) => n.title == 'sale'))
+            [
+              n.id,
+              n.dueOn,
+              noteValues(n.notes)['crop'],
+              noteValues(n.notes)['buyer'],
+              noteValues(n.notes)['quantity'],
+              noteValues(n.notes)['unit'],
+              (noteValues(n.notes)['incomePaise'] as int) / 100,
+              noteValues(n.notes)['incomePaise'],
+              noteValues(n.notes)['description'],
+              noteValues(n.notes)['harvestId'],
+            ],
+        ],
+      );
+      sheet(
+        'SaleItems',
+        ['sale_record_id', 'crop', 'quantity', 'unit'],
+        [
+          for (final n in notes.where((n) => n.title == 'sale'))
+            if (noteValues(n.notes)['items'] is List)
+              for (final item
+                  in (noteValues(n.notes)['items'] as List)
+                      .whereType<Map<Object?, Object?>>()
+                      .map((e) => e.cast<String, dynamic>()))
+                [n.id, item['crop'], item['quantity'], item['unit']]
+            else
+              [
+                n.id,
+                noteValues(n.notes)['crop'],
+                noteValues(n.notes)['quantity'],
+                noteValues(n.notes)['unit'],
+              ],
+        ],
+      );
+      sheet(
+        'Harvests',
+        [
+          'record_id',
+          'date',
+          'crop',
+          'quantity',
+          'unit',
+          'description',
+          'source',
+        ],
+        [
+          for (final n in notes.where(
+            (n) => ['harvest', 'ಕೊಯ್ಲು'].contains(n.title.trim().toLowerCase()),
+          ))
+            [
+              n.id,
+              n.dueOn,
+              noteValues(n.notes)['crop'],
+              noteValues(n.notes)['quantity'],
+              noteValues(n.notes)['unit'],
+              noteValues(n.notes)['description'],
+              'date_note',
+            ],
+          for (final l in (await db.select(db.lots).get()).where(
+            (l) => !l.deleted,
+          ))
+            [
+              l.id,
+              l.harvestedOn,
+              l.crop.name,
+              l.quantityMode == 'bags' ? l.freshBags : l.freshKg,
+              l.quantityMode,
+              l.notes,
+              'legacy_lot',
+            ],
+          for (final l in (await db.select(db.produceLots).get()).where(
+            (l) => !l.deleted,
+          ))
+            [
+              l.id,
+              l.harvestedOn,
+              l.crop,
+              l.freshQuantity,
+              l.freshUnit,
+              l.notes,
+              'legacy_produce',
+            ],
+          for (final l in (await db.select(db.arecaCollections).get()).where(
+            (l) => !l.deleted && l.lotId == null,
+          ))
+            [
+              l.id,
+              l.collectedOn,
+              'areca',
+              l.quantity,
+              l.unit,
+              l.notes,
+              'legacy_collection',
+            ],
+        ],
+      );
+      // Raw sheets preserve all old fields and soft-deleted records for technical users.
+      for (final table in db.allTables) {
+        final rows = await db
+            .customSelect('SELECT * FROM "${table.actualTableName}"')
+            .get();
+        final columns = table.$columns.map((c) => c.$name).toList();
+        final name = 'Raw_${table.actualTableName}';
+        sheet(name.length > 31 ? name.substring(0, 31) : name, columns, [
+          for (final row in rows)
+            [for (final column in columns) row.data[column]],
+        ]);
+      }
       return sheets;
     });
     return compute(encodeFarmExcel, snapshot);
@@ -334,14 +438,13 @@ class FarmExcelExport {
       file.writeAsBytes(await bytes(), flush: true);
 }
 
-double? _rupees(Object? paise) => paise is num ? paise / 100 : null;
-
 List<int> encodeFarmExcel(Map<String, List<List<Object?>>> sheets) {
   final book = Excel.createExcel();
-  CellValue? value(Object? v) => switch (v) {
-    null => null,
+  CellValue value(Object? v) => switch (v) {
+    null => TextCellValue(''),
     final int n => IntCellValue(n),
     final double n => DoubleCellValue(n),
+    final bool b => BoolCellValue(b),
     final DateTime d => DateCellValue.fromDateTime(d),
     _ => TextCellValue(v.toString()),
   };
@@ -350,29 +453,22 @@ List<int> encodeFarmExcel(Map<String, List<List<Object?>>> sheets) {
     for (final row in entry.value) {
       target.appendRow(row.map(value).toList());
     }
-    final headers = entry.value.first.cast<String>();
-    for (var i = 0; i < headers.length; i++) {
-      final header = headers[i];
+    for (var i = 0; i < entry.value.first.length; i++) {
+      final header = entry.value.first[i].toString();
       target
           .cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
           .cellStyle = CellStyle(
         bold: true,
         backgroundColorHex: ExcelColor.fromHexString('#E7EFE4'),
+        textWrapping: TextWrapping.WrapText,
       );
-      target.setColumnWidth(i, header == 'Notes' || header == 'Work' ? 42 : 24);
-      if (header.endsWith('(₹)')) {
-        for (var row = 1; row < entry.value.length; row++) {
-          final cell = target.cell(
-            CellIndex.indexByColumnRow(columnIndex: i, rowIndex: row),
-          );
-          if (cell.value != null) {
-            cell.cellStyle = CellStyle(numberFormat: NumFormat.standard_2);
-          }
-        }
-      }
+      target.setColumnWidth(
+        i,
+        header.contains('note') || header.contains('description') ? 40 : 22,
+      );
     }
   }
   book.delete('Sheet1');
-  book.setDefaultSheet(sheets.keys.first);
+  book.setDefaultSheet('Guide');
   return book.encode()!;
 }
