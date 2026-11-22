@@ -171,10 +171,11 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
   late final income = TextEditingController(
     text: paiseToInput(values['incomePaise'] as int?),
   );
-  bool get sale => label.text == 'sale';
+  bool get sale => !customLabel && label.text == 'sale';
   late bool customLabel = values['labelSource'] == 'custom';
   bool busy = false;
   bool get harvest =>
+      !customLabel &&
       ['harvest', 'ಕೊಯ್ಲು'].contains(label.text.trim().toLowerCase());
   @override
   void dispose() {
@@ -316,7 +317,7 @@ class _DateNoteState extends ConsumerState<DateNoteEditor> {
 
   @override
   Widget build(BuildContext context) {
-    if (label.text == 'purchase') {
+    if (!customLabel && label.text == 'purchase') {
       return PurchaseEditor(date: widget.date, existing: widget.existing);
     }
     if (sale) {

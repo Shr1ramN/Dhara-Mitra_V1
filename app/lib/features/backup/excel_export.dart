@@ -273,16 +273,24 @@ class FarmExcelExport {
       final notes = (await db.select(db.reminders).get()).where(
         (e) => !e.deleted && e.kind == 'dateNote',
       );
+      final sales = notes.where(
+        (n) =>
+            n.title == 'sale' &&
+            noteValues(n.notes)['labelSource'] != 'custom' &&
+            noteValues(n.notes)['incomePaise'] is int,
+      );
       sheet(
         'FarmActivities',
         ['record_id', 'date', 'label', 'description', 'crop', 'source'],
         [
           for (final n in notes.where(
-            (n) => ![
-              'harvest',
-              'ಕೊಯ್ಲು',
-              'sale',
-            ].contains(n.title.trim().toLowerCase()),
+            (n) =>
+                noteValues(n.notes)['labelSource'] == 'custom' ||
+                ![
+                  'harvest',
+                  'ಕೊಯ್ಲು',
+                  'sale',
+                ].contains(n.title.trim().toLowerCase()),
           ))
             [
               n.id,
@@ -320,7 +328,7 @@ class FarmExcelExport {
           'harvest_record_id',
         ],
         [
-          for (final n in notes.where((n) => n.title == 'sale'))
+          for (final n in sales)
             [
               n.id,
               n.dueOn,
@@ -339,7 +347,7 @@ class FarmExcelExport {
         'SaleItems',
         ['sale_record_id', 'crop', 'quantity', 'unit'],
         [
-          for (final n in notes.where((n) => n.title == 'sale'))
+          for (final n in sales)
             if (noteValues(n.notes)['items'] is List)
               for (final item
                   in (noteValues(n.notes)['items'] as List)
@@ -368,7 +376,9 @@ class FarmExcelExport {
         ],
         [
           for (final n in notes.where(
-            (n) => ['harvest', 'ಕೊಯ್ಲು'].contains(n.title.trim().toLowerCase()),
+            (n) =>
+                noteValues(n.notes)['labelSource'] != 'custom' &&
+                ['harvest', 'ಕೊಯ್ಲು'].contains(n.title.trim().toLowerCase()),
           ))
             [
               n.id,

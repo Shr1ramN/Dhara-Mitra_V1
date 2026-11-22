@@ -8,6 +8,27 @@ CalendarRecord record(
 }) => CalendarRecord('id', DateTime(2026, 10, 29), category, title, notes, '/');
 
 void main() {
+  test(
+    'custom activity names stay separate from harvests and transactions',
+    () {
+      for (final name in ['sale', 'purchase', 'Harvest', 'ಕೊಯ್ಲು']) {
+        final entry = CalendarRecord(
+          'id',
+          DateTime(2026, 10, 29),
+          'note',
+          name,
+          '',
+          '/',
+          rawNotes: '@dm-note:{"labelSource":"custom"}',
+        );
+        expect(calendarCategoryMatches(entry, 'activity'), isTrue);
+        for (final filter in ['harvest', 'income', 'expense']) {
+          expect(calendarCategoryMatches(entry, filter), isFalse);
+        }
+      }
+    },
+  );
+
   test('Harvest filter includes simple notes in both languages', () {
     for (final title in ['Harvest', 'ಕೊಯ್ಲು']) {
       expect(

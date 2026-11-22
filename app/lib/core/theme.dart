@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'enums.dart';
 
-/// Colours from the prototype (white + orange, plan section 7).
+/// Shared colours for the light theme.
 abstract final class AppColors {
   static const surface = Color(0xFFFFFFFF);
   static const background = Color(0xFFFBF8F5);
   static const border = Color(0xFFEEE7DE);
   static const text = Color(0xFF1C1A17);
   static const textMuted = Color(0xFF6B645B);
-  static const accent = Color(0xFFE8712A);
-  static const accentDark = Color(0xFFC85E1F);
-  static const accentSoft = Color(0xFFFDEFE3);
+  static const accent = Color(0xFF286048);
+  static const accentDark = Color(0xFF21523D);
+  static const accentSoft = Color(0xFFE7F2EA);
   static const up = Color(0xFF2E8B57);
   static const down = Color(0xFFC0392B);
   static const okBg = Color(0xFFEAF4EE);
@@ -216,9 +216,9 @@ class AppPalette {
   Color get border => dark ? const Color(0xFF465149) : AppColors.border;
   Color get text => dark ? const Color(0xFFF0F3EE) : AppColors.text;
   Color get textMuted => dark ? const Color(0xFFBDC9BE) : AppColors.textMuted;
-  Color get accent => dark ? const Color(0xFFFFAB73) : AppColors.accent;
-  Color get accentDark => dark ? const Color(0xFFFFBD93) : AppColors.accentDark;
-  Color get accentSoft => dark ? const Color(0xFF493424) : AppColors.accentSoft;
+  Color get accent => dark ? const Color(0xFFA5D9B8) : AppColors.accent;
+  Color get accentDark => dark ? const Color(0xFFB8E6CB) : AppColors.accentDark;
+  Color get accentSoft => dark ? const Color(0xFF2B4535) : AppColors.accentSoft;
   Color get okBg => dark ? const Color(0xFF233D2B) : AppColors.okBg;
   Color get okText => dark ? const Color(0xFFA8D9B4) : AppColors.okText;
   Color get warnBg => dark ? const Color(0xFF44391F) : AppColors.warnBg;
@@ -235,7 +235,7 @@ ThemeData buildDarkTheme() {
     seedColor: palette.accent,
     brightness: Brightness.dark,
     primary: palette.accent,
-    onPrimary: const Color(0xFF362011),
+    onPrimary: const Color(0xFF153528),
     surface: palette.surface,
     onSurface: palette.text,
     error: palette.down,

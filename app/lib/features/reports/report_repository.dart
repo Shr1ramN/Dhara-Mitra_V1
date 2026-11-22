@@ -337,6 +337,7 @@ class ReportRepository {
             ))
             .get()) {
       final values = noteValues(note.notes);
+      if (values['labelSource'] == 'custom') continue;
       if (note.title == 'purchase' && values['costPaise'] is int) {
         add(
           note.dueOn,
