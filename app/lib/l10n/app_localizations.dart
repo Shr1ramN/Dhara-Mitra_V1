@@ -3251,7 +3251,7 @@ abstract class AppLocalizations {
   /// No description provided for @xCreateBackup.
   ///
   /// In en, this message translates to:
-  /// **'Save a backup copy'**
+  /// **'Create backup'**
   String get xCreateBackup;
 
   /// No description provided for @xRestoreWarning.
@@ -3857,7 +3857,7 @@ abstract class AppLocalizations {
   /// No description provided for @excelSnapshotHelp.
   ///
   /// In en, this message translates to:
-  /// **'Share farm records as a spreadsheet. For a full copy, use Backup and restore.'**
+  /// **'An editable copy for analysis. Changes in Excel do not change the app.'**
   String get excelSnapshotHelp;
 }
 

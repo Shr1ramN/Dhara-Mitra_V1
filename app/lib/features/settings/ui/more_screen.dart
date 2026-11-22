@@ -11,7 +11,6 @@ import '../../../core/appearance.dart';
 import '../../../core/l10n.dart';
 import '../../../core/providers.dart';
 import '../../../core/widgets.dart';
-import '../../../core/v1.dart';
 import '../../backup/excel_export.dart';
 import '../../common/forms.dart';
 
@@ -61,22 +60,20 @@ class _MoreState extends ConsumerState<MoreScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
         children: [
-          SectionTitle(l.language),
-          SegmentedButton<String>(
-            segments: [
-              ButtonSegment(value: 'en', label: Text(l.english)),
-              ButtonSegment(value: 'kn', label: Text(l.kannada)),
-            ],
-            selected: {ref.watch(localeProvider).languageCode},
-            onSelectionChanged: (v) =>
-                ref.read(localeProvider.notifier).set(v.first),
-          ),
-          const SizedBox(height: 16),
+          for (final item in <(String, IconData, String)>[
+            (l.farm, Icons.agriculture_outlined, '/farm'),
+            (l.fFarms, Icons.swap_horiz, '/farms'),
+            (l.xBackup, Icons.backup_outlined, '/backup'),
+            (l.xSecurity, Icons.lock_outlined, '/security'),
+          ])
+            ListTile(
+              leading: Icon(item.$2),
+              title: Text(item.$1),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(item.$3),
+            ),
           SectionTitle(l.appearance),
           SegmentedButton<ThemeMode>(
-            direction: MediaQuery.textScalerOf(context).scale(14) > 22
-                ? Axis.vertical
-                : Axis.horizontal,
             showSelectedIcon: false,
             segments: [
               ButtonSegment(value: ThemeMode.light, label: Text(l.lightTheme)),
@@ -92,32 +89,30 @@ class _MoreState extends ConsumerState<MoreScreen> {
               () => ref.read(themeModeProvider.notifier).set(v.first),
             ),
           ),
-          for (final item in <(String, IconData, String)>[
-            (l.farm, Icons.agriculture_outlined, '/farm'),
-            (l.fFarms, Icons.swap_horiz, '/farms'),
-            (l.xBackup, Icons.backup_outlined, '/backup'),
-            (l.xSecurity, Icons.lock_outlined, '/security'),
-          ])
-            ListTile(
-              leading: Icon(item.$2),
-              title: Text(item.$1),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push(item.$3),
-            ),
-          SectionTitle(v1Text(context, 'Export files', 'ಕಡತಗಳನ್ನು ರಫ್ತು ಮಾಡಿ')),
-          ListTile(
-            enabled: !exporting,
-            leading: const Icon(Icons.table_chart_outlined),
-            title: Text(l.exportExcel),
-            subtitle: Text(l.excelSnapshotHelp),
-            onTap: () => export(true),
+          SectionTitle(l.language),
+          SegmentedButton<String>(
+            segments: [
+              ButtonSegment(value: 'en', label: Text(l.english)),
+              ButtonSegment(value: 'kn', label: Text(l.kannada)),
+            ],
+            selected: {ref.watch(localeProvider).languageCode},
+            onSelectionChanged: (v) =>
+                ref.read(localeProvider.notifier).set(v.first),
           ),
+          SectionTitle(l.exportDb),
           ListTile(
             enabled: !exporting,
             leading: const Icon(Icons.storage_outlined),
             title: Text(l.exportDb),
             subtitle: Text(l.exportDbSub),
             onTap: () => export(false),
+          ),
+          ListTile(
+            enabled: !exporting,
+            leading: const Icon(Icons.table_chart_outlined),
+            title: Text(l.exportExcel),
+            subtitle: Text(l.excelSnapshotHelp),
+            onTap: () => export(true),
           ),
           if (exporting)
             const Padding(

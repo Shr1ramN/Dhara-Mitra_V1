@@ -153,36 +153,23 @@ class _AttendanceState extends ConsumerState<AttendanceTab> {
               ],
             ),
           ),
-          ExpansionTile(
-            title: Text(
-              v1Text(
-                context,
-                'Work notes (optional)',
-                'ಕೆಲಸದ ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)',
-              ),
+          TextField(
+            controller: work,
+            enabled: !loading && !busy,
+            decoration: InputDecoration(
+              labelText: l.workToday,
+              hintText: l.workHint,
             ),
-            initiallyExpanded: work.text.isNotEmpty,
-            maintainState: true,
-            children: [
-              TextField(
-                controller: work,
-                enabled: !loading && !busy,
-                decoration: InputDecoration(
-                  labelText: l.workToday,
-                  hintText: l.workHint,
-                ),
-                onChanged: (_) {
-                  // Persist each edit; no pending timer is lost when leaving the screen.
-                  unawaited(
-                    saveWork().catchError((Object e) {
-                      if (context.mounted) {
-                        showSnack(context, failureText(context, e));
-                      }
-                    }),
-                  );
-                },
-              ),
-            ],
+            onChanged: (_) {
+              // Persist each edit; no pending timer is lost when leaving the screen.
+              unawaited(
+                saveWork().catchError((Object e) {
+                  if (context.mounted) {
+                    showSnack(context, failureText(context, e));
+                  }
+                }),
+              );
+            },
           ),
           const SizedBox(height: 12),
           Text(
@@ -242,25 +229,7 @@ class _AttendanceState extends ConsumerState<AttendanceTab> {
                         children: [
                           for (final st in AttendanceStatus.values)
                             ChoiceChip(
-                              label: Text(switch (st) {
-                                AttendanceStatus.present => v1Text(
-                                  context,
-                                  'Full day',
-                                  'ಪೂರ್ಣ ದಿನ',
-                                ),
-                                AttendanceStatus.half => v1Text(
-                                  context,
-                                  'Half day',
-                                  'ಅರ್ಧ ದಿನ',
-                                ),
-                                AttendanceStatus.absent => l.attendance(st),
-                              }),
-                              labelPadding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 5,
-                              ),
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.padded,
+                              label: Text(l.attendance(st)),
                               selected: e?.status == st,
                               onSelected:
                                   busy ||

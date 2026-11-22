@@ -17,7 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'Excel exports readable, reconciled records without raw or duplicated data',
+    'Excel snapshot reconciles wages and loans, keeps Kannada and raw history',
     () async {
       final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
@@ -112,78 +112,58 @@ void main() {
               ),
             ),
           );
-      for (final (title, data, deleted) in [
-        ('purchase', {'item': 'Seed bags', 'costPaise': 12345}, false),
-        ('purchase', {'item': 'Deleted item', 'costPaise': 200}, true),
-        (
-          'sale',
-          {'labelSource': 'custom', 'description': 'Custom work'},
-          false,
-        ),
-      ]) {
-        await db
-            .into(db.reminders)
-            .insert(
-              RemindersCompanion.insert(
-                title: title,
-                dueOn: day,
-                kind: const Value('dateNote'),
-                notes: Value(notePrefix + jsonEncode(data)),
-                deleted: Value(deleted),
-              ),
-            );
-      }
+      final buyer = await db
+          .into(db.buyers)
+          .insertReturning(BuyersCompanion.insert(name: 'Legacy buyer'));
+      await db
+          .into(db.sales)
+          .insert(SalesCompanion.insert(date: day, buyerId: buyer.id));
       final before = (await labour.watchWorkerSummaries().first)
           .firstWhere((e) => e.worker.id == w.id)
           .balance
           .due;
       final book = Excel.decodeBytes(await FarmExcelExport(db).bytes());
-      final sale = book['Sales'].rows[1];
-      expect(sale[2]!.value.toString(), '=Buyer');
-      expect(sale[2]!.value, isA<TextCellValue>());
-      expect((sale[6]!.value as DoubleCellValue).value, 1234.56);
-      expect(book.getDefaultSheet(), 'Farm work');
-      expect(book.tables.keys, [
-        'Farm work',
-        'Harvests',
-        'Sales',
-        'Purchases',
-        'Workers',
-        'Attendance',
-        'Wages and payments',
-        'Worker loans',
-      ]);
-      final workerRows = book['Workers'].rows;
-      final workerRow = workerRows.singleWhere(
-        (row) => row[0]!.value.toString() == 'ರಾಮು',
-      );
-      expect((workerRow[4]!.value as DoubleCellValue).value, 449.99);
-      expect(num.parse(workerRow[5]!.value.toString()), 300);
-      final formulaName = workerRows.singleWhere(
-        (row) => row[0]!.value.toString() == '=SUM(1,2)',
-      );
-      expect(formulaName[0]!.value, isA<TextCellValue>());
-      expect(book['Attendance'].rows[1][0]!.value, isA<DateCellValue>());
-      expect(book['Attendance'].rows[2][2]!.value.toString(), 'Half day');
-      final wages = book['Wages and payments'].rows;
-      expect(wages.length, 3);
-      expect(num.parse(wages.last[4]!.value.toString()), 400);
-      expect(num.parse(wages.last[5]!.value.toString()), 100);
-      expect(wages.last[7]!.value, isA<DateCellValue>());
-      expect(book['Harvests'].rows[1][1]!.value.toString(), 'Mango');
+      expect(book['Income'].rows[1][3]!.value, isA<TextCellValue>());
+      expect((book['Income'].rows[1][7]!.value as IntCellValue).value, 123456);
+      expect(book.getDefaultSheet(), 'Guide');
+      expect(book.tables.containsKey('Sheet1'), isFalse);
       expect(
-        (book['Harvests'].rows[1][2]!.value as DoubleCellValue).value,
+        book.tables.keys,
+        containsAll([
+          'Workers',
+          'Attendance',
+          'Wages',
+          'Settlements',
+          'WorkerLoans',
+          'FarmActivities',
+          'Harvests',
+          'Raw_sales',
+          'Raw_workers',
+        ]),
+      );
+      final rows = book['Workers'].rows;
+      final workerRow = rows
+          .skip(1)
+          .singleWhere((row) => row[0]!.value.toString() == w.id);
+      expect(workerRow[1]!.value.toString(), 'ರಾಮು');
+      expect(workerRow[2]!.value.toString(), '09876543210');
+      expect((workerRow[10]!.value as IntCellValue).value, 44999);
+      expect((workerRow[12]!.value as IntCellValue).value, 30000);
+      final formulaName = rows
+          .skip(1)
+          .singleWhere((row) => row[1]!.value.toString() == '=SUM(1,2)');
+      expect(formulaName[1]!.value, isA<TextCellValue>());
+      expect(book['Attendance'].rows[1][3]!.value, isA<DateCellValue>());
+      expect(book['Harvests'].rows[1][2]!.value.toString(), 'Mango');
+      expect(
+        (book['Harvests'].rows[1][3]!.value as DoubleCellValue).value,
         12.5,
       );
-      expect(book['Harvests'].rows[1][3]!.value.toString(), 'bags');
-      expect(book['Purchases'].rows.length, 2);
-      expect(
-        (book['Purchases'].rows[1][2]!.value as DoubleCellValue).value,
-        123.45,
-      );
-      expect(book['Farm work'].rows[1][3]!.value.toString(), 'Custom work');
+      expect(book['Harvests'].rows[1][4]!.value.toString(), 'bags');
+      expect(book['Raw_sales'].rows.length, 2);
+      expect(book.tables.length, db.allTables.length + 10);
       book['Workers']
-          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 1))
           .value = TextCellValue(
         'Edited offline',
       );
@@ -233,7 +213,7 @@ void main() {
     },
   );
   test(
-    'removed sales stay in storage and leave the calendar interface',
+    'removed sales stay stored and exported but leave the calendar interface',
     () async {
       final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
