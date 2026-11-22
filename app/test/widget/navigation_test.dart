@@ -1,3 +1,5 @@
+import 'package:dhara_mitra/features/calendar/date_note.dart';
+
 import 'dart:async';
 
 import 'package:dhara_mitra/app.dart';
@@ -147,6 +149,24 @@ void main() {
     },
   );
 
+  testWidgets('Home opens the harvest editor from Add record', (tester) async {
+    await pump(tester);
+    await tester.tap(find.text('Add record'));
+    await tester.pumpAndSettle();
+    final sheet = find.byType(BottomSheet);
+    expect(
+      find.descendant(of: sheet, matching: find.byType(ListTile)),
+      findsNWidgets(4),
+    );
+    await tester.tap(
+      find.descendant(of: sheet, matching: find.text('Harvest')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(find.byType(DateNoteEditor), findsOneWidget);
+    await finish(tester);
+  });
+
   testWidgets('home summary tiles fit a phone and open their farm tools', (
     tester,
   ) async {
@@ -159,7 +179,11 @@ void main() {
       ('Attendance', '/labour'),
     ]) {
       final tile = find.text(item.$1);
-      await tester.ensureVisible(tile);
+      await tester.scrollUntilVisible(
+        tile,
+        140,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       expect(tile.hitTestable(), findsOneWidget);
       await tester.tap(tile);

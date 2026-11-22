@@ -37,6 +37,11 @@ class HomeScreen extends ConsumerWidget {
         .length;
     final records = ref.watch(calendarRecordsProvider).value ?? [];
     final money = ref.watch(homeMoneyProvider);
+    void openAttendance() {
+      ref.read(entryDateProvider.notifier).select(today);
+      context.push('/labour?tab=attendance');
+    }
+
     final start = DateTime(
       today.year,
       today.month,
@@ -45,7 +50,7 @@ class HomeScreen extends ConsumerWidget {
     final work = records
         .where(
           (r) =>
-              (r.category == 'activity' || r.category == 'note') &&
+              calendarCategoryMatches(r, 'activity') &&
               !calendarDay(r.date).isBefore(start) &&
               !calendarDay(r.date).isAfter(calendarDay(today)),
         )
@@ -58,18 +63,8 @@ class HomeScreen extends ConsumerWidget {
         child: ListView(
           padding: EdgeInsets.fromLTRB(16, 18, 16, 32),
           children: [
-            Text(
-              fmt.weekdayDate(today),
-              style: TextStyle(color: context.appColors.textMuted),
-            ),
-            SizedBox(height: 2),
-            Text('${l.namaskara} 🙏', style: display(26)),
-            OutlinedButton.icon(
-              onPressed: () => context.push('/farms'),
-              icon: Icon(Icons.swap_horiz),
-              label: Text(l.fFarms),
-            ),
-            SizedBox(height: 8),
+            _FarmWelcome(date: fmt.weekdayDate(today)),
+            const SizedBox(height: 16),
             LayoutBuilder(
               builder: (context, constraints) {
                 final large = MediaQuery.textScalerOf(context).scale(16) > 19.2;
@@ -87,7 +82,7 @@ class HomeScreen extends ConsumerWidget {
                         value: '$present',
                         detail: v1Text(context, 'Present today', 'ಇಂದು ಹಾಜರು'),
                         icon: Icons.how_to_reg,
-                        onTap: () => context.push('/labour?tab=attendance'),
+                        onTap: openAttendance,
                       ),
                     ),
                     SizedBox(
@@ -136,22 +131,8 @@ class HomeScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   for (final (title, icon, path) in [
-                    (
-                      v1Text(context, 'Add Farm Activity', 'ತೋಟದ ಕೆಲಸ ಸೇರಿಸಿ'),
-                      Icons.add_circle_outline,
-                      '/date-note',
-                    ),
-                    (
-                      v1Text(context, 'Sold to Buyer', 'ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ'),
-                      Icons.storefront_outlined,
-                      '/date-note?label=sale',
-                    ),
                     (l.labourManagement, Icons.groups_outlined, '/labour'),
-                    (
-                      l.farmPurchases,
-                      Icons.shopping_bag_outlined,
-                      '/date-note?label=purchase',
-                    ),
+                    (l.fFarms, Icons.swap_horiz, '/farms'),
                   ])
                     ListTile(
                       leading: Icon(icon),
@@ -204,26 +185,11 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                      child: Wrap(
-                        spacing: 8,
-                        children: [
-                          TextButton(
-                            onPressed: () =>
-                                context.push('/calendar?category=income'),
-                            child: Text(
-                              v1Text(context, 'View sales', 'ಮಾರಾಟಗಳನ್ನು ನೋಡಿ'),
-                            ),
-                          ),
-                          TextButton.icon(
-                            onPressed: () =>
-                                context.push('/labour?tab=reports'),
-                            icon: const Icon(Icons.bar_chart),
-                            label: Text(l.labourReports),
-                          ),
-                        ],
-                      ),
+                    ListTile(
+                      leading: const Icon(Icons.bar_chart_outlined),
+                      title: Text(l.labourReports),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/labour?tab=reports'),
                     ),
                   ],
                 ),
@@ -234,6 +200,91 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _FarmWelcome extends StatelessWidget {
+  const _FarmWelcome({required this.date});
+
+  final String date;
+
+  Future<void> _addRecord(BuildContext context) async {
+    final l = context.l;
+    final path = await showModalBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Text(
+                l.add,
+                style: Theme.of(sheetContext).textTheme.titleLarge,
+              ),
+            ),
+            for (final (label, icon, route) in [
+              (l.farmActivity, Icons.edit_note_outlined, '/date-note'),
+              (l.navHarvest, Icons.eco_outlined, '/date-note?label=harvest'),
+              (
+                v1Text(context, 'Sale', 'ಮಾರಾಟ'),
+                Icons.storefront_outlined,
+                '/date-note?label=sale',
+              ),
+              (
+                l.farmPurchases,
+                Icons.shopping_bag_outlined,
+                '/date-note?label=purchase',
+              ),
+            ])
+              ListTile(
+                leading: Icon(icon),
+                title: Text(label),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.pop(sheetContext, route),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (context.mounted && path != null) await context.push<void>(path);
+  }
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: const Color(0xFF173F32),
+      borderRadius: BorderRadius.circular(22),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(date, style: const TextStyle(color: Color(0xFFD5EADF))),
+          const SizedBox(height: 8),
+          Text(context.l.namaskara, style: display(30, color: Colors.white)),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFF0FAF3),
+                foregroundColor: const Color(0xFF173F32),
+              ),
+              onPressed: () => _addRecord(context),
+              icon: const Icon(Icons.add),
+              label: Text(v1Text(context, 'Add record', 'ದಾಖಲೆ ಸೇರಿಸಿ')),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _FarmSummaryTile extends StatelessWidget {
@@ -260,12 +311,12 @@ class _FarmSummaryTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: EdgeInsets.all(18),
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: color, size: 30),
-              SizedBox(height: 14),
+              Icon(icon, color: color, size: 23),
+              const SizedBox(height: 8),
               Text(
                 label,
                 style: TextStyle(

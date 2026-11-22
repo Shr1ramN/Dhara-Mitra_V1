@@ -119,30 +119,24 @@ class RecordQuery {
 DateTime calendarDay(DateTime date) =>
     DateTime(date.year, date.month, date.day);
 
-bool calendarCategoryMatches(CalendarRecord record, String category) =>
-    category.isEmpty ||
-    record.category == category ||
-    (category == 'income' &&
-        record.category == 'note' &&
-        record.title == 'sale') ||
-    (category == 'expense' &&
-        record.category == 'note' &&
-        record.title == 'purchase') ||
-    (category == 'labour' &&
-        ['attendance', 'payment', 'loan'].contains(record.category)) ||
-    (category == 'activity' &&
-        record.category == 'note' &&
-        !const [
-          'sale',
-          'harvest',
-          'ಕೊಯ್ಲು',
-        ].contains(record.title.trim().toLowerCase())) ||
-    (category == 'harvest' &&
-        record.category == 'note' &&
-        const [
-          'harvest',
-          'ಕೊಯ್ಲು',
-        ].contains(record.title.trim().toLowerCase()));
+bool calendarCategoryMatches(CalendarRecord record, String category) {
+  if (category.isEmpty || record.category == category) return true;
+  if (category == 'labour') {
+    return const ['attendance', 'payment', 'loan'].contains(record.category);
+  }
+  if (record.category != 'note') return false;
+  if (noteValues(record.rawNotes)['labelSource'] == 'custom') {
+    return category == 'activity';
+  }
+
+  final title = record.title.trim().toLowerCase();
+  return switch (title) {
+    'sale' => category == 'income',
+    'purchase' => category == 'expense',
+    'harvest' || 'ಕೊಯ್ಲು' => category == 'harvest',
+    _ => category == 'activity',
+  };
+}
 
 /// Date-only comparison includes entries at any time on the final day.
 bool calendarDateInRange(DateTime date, DateTime start, DateTime end) {
@@ -201,15 +195,16 @@ final calendarRecordsProvider = StreamProvider(
 
 String recordTitle(BuildContext context, CalendarRecord record) {
   if (record.category == 'note') {
+    if (noteValues(record.rawNotes)['labelSource'] == 'custom') {
+      return record.title;
+    }
     if (record.title == 'sale') {
       final buyer =
           noteValues(record.rawNotes)['buyer']?.toString().trim() ?? '';
       if (buyer.isNotEmpty) return context.l.soldToName(buyer);
     }
     if (record.title == 'purchase') return context.l.farmPurchases;
-    return noteValues(record.rawNotes)['labelSource'] == 'custom'
-        ? record.title
-        : translatedLabel(context, record.title);
+    return translatedLabel(context, record.title);
   }
   if (['attendance', 'payment', 'loan'].contains(record.category)) {
     final split = record.title.lastIndexOf(' ');
