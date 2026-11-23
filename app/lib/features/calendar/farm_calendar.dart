@@ -710,52 +710,52 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                 ),
               ),
           ];
-          final results = <Widget>[
-            for (final r in visible)
-              Card(
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: colors.primaryContainer,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      categoryIcon(r.category),
-                      color: colors.onPrimaryContainer,
-                    ),
-                  ),
-                  title: Text(recordTitle(context, r), style: text.titleMedium),
-                  subtitle: Text(
-                    '${context.fmt.date(r.date)} · ${label(r.category)}${r.notes.isEmpty ? '' : '\n${r.rawNotes.startsWith(notePrefix) ? localizedNote(context, r.rawNotes) : r.notes}'}',
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                  ),
-                  onTap: () => open(r),
+          Widget buildRecord(BuildContext context, int index) {
+            final r = visible[index];
+            return Card(
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-              ),
-            if (query.latest && !older && filtered.length > 1)
-              TextButton.icon(
-                onPressed: () => setState(() => older = true),
-                icon: const Icon(Icons.history),
-                label: Text(
-                  v1Text(
-                    context,
-                    'Show older records',
-                    'ಹಳೆಯ ದಾಖಲೆಗಳನ್ನು ತೋರಿಸಿ',
+                leading: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    categoryIcon(r.category),
+                    color: colors.onPrimaryContainer,
                   ),
                 ),
+                title: Text(recordTitle(context, r), style: text.titleMedium),
+                subtitle: Text(
+                  '${context.fmt.date(r.date)} · ${label(r.category)}${r.notes.isEmpty ? '' : '\n${r.rawNotes.startsWith(notePrefix) ? localizedNote(context, r.rawNotes) : r.notes}'}',
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                onTap: () => open(r),
               ),
-          ];
+            );
+          }
+
+          final showOlder = query.latest && !older && filtered.length > 1;
+          final footer = showOlder
+              ? TextButton.icon(
+                  onPressed: () => setState(() => older = true),
+                  icon: const Icon(Icons.history),
+                  label: Text(
+                    v1Text(
+                      context,
+                      'Show older records',
+                      'ಹಳೆಯ ದಾಖಲೆಗಳನ್ನು ತೋರಿಸಿ',
+                    ),
+                  ),
+                )
+              : null;
           return Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
@@ -773,7 +773,15 @@ class _FarmCalendarState extends ConsumerState<FarmCalendarScreen> {
                   ),
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
-                    sliver: SliverList.list(children: results),
+                    sliver: SliverMainAxisGroup(
+                      slivers: [
+                        SliverList.builder(
+                          itemCount: visible.length,
+                          itemBuilder: buildRecord,
+                        ),
+                        if (footer != null) SliverToBoxAdapter(child: footer),
+                      ],
+                    ),
                   ),
                 ],
               ),
