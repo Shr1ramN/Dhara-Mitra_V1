@@ -38,7 +38,7 @@ class HomeScreen extends ConsumerWidget {
     final records = ref.watch(calendarRecordsProvider).value ?? [];
     final money = ref.watch(homeMoneyProvider);
     void openAttendance() {
-      ref.read(entryDateProvider.notifier).select(today);
+      ref.read(entryDateProvider.notifier).select(null);
       context.push('/labour?tab=attendance');
     }
 
@@ -257,7 +257,7 @@ class _FarmWelcome extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
-      color: const Color(0xFF173F32),
+      color: context.appColors.accentSoft,
       borderRadius: BorderRadius.circular(22),
     ),
     child: Padding(
@@ -265,17 +265,16 @@ class _FarmWelcome extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(date, style: const TextStyle(color: Color(0xFFD5EADF))),
+          Text(date, style: TextStyle(color: context.appColors.textMuted)),
           const SizedBox(height: 8),
-          Text(context.l.namaskara, style: display(30, color: Colors.white)),
+          Text(
+            context.l.namaskara,
+            style: display(30, color: context.appColors.text),
+          ),
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFF0FAF3),
-                foregroundColor: const Color(0xFF173F32),
-              ),
               onPressed: () => _addRecord(context),
               icon: const Icon(Icons.add),
               label: Text(v1Text(context, 'Add record', 'ದಾಖಲೆ ಸೇರಿಸಿ')),

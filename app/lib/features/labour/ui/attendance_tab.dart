@@ -56,18 +56,29 @@ class _AttendanceState extends ConsumerState<AttendanceTab> {
   }
 
   Future<void> changeDay(DateTime d) async {
-    if (busy) return;
-    await saveWork();
-    if (!mounted) return;
-    setState(() {
-      day = dateOnly(d);
-      loading = true;
-      for (final c in rates.values) {
-        c.dispose();
-      }
-      rates.clear();
-    });
-    await loadWork();
+    if (busy || loading) return;
+    setState(() => busy = true);
+    try {
+      final db = ref.read(databaseProvider);
+      final nextDay = dateOnly(d);
+      await saveWork();
+      final nextWork = await db.setting(
+        'attendance.work.${nextDay.toIso8601String()}',
+      );
+      if (!mounted) return;
+      setState(() {
+        day = nextDay;
+        work.text = nextWork ?? '';
+        for (final c in rates.values) {
+          c.dispose();
+        }
+        rates.clear();
+      });
+    } catch (e) {
+      if (mounted) showSnack(context, failureText(context, e));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
   }
 
   Future<void> saveWork() async {

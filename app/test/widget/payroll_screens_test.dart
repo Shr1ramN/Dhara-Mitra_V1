@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -136,6 +137,130 @@ void main() {
   );
 
   for (final lang in ['en', 'kn']) {
+    testWidgets('populated farm search and attendance work in $lang', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final db = AppDatabase(
+        DatabaseConnection(
+          NativeDatabase.memory(),
+          closeStreamsSynchronously: true,
+        ),
+      );
+      final today = DateTime(2026, 10, 31);
+      final workerName = lang == 'kn' ? 'ಕೆಲಸಗಾರ 01' : 'Worker 01';
+      final lot = lang == 'kn' ? 'ಉತ್ತರದ ಅಡಿಕೆ' : 'North arecanut';
+      await tester.runAsync(() async {
+        await db.into(db.farms).insert(FarmsCompanion.insert(name: 'Malnad'));
+        final workers = [
+          for (var i = 1; i <= 24; i++)
+            WorkersCompanion.insert(
+              name:
+                  "${lang == 'kn' ? 'ಕೆಲಸಗಾರ' : 'Worker'} ${i.toString().padLeft(2, '0')}",
+              dayRate: const Value(60000),
+            ),
+        ];
+        await db.batch((batch) => batch.insertAll(db.workers, workers));
+        final savedWorkers = await db.select(db.workers).get();
+        final labour = LabourRepository(db);
+        for (var day = 1; day <= 30; day++) {
+          await labour.saveAttendance(DateTime(2026, 10, day), {
+            for (final worker in savedWorkers)
+              worker.id: const AttendanceMark(AttendanceStatus.present),
+          });
+        }
+        await db.batch(
+          (batch) => batch.insertAll(db.reminders, [
+            for (var day = 1; day <= 30; day++)
+              for (final (title, fields) in <(String, Map<String, Object>)>[
+                ('Irrigation', {'crop': lot, 'description': 'Upper plot'}),
+                ('Harvest', {'crop': lot, 'quantity': 12, 'unit': 'bags'}),
+                ('sale', {'crop': lot, 'buyer': 'Ravi', 'incomePaise': 125025}),
+                ('purchase', {'item': 'Seed', 'costPaise': 50010}),
+              ])
+                RemindersCompanion.insert(
+                  title: title,
+                  dueOn: DateTime(2026, 10, day),
+                  kind: const Value('dateNote'),
+                  done: const Value(true),
+                  notes: Value(notePrefix + jsonEncode(fields)),
+                ),
+          ]),
+        );
+        await db.putSetting(
+          'attendance.work.2026-10-30T00:00:00.000',
+          'Previous day work',
+        );
+      });
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            initialLanguageProvider.overrideWithValue(lang),
+            todayProvider.overrideWithValue(today),
+          ],
+          child: const DharaMitraApp(hasFarm: true),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(Scaffold).first));
+      router.go('/calendar?category=harvest');
+      await tester.pumpAndSettle();
+      final count = find.widgetWithText(Chip, '30');
+      expect(count.hitTestable(), findsOneWidget);
+      final search = find.byType(TextField);
+      await tester.ensureVisible(search);
+      await tester.enterText(search, lot);
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      expect(count.hitTestable(), findsOneWidget);
+      router.go('/');
+      await tester.pumpAndSettle();
+      final attendance = find.text(lang == 'kn' ? 'ಹಾಜರಾತಿ' : 'Attendance');
+      await tester.ensureVisible(attendance);
+      await tester.tap(attendance);
+      await tester.pumpAndSettle();
+      final previous = find.widgetWithIcon(IconButton, Icons.chevron_left);
+      final goBackOneDay = tester.widget<IconButton>(previous).onPressed!;
+      goBackOneDay();
+      goBackOneDay();
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(find.byType(TextField).first).controller!.text,
+        'Previous day work',
+      );
+      final next = find.widgetWithIcon(IconButton, Icons.chevron_right);
+      await tester.tap(next);
+      await tester.pumpAndSettle();
+      final firstWorker = find
+          .ancestor(of: find.text(workerName), matching: find.byType(Card))
+          .first;
+      final half = find
+          .descendant(of: firstWorker, matching: find.byType(ChoiceChip))
+          .at(1);
+      await tester.ensureVisible(half);
+      await tester.pumpAndSettle();
+      await tester.tap(half);
+      await tester.pumpAndSettle();
+      await tester.runAsync(() async {
+        final attendance = await db.select(db.attendanceEntries).get();
+        expect(attendance, hasLength(721));
+        final saved = attendance.singleWhere((entry) => entry.date == today);
+        expect(saved.status, AttendanceStatus.half);
+        expect(saved.amount, 30000);
+        expect(saved.work, isEmpty);
+      });
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(seconds: 1));
+      await db.close();
+    });
+
     testWidgets('labour and calendar fit 320px with enlarged text in $lang', (
       tester,
     ) async {
